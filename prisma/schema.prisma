@@ -1,0 +1,348 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Enums ────────────────────────────────────────────────────────────────────
+
+enum NiveauAcces {
+  MINISTERE
+  ADMIN_CENTRE
+  PERSONNEL
+}
+
+enum TypeCentre {
+  HOPITAL
+  CLINIQUE
+  CSU
+  CMS
+  AUTRE
+}
+
+enum Genre {
+  M
+  F
+}
+
+enum ActionLog {
+  LOGIN
+  LOGOUT
+  SCAN_QR
+  ENVOI_OTP
+  VALIDATION_OTP
+  ACCES_DOSSIER
+  MODIFICATION_DOSSIER
+  URGENCE_ACTIVATION
+  CREATION_PATIENT
+  CREATION_USER
+  CREATION_CENTRE
+  CREATION_ROLE
+  MODIFICATION_PERMISSIONS
+}
+
+enum CreateurRole {
+  MINISTERE
+  CENTRE
+}
+
+enum TypeJustificateurUrgence {
+  PATIENT
+  PERSONNE_URGENCE
+}
+
+// ─── Modèles ──────────────────────────────────────────────────────────────────
+
+model Permission {
+  id          String   @id @default(cuid())
+  code        String   @unique
+  description String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  roles           RolePermission[]
+  userPermissions UserPermission[]
+}
+
+model Role {
+  id          String       @id @default(cuid())
+  nom         String
+  description String?
+  creePar     CreateurRole
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  centreId String?
+  centre   Centre? @relation(fields: [centreId], references: [id])
+
+  permissions  RolePermission[]
+  utilisateurs User[]
+}
+
+model RolePermission {
+  roleId       String
+  permissionId String
+
+  role       Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@id([roleId, permissionId])
+}
+
+model Specialite {
+  id          String   @id @default(cuid())
+  nom         String
+  code        String   @unique
+  description String?
+  estActive   Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  userSpecialites UserSpecialite[]
+  enregistrements EnregistrementMedical[]
+}
+
+model Centre {
+  id         String     @id @default(cuid())
+  nom        String
+  adresse    String
+  telephone  String
+  email      String
+  region     String
+  prefecture String
+  type       TypeCentre
+  estActif   Boolean    @default(true)
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+
+  adminId String? @unique
+  admin   User?   @relation("CentreAdmin", fields: [adminId], references: [id])
+
+  creeParId String?
+  creePar   User?   @relation("CentreCreePar", fields: [creeParId], references: [id])
+
+  utilisateurs      UserCentre[]
+  utilisateursActif User[]                  @relation("CentreActif")
+  roles             Role[]
+  patients          Patient[]
+  enregistrements   EnregistrementMedical[]
+  accesUrgences     AccesUrgence[]
+  accesEnCours      AccesDossier[]
+  logs              Log[]
+}
+
+model User {
+  id          String      @id @default(cuid())
+  nom         String
+  prenoms     String
+  email       String      @unique
+  motDePasse  String
+  telephone   String?
+  niveauAcces NiveauAcces
+  estActif    Boolean     @default(true)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  roleId String?
+  role   Role?   @relation(fields: [roleId], references: [id])
+
+  centreActifId String?
+  centreActif   Centre? @relation("CentreActif", fields: [centreActifId], references: [id])
+
+  creeParId String?
+  creePar   User?   @relation("UserCreePar", fields: [creeParId], references: [id])
+  creeParOf User[]  @relation("UserCreePar")
+
+  centres         UserCentre[]
+  specialites     UserSpecialite[]
+  permissions     UserPermission[]
+  centreAdminDe   Centre?                 @relation("CentreAdmin")
+  centresCrees    Centre[]                @relation("CentreCreePar")
+  patientsCrees   Patient[]
+  enregistrements EnregistrementMedical[]
+  accesUrgences   AccesUrgence[]
+  accesEnCours    AccesDossier[]
+  otps            OTP[]
+  logs            Log[]
+}
+
+model UserCentre {
+  userId   String
+  centreId String
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  centre Centre @relation(fields: [centreId], references: [id], onDelete: Cascade)
+
+  @@id([userId, centreId])
+}
+
+model UserSpecialite {
+  userId       String
+  specialiteId String
+
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  specialite Specialite @relation(fields: [specialiteId], references: [id], onDelete: Cascade)
+
+  @@id([userId, specialiteId])
+}
+
+model UserPermission {
+  userId       String
+  permissionId String
+
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  permission Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@id([userId, permissionId])
+}
+
+model Patient {
+  id                    String   @id @default(cuid())
+  nom                   String
+  prenoms               String
+  genre                 Genre
+  dateNaissance         DateTime
+  dateNaissancePresumee Boolean  @default(false)
+  adresse               String
+  telephone             String?
+  email                 String?
+  numeroCNI             String?
+  qrToken               String   @unique
+  qrGeneratedAt         DateTime @default(now())
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  // Personne à prévenir (champs dénormalisés)
+  urgenceNom      String
+  urgencePrenoms  String
+  urgenceTel      String
+  urgenceAdresse  String
+  urgenceRelation String
+
+  creeParId String
+  creePar   User   @relation(fields: [creeParId], references: [id])
+
+  centreCreationId String
+  centreCreation   Centre @relation(fields: [centreCreationId], references: [id])
+
+  dossier       DossierMedical?
+  otps          OTP[]
+  accesUrgences AccesUrgence[]
+}
+
+model DossierMedical {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  patientId String  @unique
+  patient   Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+  enregistrements EnregistrementMedical[]
+  accesEnCours    AccesDossier[]
+}
+
+model AccesDossier {
+  id          String   @id @default(cuid())
+  debutAcces  DateTime @default(now())
+  finAcces    DateTime
+  modeUrgence Boolean  @default(false)
+
+  dossierId String
+  dossier   DossierMedical @relation(fields: [dossierId], references: [id], onDelete: Cascade)
+
+  medecinId String
+  medecin   User   @relation(fields: [medecinId], references: [id])
+
+  centreId String
+  centre   Centre @relation(fields: [centreId], references: [id])
+
+  specialiteId String?
+}
+
+model EnregistrementMedical {
+  id                      String   @id @default(cuid())
+  antecedents             String?
+  signes                  String?
+  examens                 String?
+  bilan                   String?
+  traitConseils           String?
+  traitInjections         String?
+  traitOrdonnance         String?
+  suivi                   String?
+  audioTranscriptionBrute String?
+  genereParIA             Boolean  @default(false)
+  valideParMedecin        Boolean  @default(true)
+  dateConsultation        DateTime @default(now())
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
+
+  dossierId String
+  dossier   DossierMedical @relation(fields: [dossierId], references: [id], onDelete: Cascade)
+
+  specialiteId String
+  specialite   Specialite @relation(fields: [specialiteId], references: [id])
+
+  medecinId String
+  medecin   User   @relation(fields: [medecinId], references: [id])
+
+  centreId String
+  centre   Centre @relation(fields: [centreId], references: [id])
+}
+
+model OTP {
+  id        String   @id @default(cuid())
+  code      String
+  telephone String
+  expireAt  DateTime
+  utilise   Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  patientId String
+  patient   Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+  medecinId String
+  medecin   User   @relation(fields: [medecinId], references: [id])
+}
+
+model AccesUrgence {
+  id            String   @id @default(cuid())
+  justification String
+  dateAcces     DateTime @default(now())
+  createdAt     DateTime @default(now())
+
+  // Justification a posteriori
+  justifieParType      TypeJustificateurUrgence?
+  justifieParNom       String?
+  justifieParTel       String?
+  justifieParSignature String?
+
+  patientId String
+  patient   Patient @relation(fields: [patientId], references: [id])
+
+  medecinId String
+  medecin   User   @relation(fields: [medecinId], references: [id])
+
+  centreId String
+  centre   Centre @relation(fields: [centreId], references: [id])
+}
+
+model Log {
+  id        String    @id @default(cuid())
+  action    ActionLog
+  cible     String?
+  cibleId   String?
+  details   Json?
+  ip        String?
+  userAgent String?
+  createdAt DateTime  @default(now())
+
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id])
+
+  centreId String?
+  centre   Centre? @relation(fields: [centreId], references: [id])
+}
