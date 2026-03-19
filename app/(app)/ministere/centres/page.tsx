@@ -170,9 +170,7 @@ export default function CentresPage() {
             </Button>
           </DialogTrigger>
           <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle className="text-slate-900 dark:text-white font-extrabold">Créer un centre de santé</DialogTitle>
-            </DialogHeader>
+            <DialogHeader title="Créer un centre de santé" description="Enregistrez les informations essentielles de votre centre pour permettre une meilleure coordination des services." icon={Plus} />
             <form onSubmit={handleCreate} className="space-y-4 mt-2">
               <div className="grid sm:grid-cols-2 gap-3">
                 {[
@@ -408,10 +406,8 @@ export default function CentresPage() {
 
       {/* ── Dialog modifier ── */}
       <Dialog open={!!editTarget} onOpenChange={(o) => { if (!o) setEditTarget(null) }}>
-        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="text-slate-900 dark:text-white font-extrabold">Modifier le centre</DialogTitle>
-          </DialogHeader>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader title="Modifier le centre" description="Mettez à jour les informations du centre pour garder vos données à jour." icon={Pencil} />
           <form onSubmit={handleEdit} className="space-y-3 mt-2">
             <div className="grid sm:grid-cols-2 gap-3">
               {[
@@ -450,12 +446,7 @@ export default function CentresPage() {
       {/* ── Dialog supprimer ── */}
       <Dialog open={!!deleteTarget} onOpenChange={(o) => { if (!o) setDeleteTarget(null) }}>
         <DialogContent className="max-w-sm">
-          <DialogHeader>
-            <DialogTitle className="text-slate-900 dark:text-white font-extrabold">Supprimer le centre ?</DialogTitle>
-          </DialogHeader>
-          <p className="text-sm text-slate-500 dark:text-zinc-400 mt-1">
-            Vous êtes sur le point de supprimer <span className="font-semibold text-slate-800 dark:text-white">{deleteTarget?.nom}</span>. Cette action est irréversible.
-          </p>
+          <DialogHeader title="Supprimer le centre ?" description={`Vous êtes sur le point de supprimer ${deleteTarget?.nom}. Cette action est irréversible.`} icon={Trash2} danger />
           <div className="flex gap-3 mt-4">
             <Button variant="outline" className="flex-1 h-11 rounded-xl" onClick={() => setDeleteTarget(null)}>Annuler</Button>
             <Button className="flex-1 h-11 rounded-xl bg-red-500 hover:bg-red-600 text-white shadow-sm" onClick={handleDelete} disabled={deleting}>

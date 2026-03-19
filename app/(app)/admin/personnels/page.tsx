@@ -94,10 +94,8 @@ export default function PersonnelsPage() {
               <Plus className="h-4 w-4" />Ajouter
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle className="text-slate-900 dark:text-white font-extrabold">Nouveau compte personnel</DialogTitle>
-            </DialogHeader>
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader title="Nouveau compte personnel" description="Créez un compte de gestion système avec les permissions appropriées." icon={Plus} />
             <form onSubmit={handleSubmit} className="space-y-4 mt-2">
               <div className="grid sm:grid-cols-2 gap-3">
                 {[

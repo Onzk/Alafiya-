@@ -92,10 +92,8 @@ export default function AdminRolesPage() {
               <Plus className="h-4 w-4" />Nouveau rôle
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle className="text-slate-900 dark:text-white font-extrabold">Créer un rôle</DialogTitle>
-            </DialogHeader>
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader title="Créer un rôle" description="Configurez un rôle avec ses permissions pour simplifier la gestion des accès." icon={Plus} />
             {erreur && (
               <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 rounded-xl p-3 text-sm text-red-600 dark:text-red-400">
                 {erreur}

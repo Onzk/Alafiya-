@@ -64,10 +64,8 @@ export default function SpecialitesPage() {
               <Plus className="h-4 w-4" />Nouvelle spécialité
             </Button>
           </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle className="text-slate-900 dark:text-white font-extrabold">Créer une spécialité</DialogTitle>
-            </DialogHeader>
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader title="Créer une spécialité" description="Enregistrez une spécialité médicale pour organiser les services de santé." icon={Plus} />
             <form onSubmit={handleSubmit} className="space-y-4 mt-2">
               <div className="space-y-1.5">
                 <Label className={labelCls}>Nom *</Label>

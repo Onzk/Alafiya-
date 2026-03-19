@@ -45,9 +45,9 @@ const DialogContent = React.forwardRef<
         'sm:-translate-x-1/2 sm:-translate-y-1/2 sm:max-w-lg sm:rounded-2xl',
         // Fond + ombre
         'bg-white dark:bg-zinc-950 dark:border dark:border-zinc-800',
-        'shadow-2xl shadow-black/10 dark:shadow-black/40',
+        'shadow-2xl shadow-black/10 dark:shadow-black/40 ring-1 ring-black/5 dark:ring-zinc-800/50',
         // Layout flex column + hauteur max pour le scroll interne
-        'flex flex-col overflow-hidden max-h-[90dvh]',
+        'flex flex-col overflow-hidden max-h-[90dvh] p-4',
         // Animation
         'data-[state=open]:animate-in data-[state=closed]:animate-out',
         'data-[state=open]:slide-in-from-bottom-full data-[state=closed]:slide-out-to-bottom-full',
@@ -64,41 +64,51 @@ const DialogContent = React.forwardRef<
 DialogContent.displayName = DialogPrimitive.Content.displayName
 
 interface DialogHeaderProps extends React.HTMLAttributes<HTMLDivElement> {
+  title?: string
+  description?: string
   icon?: React.ElementType
   danger?: boolean
 }
 
-const DialogHeader = ({ className, icon: Icon, danger, children, ...props }: DialogHeaderProps) => (
+const DialogHeader = ({ className, title, description, icon: Icon, danger, children, ...props }: DialogHeaderProps) => (
   <div
     className={cn(
-      'sticky top-0 z-10 flex-shrink-0',
+      'top-0 z-10 flex-shrink-0',
       'flex items-start gap-4',
-      'bg-white dark:bg-zinc-950',
-      'px-6 pt-5 pb-4',
-      'border-b border-slate-100 dark:border-zinc-800/60',
+      'pb-4 pt-2',
       className
     )}
     {...props}
   >
     {Icon && (
       <div className={cn(
-        'h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5',
+        'h-12 w-12 rounded-2xl flex items-center justify-center flex-shrink-0',
         danger
           ? 'bg-red-50 dark:bg-red-500/10'
           : 'bg-emerald-50 dark:bg-emerald-500/10'
       )}>
         <Icon className={cn(
-          'h-5 w-5',
+          'h-6 w-6',
           danger
             ? 'text-red-500 dark:text-red-400'
             : 'text-emerald-600 dark:text-emerald-400'
         )} />
       </div>
     )}
-    <div className="flex-1 min-w-0 space-y-1">
+    <div className="flex-1 min-w-0 space-y-2">
+      {title && (
+        <DialogPrimitive.Title className="text-lg font-semibold text-slate-900 dark:text-white leading-tight">
+          {title}
+        </DialogPrimitive.Title>
+      )}
+      {description && (
+        <p className="text-sm text-slate-500 dark:text-zinc-400 leading-relaxed">
+          {description}
+        </p>
+      )}
       {children}
     </div>
-    <DialogPrimitive.Close className="p-1.5 -mr-1 rounded-xl opacity-50 hover:opacity-100 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-all focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-0 flex-shrink-0 disabled:pointer-events-none">
+    <DialogPrimitive.Close className="p-2 -mr-2 rounded-lg opacity-60 hover:opacity-100 hover:bg-slate-200/50 dark:hover:bg-zinc-700/50 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:ring-offset-0 flex-shrink-0 disabled:pointer-events-none">
       <X className="h-4 w-4" />
       <span className="sr-only">Fermer</span>
     </DialogPrimitive.Close>
@@ -107,12 +117,12 @@ const DialogHeader = ({ className, icon: Icon, danger, children, ...props }: Dia
 DialogHeader.displayName = 'DialogHeader'
 
 const DialogBody = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
-  <div className={cn('flex-1 overflow-y-auto px-6 py-5', className)} {...props} />
+  <div className={cn('flex-1 overflow-y-auto px-6 py-5 space-y-4', className)} {...props} />
 )
 DialogBody.displayName = 'DialogBody'
 
 const DialogFooter = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
-  <div className={cn('flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2', className)} {...props} />
+  <div className={cn('flex-shrink-0 flex flex-col-reverse sm:flex-row sm:justify-end gap-3 px-6 py-4 border-t border-slate-100 dark:border-zinc-800/50', className)} {...props} />
 )
 DialogFooter.displayName = 'DialogFooter'
 

@@ -320,17 +320,8 @@ export default function LoginPage() {
       {/* Modale inscription */}
       <Dialog open={inscriptionModalOpen} onOpenChange={setInscriptionModalOpen}>
         <DialogContent className="max-w-sm">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <ShieldAlert className="h-5 w-5 text-emerald-500" />
-              Accès sur invitation
-            </DialogTitle>
-          </DialogHeader>
+          <DialogHeader title="Accès sur invitation" description="Alafiya Plus est une plateforme réservée aux professionnels de santé autorisés. La création de compte se fait uniquement via votre centre de santé." icon={ShieldAlert} />
           <div className="space-y-3 py-1">
-            <p className="text-sm text-slate-600 dark:text-zinc-400 leading-relaxed">
-              Alafiya Plus est une plateforme réservée aux professionnels de santé autorisés.
-              La création de compte se fait uniquement via votre centre de santé.
-            </p>
 
             {/* Personnel de centre */}
             <div className="bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/50 rounded-xl p-4 flex items-start gap-3">
@@ -368,12 +359,7 @@ export default function LoginPage() {
       {/* Modale sélection du centre actif */}
       <Dialog open={centreModalOpen} onOpenChange={() => {}}>
         <DialogContent className="max-w-sm" onInteractOutside={(e) => e.preventDefault()}>
-          <DialogHeader>
-            <DialogTitle>Choisissez votre centre de travail</DialogTitle>
-          </DialogHeader>
-          <p className="text-sm text-gray-500 dark:text-zinc-400 mb-2">
-            Vous êtes affecté(e) à plusieurs centres. Sélectionnez celui sur lequel vous travaillez aujourd&apos;hui.
-          </p>
+          <DialogHeader title="Choisissez votre centre de travail" description="Vous êtes affecté(e) à plusieurs centres. Sélectionnez celui sur lequel vous travaillez aujourd'hui." icon={Building2} />
           <div className="space-y-2">
             {centresDisponibles.map((centre) => (
               <button

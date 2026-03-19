@@ -8,6 +8,7 @@ import Image from 'next/image'
 import { LogoIcon } from '@/components/ui/logo'
 import { SessionUser } from '@/types'
 import { ThemeToggle } from '@/components/ThemeToggle'
+import { cn } from '@/lib/utils'
 
 interface HeaderProps { user: SessionUser }
 
@@ -70,9 +71,10 @@ export function Header({ user }: HeaderProps) {
   /* ── Réseau search (MINISTERE only) ── */
   const isMinistere = user.niveauAcces === 'MINISTERE'
 
-  const [query,        setQuery]        = useState('')
-  const [showDropdown, setShowDropdown] = useState(false)
-  const [reseauData,   setReseauData]   = useState<{
+  const [query,           setQuery]           = useState('')
+  const [showDropdown,    setShowDropdown]    = useState(false)
+  const [selectedIndex,   setSelectedIndex]   = useState(-1)
+  const [reseauData,      setReseauData]      = useState<{
     centres:    CentreItem[]
     medecins:   MedecinItem[]
     specialites: SpecialiteItem[]
@@ -104,6 +106,7 @@ export function Header({ user }: HeaderProps) {
     function handleClick(e: MouseEvent) {
       if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
         setShowDropdown(false)
+        setSelectedIndex(-1)
       }
     }
     document.addEventListener('mousedown', handleClick)
@@ -188,10 +191,25 @@ export function Header({ user }: HeaderProps) {
             <input
               type="text"
               value={query}
-              onChange={e => { setQuery(e.target.value); setShowDropdown(true) }}
+              onChange={e => { setQuery(e.target.value); setShowDropdown(true); setSelectedIndex(-1) }}
               onFocus={() => { if (query.length >= 2) setShowDropdown(true) }}
-              onKeyDown={e => { if (e.key === 'Escape') { setQuery(''); setShowDropdown(false) } }}
-              placeholder="Rechercher centres, médecins, rôles…"
+              onKeyDown={e => {
+                if (e.key === 'Escape') { setQuery(''); setShowDropdown(false); setSelectedIndex(-1) }
+                else if (e.key === 'ArrowDown') {
+                  e.preventDefault()
+                  setShowDropdown(true)
+                  setSelectedIndex(i => i < results.length - 1 ? i + 1 : i)
+                }
+                else if (e.key === 'ArrowUp') {
+                  e.preventDefault()
+                  setSelectedIndex(i => i > 0 ? i - 1 : -1)
+                }
+                else if (e.key === 'Enter' && selectedIndex >= 0) {
+                  e.preventDefault()
+                  handleResultClick(results[selectedIndex].href)
+                }
+              }}
+              placeholder="Rechercher centres, médecins, spécialités, rôles…"
               className="w-full h-10 rounded-xl bg-white dark:bg-zinc-950 border border-slate-200 dark:border-zinc-900 pl-9 pr-8 py-2 text-xs text-slate-700 dark:text-zinc-200 placeholder:text-slate-400 dark:placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-emerald-400/50 focus:border-emerald-400 dark:focus:border-emerald-500 transition-all"
             />
             {query && (
@@ -205,39 +223,48 @@ export function Header({ user }: HeaderProps) {
 
             {/* Dropdown */}
             {showDropdown && query.length >= 2 && (
-              <div className="absolute top-full left-0 right-0 mt-1.5 bg-white dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 rounded-2xl shadow-xl shadow-black/10 dark:shadow-black/30 overflow-hidden z-50">
+              <div className="absolute top-full left-0 right-0 mt-1.5 bg-white dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 rounded-2xl shadow-xl shadow-black/10 dark:shadow-black/30 overflow-hidden z-50 animate-in fade-in slide-in-from-top-1 duration-200">
                 {results.length > 0 ? (
                   <>
                     <p className="px-4 pt-3 pb-1.5 text-[9px] font-bold uppercase tracking-widest text-slate-400 dark:text-zinc-500">
-                      {results.length} résultat(s)
+                      {results.length} résultat{results.length !== 1 ? 's' : ''}
                     </p>
-                    {results.map((r, i) => (
-                      <button
-                        key={i}
-                        onClick={() => handleResultClick(r.href)}
-                        className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-slate-50 dark:hover:bg-zinc-900 transition-colors text-left"
-                      >
-                        <div className={`h-8 w-8 rounded-lg flex items-center justify-center flex-shrink-0 ${r.iconBg}`}>
-                          <r.Icon className={`h-4 w-4 ${r.iconColor}`} />
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <p className="text-xs font-semibold text-slate-900 dark:text-white truncate">{r.label}</p>
-                          {r.sub && <p className="text-[10px] text-slate-400 dark:text-zinc-500 truncate">{r.sub}</p>}
-                        </div>
-                        <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-slate-100 dark:bg-zinc-800 text-slate-400 dark:text-zinc-500 flex-shrink-0 whitespace-nowrap">
-                          {r.type}
-                        </span>
-                      </button>
-                    ))}
+                    <div className="max-h-80 overflow-y-auto">
+                      {results.map((r, i) => (
+                        <button
+                          key={i}
+                          onClick={() => handleResultClick(r.href)}
+                          className={cn(
+                            "w-full flex items-center gap-3 px-4 py-2.5 transition-colors text-left",
+                            selectedIndex === i
+                              ? 'bg-emerald-50 dark:bg-emerald-500/10 border-l-2 border-emerald-500'
+                              : 'hover:bg-slate-50 dark:hover:bg-zinc-900'
+                          )}
+                        >
+                          <div className={`h-8 w-8 rounded-lg flex items-center justify-center flex-shrink-0 ${r.iconBg}`}>
+                            <r.Icon className={`h-4 w-4 ${r.iconColor}`} />
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="text-xs font-semibold text-slate-900 dark:text-white truncate">{r.label}</p>
+                            {r.sub && <p className="text-[10px] text-slate-400 dark:text-zinc-500 truncate">{r.sub}</p>}
+                          </div>
+                          <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-slate-100 dark:bg-zinc-800 text-slate-400 dark:text-zinc-500 flex-shrink-0 whitespace-nowrap">
+                            {r.type}
+                          </span>
+                        </button>
+                      ))}
+                    </div>
                     <div className="h-px bg-slate-100 dark:bg-zinc-800 mx-4" />
-                    <p className="px-4 py-2.5 text-[10px] text-slate-400 dark:text-zinc-500">
-                      Appuyez sur <kbd className="px-1 py-0.5 rounded bg-slate-100 dark:bg-zinc-800 font-mono text-[9px]">Échap</kbd> pour fermer
+                    <p className="px-4 py-2.5 text-[10px] text-slate-400 dark:text-zinc-500 flex items-center gap-2">
+                      <kbd className="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-zinc-800 font-mono text-[8px] font-semibold">↑↓</kbd>
+                      <kbd className="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-zinc-800 font-mono text-[8px] font-semibold">↩</kbd>
+                      <span>pour sélectionner</span>
                     </p>
                   </>
                 ) : (
-                  <div className="px-4 py-6 text-center">
+                  <div className="px-4 py-8 text-center">
                     <p className="text-xs font-semibold text-slate-500 dark:text-zinc-400">Aucun résultat pour &ldquo;{query}&rdquo;</p>
-                    <p className="text-[10px] text-slate-400 dark:text-zinc-500 mt-0.5">Essayez un autre terme</p>
+                    <p className="text-[10px] text-slate-400 dark:text-zinc-500 mt-1">Essayez un autre terme ou une région</p>
                   </div>
                 )}
               </div>

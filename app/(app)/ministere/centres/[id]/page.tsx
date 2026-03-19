@@ -276,10 +276,8 @@ export default function CentreDetailPage() {
 
       {/* ── Dialog modifier ── */}
       <Dialog open={editOpen} onOpenChange={setEditOpen}>
-        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="text-slate-900 dark:text-white font-extrabold">Modifier le centre</DialogTitle>
-          </DialogHeader>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader title="Modifier le centre" description="Mettez à jour les informations du centre pour garder vos données à jour." icon={Pencil} />
           <form onSubmit={handleEdit} className="space-y-3 mt-2">
             <div className="grid sm:grid-cols-2 gap-3">
               {[
