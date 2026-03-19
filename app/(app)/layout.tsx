@@ -32,7 +32,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         <Header user={user} />
 
         {/* Contenu de la page avec dégradé vert */}
-        <main className="flex-1 overflow-y-auto shadow-xl shadow-emerald-200 relative
+        <main className="flex-1 overflow-y-auto relative
           dark:bg-zinc-950
           p-4 sm:p-6 lg:p-8
           pb-20 lg:pb-8">
@@ -48,7 +48,18 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           <div className="relative z-10">
             {children}
           </div>
+
         </main>
+
+        {/* ── Mini footer sticky ── */}
+        <footer className="flex-shrink-0 bg-white dark:bg-zinc-950 px-8 py-6 flex flex-col sm:flex-row items-center justify-between gap-2 text-[11px] text-slate-400 dark:text-zinc-500">
+          <span className="font-medium">© {new Date().getFullYear()} Alafiya · Ministère de la Santé</span>
+          <div className="flex items-center gap-4">
+            <a href="/legal/conditions" className="hover:text-slate-600 dark:hover:text-zinc-300 transition-colors">Conditions d'utilisation</a>
+            <a href="/legal/confidentialite" className="hover:text-slate-600 dark:hover:text-zinc-300 transition-colors">Confidentialité</a>
+            <a href="/support" className="hover:text-slate-600 dark:hover:text-zinc-300 transition-colors">Support</a>
+          </div>
+        </footer>
       </div>
 
       {/* ── Navigation bottom — mobile uniquement ── */}

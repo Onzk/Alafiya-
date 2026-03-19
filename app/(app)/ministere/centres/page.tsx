@@ -1,11 +1,21 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { Plus, Building2, Loader2, CheckCircle2, XCircle } from 'lucide-react'
+import { useState, useEffect, useMemo } from 'react'
+import { useRouter } from 'next/navigation'
+import {
+  Plus, Building2, Loader2, CheckCircle2, XCircle, Search,
+  Pencil, Trash2, X, MapPin, MoreHorizontal, Eye, Power,
+} from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger,
+} from '@/components/ui/dialog'
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem,
+  DropdownMenuSeparator, DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useToast } from '@/hooks/use-toast'
 
@@ -13,38 +23,73 @@ interface Centre {
   id: string
   nom: string
   type: string
+  adresse: string
+  telephone: string
+  email: string
   region: string
   prefecture: string
   estActif: boolean
   admin?: { nom: string; prenoms: string; email: string }
 }
 
-const inputCls = 'h-12 border-slate-200 dark:border-zinc-700 rounded-lg text-sm bg-white dark:bg-zinc-900 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-zinc-500 focus-visible:ring-emerald-500 focus-visible:border-emerald-400'
+const TYPE_LABELS: Record<string, string> = {
+  HOPITAL: 'Hôpital', CLINIQUE: 'Clinique', CSU: 'CSU', CMS: 'CMS', AUTRE: 'Autre',
+}
+
+const inputCls = 'h-11 border-slate-200 dark:border-zinc-700 rounded-lg text-sm bg-white dark:bg-zinc-950 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-zinc-500 focus-visible:ring-emerald-500 focus-visible:border-emerald-400'
 const labelCls = 'text-slate-700 dark:text-zinc-300 text-sm font-medium'
+
+const EMPTY_FORM = {
+  nom: '', adresse: '', telephone: '', email: '', region: '', prefecture: '',
+  type: 'HOPITAL' as const,
+  adminNom: '', adminPrenoms: '', adminEmail: '', adminMotDePasse: '', adminTelephone: '',
+}
+
+type EditForm = { nom: string; adresse: string; telephone: string; email: string; region: string; prefecture: string; type: string }
 
 export default function CentresPage() {
   const { toast } = useToast()
+  const router = useRouter()
   const [centres, setCentres] = useState<Centre[]>([])
   const [loading, setLoading] = useState(true)
-  const [dialogOpen, setDialogOpen] = useState(false)
-  const [submitting, setSubmitting] = useState(false)
+  const [search, setSearch] = useState('')
+  const [filterStatut, setFilterStatut] = useState<'tous' | 'actif' | 'inactif'>('tous')
 
-  const [form, setForm] = useState({
-    nom: '', adresse: '', telephone: '', email: '', region: '', prefecture: '',
-    type: 'HOPITAL' as const,
-    adminNom: '', adminPrenoms: '', adminEmail: '', adminMotDePasse: '', adminTelephone: '',
-  })
+  // Create dialog
+  const [createOpen, setCreateOpen] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
+  const [form, setForm] = useState(EMPTY_FORM)
+
+  // Edit dialog
+  const [editTarget, setEditTarget] = useState<Centre | null>(null)
+  const [editForm, setEditForm] = useState<EditForm>({ nom: '', adresse: '', telephone: '', email: '', region: '', prefecture: '', type: 'HOPITAL' })
+  const [editSubmitting, setEditSubmitting] = useState(false)
+
+  // Delete dialog
+  const [deleteTarget, setDeleteTarget] = useState<Centre | null>(null)
+  const [deleting, setDeleting] = useState(false)
+
+  // Toggle loading
+  const [toggling, setToggling] = useState<string | null>(null)
 
   useEffect(() => {
     fetch('/api/centres')
       .then((r) => r.json())
-      .then((d) => { setCentres(d.centres); setLoading(false) })
+      .then((d) => { setCentres(d.centres || []); setLoading(false) })
   }, [])
 
-  async function handleSubmit(e: React.FormEvent) {
+  const filtered = useMemo(() => {
+    return centres.filter((c) => {
+      const matchSearch = search === '' ||
+        `${c.nom} ${c.region} ${c.prefecture} ${c.type}`.toLowerCase().includes(search.toLowerCase())
+      const matchStatut = filterStatut === 'tous' || (filterStatut === 'actif' ? c.estActif : !c.estActif)
+      return matchSearch && matchStatut
+    })
+  }, [centres, search, filterStatut])
+
+  async function handleCreate(e: React.FormEvent) {
     e.preventDefault()
     setSubmitting(true)
-
     const res = await fetch('/api/centres', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -52,21 +97,59 @@ export default function CentresPage() {
     })
     const data = await res.json()
     setSubmitting(false)
-
     if (!res.ok) { toast({ description: data.error || 'Erreur', variant: 'destructive' }); return }
-
     setCentres((prev) => [data.centre, ...prev])
-    setDialogOpen(false)
+    setCreateOpen(false)
+    setForm(EMPTY_FORM)
+    toast({ description: 'Centre créé avec succès' })
+  }
+
+  function openEdit(centre: Centre) {
+    setEditTarget(centre)
+    setEditForm({ nom: centre.nom, adresse: centre.adresse, telephone: centre.telephone, email: centre.email, region: centre.region, prefecture: centre.prefecture, type: centre.type })
+  }
+
+  async function handleEdit(e: React.FormEvent) {
+    e.preventDefault()
+    if (!editTarget) return
+    setEditSubmitting(true)
+    const res = await fetch(`/api/centres/${editTarget.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(editForm),
+    })
+    const data = await res.json()
+    setEditSubmitting(false)
+    if (!res.ok) { toast({ description: data.error || 'Erreur', variant: 'destructive' }); return }
+    setCentres((prev) => prev.map((c) => c.id === editTarget.id ? { ...c, ...data.centre } : c))
+    setEditTarget(null)
+    toast({ description: 'Centre modifié avec succès' })
+  }
+
+  async function handleDelete() {
+    if (!deleteTarget) return
+    setDeleting(true)
+    const res = await fetch(`/api/centres/${deleteTarget.id}`, { method: 'DELETE' })
+    const data = await res.json()
+    setDeleting(false)
+    if (!res.ok) { toast({ description: data.error || 'Erreur', variant: 'destructive' }); return }
+    setCentres((prev) => prev.filter((c) => c.id !== deleteTarget.id))
+    setDeleteTarget(null)
+    toast({ description: 'Centre supprimé' })
   }
 
   async function toggleActif(id: string, actuel: boolean) {
-    await fetch(`/api/centres/${id}`, {
+    setToggling(id)
+    const res = await fetch(`/api/centres/${id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ estActif: !actuel }),
     })
-    setCentres((prev) => prev.map((c) => c.id === id ? { ...c, estActif: !actuel } : c))
+    setToggling(null)
+    if (res.ok) setCentres((prev) => prev.map((c) => c.id === id ? { ...c, estActif: !actuel } : c))
   }
+
+  const actifs = centres.filter((c) => c.estActif).length
 
   return (
     <div className="space-y-5 max-w-[1400px]">
@@ -75,11 +158,14 @@ export default function CentresPage() {
       <div className="dash-in delay-0 flex items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white leading-tight">Centres de santé</h1>
-          <p className="text-sm text-slate-500 dark:text-zinc-400 mt-0.5">{centres.length} centre(s)</p>
+          <p className="text-sm text-slate-500 dark:text-zinc-400 mt-0.5">
+            {centres.length} centre(s) · <span className="text-brand">{actifs} actif(s)</span>
+          </p>
         </div>
-        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+
+        <Dialog open={createOpen} onOpenChange={setCreateOpen}>
           <DialogTrigger asChild>
-            <Button className="h-12 bg-brand hover:bg-brand-dark text-white rounded-xl gap-1.5 shadow-sm shadow-brand/20">
+            <Button className="h-11 bg-brand hover:bg-brand-dark text-white rounded-xl gap-1.5 shadow-sm shadow-brand/20 flex-shrink-0">
               <Plus className="h-4 w-4" />Nouveau centre
             </Button>
           </DialogTrigger>
@@ -87,7 +173,7 @@ export default function CentresPage() {
             <DialogHeader>
               <DialogTitle className="text-slate-900 dark:text-white font-extrabold">Créer un centre de santé</DialogTitle>
             </DialogHeader>
-            <form onSubmit={handleSubmit} className="space-y-4 mt-2">
+            <form onSubmit={handleCreate} className="space-y-4 mt-2">
               <div className="grid sm:grid-cols-2 gap-3">
                 {[
                   { key: 'nom',        label: 'Nom du centre', placeholder: 'Ex: CHU de Lomé' },
@@ -99,14 +185,8 @@ export default function CentresPage() {
                 ].map(({ key, label, type, placeholder }) => (
                   <div key={key} className="space-y-1.5">
                     <Label className={labelCls}>{label} *</Label>
-                    <Input
-                      type={type || 'text'}
-                      placeholder={placeholder}
-                      value={(form as Record<string, string>)[key]}
-                      onChange={(e) => setForm((p) => ({ ...p, [key]: e.target.value }))}
-                      required
-                      className={inputCls}
-                    />
+                    <Input type={type || 'text'} placeholder={placeholder} value={(form as Record<string, string>)[key]}
+                      onChange={(e) => setForm((p) => ({ ...p, [key]: e.target.value }))} required className={inputCls} />
                   </div>
                 ))}
                 <div className="space-y-1.5">
@@ -114,9 +194,7 @@ export default function CentresPage() {
                   <Select value={form.type} onValueChange={(v) => setForm((p) => ({ ...p, type: v as typeof form.type }))}>
                     <SelectTrigger className={inputCls}><SelectValue /></SelectTrigger>
                     <SelectContent>
-                      {['HOPITAL', 'CLINIQUE', 'CSU', 'CMS', 'AUTRE'].map((t) => (
-                        <SelectItem key={t} value={t}>{t}</SelectItem>
-                      ))}
+                      {Object.entries(TYPE_LABELS).map(([v, l]) => <SelectItem key={v} value={v}>{l}</SelectItem>)}
                     </SelectContent>
                   </Select>
                 </div>
@@ -134,20 +212,14 @@ export default function CentresPage() {
                   ].map(({ key, label, type, placeholder, required }) => (
                     <div key={key} className="space-y-1.5">
                       <Label className={labelCls}>{label}{required !== false && ' *'}</Label>
-                      <Input
-                        type={type || 'text'}
-                        placeholder={placeholder}
-                        value={(form as Record<string, string>)[key]}
-                        onChange={(e) => setForm((p) => ({ ...p, [key]: e.target.value }))}
-                        required={required !== false}
-                        className={inputCls}
-                      />
+                      <Input type={type || 'text'} placeholder={placeholder} value={(form as Record<string, string>)[key]}
+                        onChange={(e) => setForm((p) => ({ ...p, [key]: e.target.value }))} required={required !== false} className={inputCls} />
                     </div>
                   ))}
                 </div>
               </div>
 
-              <Button type="submit" disabled={submitting} className="w-full h-12 bg-brand hover:bg-brand-dark text-white rounded-xl shadow-sm shadow-brand/20">
+              <Button type="submit" disabled={submitting} className="w-full h-11 bg-brand hover:bg-brand-dark text-white rounded-xl shadow-sm shadow-brand/20">
                 {submitting ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Création...</> : 'Créer le centre'}
               </Button>
             </form>
@@ -155,53 +227,243 @@ export default function CentresPage() {
         </Dialog>
       </div>
 
-      {loading ? (
-        <div className="dash-in delay-75 flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-brand" /></div>
-      ) : (
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {centres.map((centre, i) => (
-            <div
-              key={centre.id}
-              className={`dash-in delay-${[0,75,100,150,200,225,300][Math.min(i,6)]} bg-white dark:bg-zinc-950 rounded-2xl border border-slate-100 dark:border-zinc-800 overflow-hidden hover:shadow-md transition-shadow`}
-            >
-              <div className="h-1.5 bg-brand rounded-t-2xl" />
-              <div className="p-4">
-                <div className="flex items-start justify-between gap-2 mb-3">
-                  <div className="flex items-center gap-2 min-w-0">
-                    <div className="h-8 w-8 rounded-lg bg-brand/10 dark:bg-brand/15 flex items-center justify-center flex-shrink-0">
-                      <Building2 className="h-4 w-4 text-brand" />
-                    </div>
-                    <p className="font-bold text-sm text-slate-900 dark:text-white truncate">{centre.nom}</p>
-                  </div>
-                  <div className={`flex-shrink-0 flex items-center gap-1 px-2 py-0.5 rounded-full border text-[10px] font-bold ${
-                    centre.estActif
-                      ? 'bg-brand/8 dark:bg-brand/12 border-brand/20 text-brand'
-                      : 'bg-slate-50 dark:bg-zinc-800 border-slate-200 dark:border-zinc-700 text-slate-400 dark:text-zinc-500'
-                  }`}>
-                    {centre.estActif ? <><CheckCircle2 className="h-2.5 w-2.5" /> Actif</> : <><XCircle className="h-2.5 w-2.5" /> Inactif</>}
-                  </div>
-                </div>
-                <div className="space-y-1 text-xs text-slate-500 dark:text-zinc-400 mb-3">
-                  <p>
-                    <span className="inline-block px-1.5 py-0.5 rounded bg-slate-100 dark:bg-zinc-800 text-slate-500 dark:text-zinc-400 font-mono text-[9px] mr-1">{centre.type}</span>
-                    {centre.region}, {centre.prefecture}
-                  </p>
-                  {centre.admin && (
-                    <p>Admin : <span className="font-medium text-slate-600 dark:text-zinc-300">{centre.admin.nom} {centre.admin.prenoms}</span></p>
-                  )}
-                </div>
-                <Button
-                  variant={centre.estActif ? 'outline' : 'default'}
-                  className={`w-full h-12 rounded-xl text-sm font-semibold ${centre.estActif ? 'border-slate-200 dark:border-zinc-700 text-slate-600 dark:text-zinc-300' : 'bg-brand hover:bg-brand-dark text-white shadow-sm shadow-brand/20'}`}
-                  onClick={() => toggleActif(centre.id, centre.estActif)}
-                >
-                  {centre.estActif ? 'Désactiver' : 'Activer'}
-                </Button>
-              </div>
-            </div>
+      {/* Filtres */}
+      <div className="dash-in delay-75 flex flex-wrap items-center gap-3">
+        <div className="relative flex-1 min-w-[200px] max-w-xs">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400 dark:text-zinc-500" />
+          <Input placeholder="Rechercher un centre..." value={search} onChange={(e) => setSearch(e.target.value)}
+            className={`${inputCls} pl-9`} />
+        </div>
+        <div className="flex items-center gap-1.5 border border-slate-200 dark:border-zinc-700 bg-white dark:bg-zinc-950 dark:border-zinc-700 rounded-xl p-1">
+          {(['tous', 'actif', 'inactif'] as const).map((s) => (
+            <button key={s} onClick={() => setFilterStatut(s)}
+              className={`px-3 py-1 h-9 rounded-lg text-xs font-semibold capitalize transition-colors ${filterStatut === s ? 'bg-brand text-white shadow-sm' : 'text-slate-500 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white'}`}>
+              {s === 'tous' ? 'Tous' : s === 'actif' ? 'Actifs' : 'Inactifs'}
+            </button>
           ))}
         </div>
+        {(search || filterStatut !== 'tous') && (
+          <button onClick={() => { setSearch(''); setFilterStatut('tous') }}
+            className="flex items-center gap-1.5 text-xs font-semibold text-slate-400 dark:text-zinc-500 hover:text-slate-700 dark:hover:text-zinc-300 transition-colors">
+            <X className="h-3.5 w-3.5" /> Réinitialiser
+          </button>
+        )}
+      </div>
+
+      {/* Contenu */}
+      {loading ? (
+        <div className="dash-in delay-75 flex justify-center py-16">
+          <Loader2 className="h-6 w-6 animate-spin text-brand" />
+        </div>
+      ) : filtered.length === 0 ? (
+        <div className="dash-in delay-75 py-16 text-center bg-white dark:bg-zinc-950 rounded-2xl border border-slate-100 dark:border-zinc-800">
+          <div className="h-12 w-12 rounded-2xl bg-slate-50 dark:bg-zinc-800 flex items-center justify-center mx-auto mb-3">
+            <Building2 className="h-6 w-6 text-slate-300 dark:text-zinc-600" />
+          </div>
+          <p className="text-sm font-semibold text-slate-600 dark:text-zinc-300 mb-1">Aucun centre trouvé</p>
+          <p className="text-xs text-slate-400 dark:text-zinc-500">Créez votre premier centre de santé</p>
+        </div>
+      ) : (
+        <>
+          {/* ── TABLE desktop ── */}
+          <div className="dash-in delay-100 hidden lg:block bg-white dark:bg-zinc-950 rounded-2xl border border-slate-100 dark:border-zinc-800 overflow-hidden">
+            <div className="grid grid-cols-[2fr_100px_1fr_1fr_90px_44px] gap-4 px-5 py-2.5 bg-slate-50/60 dark:bg-zinc-800/40 border-b border-slate-100 dark:border-zinc-800">
+              {['Centre', 'Type', 'Localisation', 'Administrateur', 'Statut', ''].map((h, i) => (
+                <span key={i} className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-zinc-500">{h}</span>
+              ))}
+            </div>
+            <ul>
+              {filtered.map((c, i) => (
+                <li key={c.id}
+                  onClick={() => router.push(`/ministere/centres/${c.id}`)}
+                  className={`dash-in delay-${[0,75,100,150,200,225,300][Math.min(i,6)]} grid grid-cols-[2fr_100px_1fr_1fr_90px_44px] items-center gap-4 px-5 py-3.5 border-b border-slate-50 dark:border-zinc-800/60 last:border-0 hover:bg-slate-50/60 dark:hover:bg-zinc-800/30 transition-colors cursor-pointer`}>
+                  {/* Centre */}
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="h-9 w-9 rounded-xl bg-brand/10 dark:bg-brand/15 flex items-center justify-center flex-shrink-0">
+                      <Building2 className="h-4 w-4 text-brand" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold text-slate-900 dark:text-white truncate">{c.nom}</p>
+                      <p className="text-xs text-slate-400 dark:text-zinc-500 truncate">{c.email}</p>
+                    </div>
+                  </div>
+                  {/* Type */}
+                  <span className="text-[10px] font-bold px-2 py-1 rounded-lg bg-slate-100 dark:bg-zinc-800 text-slate-500 dark:text-zinc-400 w-fit">{TYPE_LABELS[c.type] ?? c.type}</span>
+                  {/* Localisation */}
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    <MapPin className="h-3 w-3 text-slate-400 flex-shrink-0" />
+                    <span className="text-xs text-slate-600 dark:text-zinc-300 truncate">{c.region}, {c.prefecture}</span>
+                  </div>
+                  {/* Admin */}
+                  <div className="min-w-0">
+                    {c.admin ? (
+                      <p className="text-xs text-slate-600 dark:text-zinc-300 truncate">{c.admin.nom} {c.admin.prenoms}</p>
+                    ) : (
+                      <span className="text-xs text-slate-300 dark:text-zinc-600">—</span>
+                    )}
+                  </div>
+                  {/* Statut */}
+                  <div className={`flex items-center gap-1 px-2 py-1 rounded-full border text-[10px] font-bold w-fit ${c.estActif ? 'bg-brand/8 dark:bg-brand/12 border-brand/20 text-brand' : 'bg-slate-50 dark:bg-zinc-800 border-slate-200 dark:border-zinc-700 text-slate-400 dark:text-zinc-500'}`}>
+                    {c.estActif ? <><CheckCircle2 className="h-2.5 w-2.5" />Actif</> : <><XCircle className="h-2.5 w-2.5" />Inactif</>}
+                  </div>
+                  {/* Dropdown actions */}
+                  <div onClick={(e) => e.stopPropagation()}>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <button className="h-8 w-8 rounded-lg border border-slate-200 dark:border-zinc-700 flex items-center justify-center text-slate-400 dark:text-zinc-500 hover:text-slate-700 dark:hover:text-zinc-200 hover:bg-slate-50 dark:hover:bg-zinc-800 transition-colors">
+                          <MoreHorizontal className="h-4 w-4" />
+                        </button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-44">
+                        <DropdownMenuItem onClick={() => router.push(`/ministere/centres/${c.id}`)}>
+                          <Eye className="h-4 w-4 text-slate-400" />
+                          <span>Voir les détails</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => openEdit(c)}>
+                          <Pencil className="h-4 w-4 text-slate-400" />
+                          <span>Modifier</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={() => toggleActif(c.id, c.estActif)} disabled={toggling === c.id}
+                          className={c.estActif ? 'text-orange-500 focus:text-orange-600' : 'text-brand focus:text-brand'}>
+                          {toggling === c.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Power className="h-4 w-4" />}
+                          <span>{c.estActif ? 'Désactiver' : 'Activer'}</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setDeleteTarget(c)} className="text-red-500 focus:text-red-600">
+                          <Trash2 className="h-4 w-4" />
+                          <span>Supprimer</span>
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                </li>
+              ))}
+            </ul>
+            <div className="px-5 py-3 border-t border-slate-50 dark:border-zinc-800 bg-slate-50/40 dark:bg-zinc-800/20">
+              <p className="text-xs text-slate-400 dark:text-zinc-500">{filtered.length} centre(s) affiché(s) sur {centres.length} au total</p>
+            </div>
+          </div>
+
+          {/* ── CARDS mobile ── */}
+          <div className="dash-in delay-100 lg:hidden grid sm:grid-cols-2 gap-4">
+            {filtered.map((c, i) => (
+              <div key={c.id}
+                onClick={() => router.push(`/ministere/centres/${c.id}`)}
+                className={`dash-in delay-${[0,75,100,150,200,225,300][Math.min(i,6)]} bg-white dark:bg-zinc-950 rounded-2xl border border-slate-100 dark:border-zinc-800 overflow-hidden cursor-pointer hover:shadow-md transition-shadow`}>
+                <div className="h-1 bg-brand" />
+                <div className="p-4 space-y-3">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <div className="h-9 w-9 rounded-xl bg-brand/10 dark:bg-brand/15 flex items-center justify-center flex-shrink-0">
+                        <Building2 className="h-4 w-4 text-brand" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="font-bold text-sm text-slate-900 dark:text-white truncate">{c.nom}</p>
+                        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-100 dark:bg-zinc-800 text-slate-500 dark:text-zinc-400">{TYPE_LABELS[c.type] ?? c.type}</span>
+                      </div>
+                    </div>
+                    <div onClick={(e) => e.stopPropagation()}>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <button className="h-8 w-8 rounded-lg border border-slate-200 dark:border-zinc-700 flex items-center justify-center text-slate-400 dark:text-zinc-500 hover:text-slate-700 dark:hover:text-zinc-200 hover:bg-slate-50 dark:hover:bg-zinc-800 transition-colors">
+                            <MoreHorizontal className="h-4 w-4" />
+                          </button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-44">
+                          <DropdownMenuItem onClick={() => router.push(`/ministere/centres/${c.id}`)}>
+                            <Eye className="h-4 w-4 text-slate-400" /><span>Voir les détails</span>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => openEdit(c)}>
+                            <Pencil className="h-4 w-4 text-slate-400" /><span>Modifier</span>
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem onClick={() => toggleActif(c.id, c.estActif)} disabled={toggling === c.id}
+                            className={c.estActif ? 'text-orange-500 focus:text-orange-600' : 'text-brand focus:text-brand'}>
+                            {toggling === c.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Power className="h-4 w-4" />}
+                            <span>{c.estActif ? 'Désactiver' : 'Activer'}</span>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => setDeleteTarget(c)} className="text-red-500 focus:text-red-600">
+                            <Trash2 className="h-4 w-4" /><span>Supprimer</span>
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div className="text-xs text-slate-500 dark:text-zinc-400 space-y-0.5">
+                      <p className="flex items-center gap-1.5"><MapPin className="h-3 w-3 flex-shrink-0" />{c.region}, {c.prefecture}</p>
+                      {c.admin && <p>Admin : <span className="font-medium text-slate-700 dark:text-zinc-300">{c.admin.nom} {c.admin.prenoms}</span></p>}
+                    </div>
+                    <div className={`flex-shrink-0 flex items-center gap-1 px-2 py-0.5 rounded-full border text-[10px] font-bold ${c.estActif ? 'bg-brand/8 dark:bg-brand/12 border-brand/20 text-brand' : 'bg-slate-50 dark:bg-zinc-800 border-slate-200 dark:border-zinc-700 text-slate-400 dark:text-zinc-500'}`}>
+                      {c.estActif ? <><CheckCircle2 className="h-2.5 w-2.5" />Actif</> : <><XCircle className="h-2.5 w-2.5" />Inactif</>}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
       )}
+
+      {/* ── Dialog modifier ── */}
+      <Dialog open={!!editTarget} onOpenChange={(o) => { if (!o) setEditTarget(null) }}>
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-slate-900 dark:text-white font-extrabold">Modifier le centre</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleEdit} className="space-y-3 mt-2">
+            <div className="grid sm:grid-cols-2 gap-3">
+              {[
+                { key: 'nom',        label: 'Nom',        placeholder: 'Nom du centre' },
+                { key: 'adresse',    label: 'Adresse',    placeholder: 'Adresse' },
+                { key: 'telephone',  label: 'Téléphone',  placeholder: '+228 XX XX XX XX' },
+                { key: 'email',      label: 'Email',      placeholder: 'email@centre.tg', type: 'email' },
+                { key: 'region',     label: 'Région',     placeholder: 'Région' },
+                { key: 'prefecture', label: 'Préfecture', placeholder: 'Préfecture' },
+              ].map(({ key, label, type, placeholder }) => (
+                <div key={key} className="space-y-1.5">
+                  <Label className={labelCls}>{label} *</Label>
+                  <Input type={type || 'text'} placeholder={placeholder}
+                    value={(editForm as Record<string, string>)[key]}
+                    onChange={(e) => setEditForm((p) => ({ ...p, [key]: e.target.value }))}
+                    required className={inputCls} />
+                </div>
+              ))}
+              <div className="space-y-1.5">
+                <Label className={labelCls}>Type *</Label>
+                <Select value={editForm.type} onValueChange={(v) => setEditForm((p) => ({ ...p, type: v }))}>
+                  <SelectTrigger className={inputCls}><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {Object.entries(TYPE_LABELS).map(([v, l]) => <SelectItem key={v} value={v}>{l}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <Button type="submit" disabled={editSubmitting} className="w-full h-11 bg-brand hover:bg-brand-dark text-white rounded-xl shadow-sm shadow-brand/20">
+              {editSubmitting ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Enregistrement...</> : 'Enregistrer les modifications'}
+            </Button>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── Dialog supprimer ── */}
+      <Dialog open={!!deleteTarget} onOpenChange={(o) => { if (!o) setDeleteTarget(null) }}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="text-slate-900 dark:text-white font-extrabold">Supprimer le centre ?</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-slate-500 dark:text-zinc-400 mt-1">
+            Vous êtes sur le point de supprimer <span className="font-semibold text-slate-800 dark:text-white">{deleteTarget?.nom}</span>. Cette action est irréversible.
+          </p>
+          <div className="flex gap-3 mt-4">
+            <Button variant="outline" className="flex-1 h-11 rounded-xl" onClick={() => setDeleteTarget(null)}>Annuler</Button>
+            <Button className="flex-1 h-11 rounded-xl bg-red-500 hover:bg-red-600 text-white shadow-sm" onClick={handleDelete} disabled={deleting}>
+              {deleting ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Supprimer'}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

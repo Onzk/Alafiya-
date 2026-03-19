@@ -91,7 +91,7 @@ export default function MedecinsPage() {
     setMedecins(refreshed.utilisateurs || [])
     setDialogOpen(false)
     setForm({ nom: '', prenoms: '', email: '', motDePasse: '', telephone: '', centreId: '', niveauAcces: 'PERSONNEL', specialites: [] })
-    toast({ description: 'Médecin créé avec succès' })
+    toast({ description: 'Personnel créé avec succès' })
   }
 
   async function toggleActif(id: string, actuel: boolean) {
@@ -139,27 +139,27 @@ export default function MedecinsPage() {
       {/* En-tête */}
       <div className="dash-in delay-0 flex items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white leading-tight">Médecins</h1>
+          <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white leading-tight">Personnel médical</h1>
           <p className="text-sm text-slate-500 dark:text-zinc-400 mt-0.5">
-            {medecins.length} médecin(s) · <span className="text-brand">{actifs} actif(s)</span> · <span className="text-slate-400">{inactifs} inactif(s)</span>
+            {medecins.length} personnel(s) · <span className="text-brand">{actifs} actif(s)</span> · <span className="text-slate-400">{inactifs} inactif(s)</span>
           </p>
         </div>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
             <Button className="h-12 bg-brand hover:bg-brand-dark text-white rounded-xl gap-1.5 shadow-sm shadow-brand/20 flex-shrink-0">
-              <Plus className="h-4 w-4" />Ajouter un médecin
+              <Plus className="h-4 w-4" />Ajouter un personnel
             </Button>
           </DialogTrigger>
           <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle className="text-slate-900 dark:text-white font-extrabold">Nouveau médecin</DialogTitle>
+              <DialogTitle className="text-slate-900 dark:text-white font-extrabold">Nouveau personnel médical</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4 mt-2">
               <div className="grid sm:grid-cols-2 gap-3">
                 {[
                   { key: 'nom',        label: 'Nom',           placeholder: 'Ex: KOFI' },
                   { key: 'prenoms',    label: 'Prénoms',       placeholder: 'Ex: Kwame Mensah' },
-                  { key: 'email',      label: 'Email',         placeholder: 'medecin@hopital.tg', type: 'email' },
+                  { key: 'email',      label: 'Email',         placeholder: 'personnel@hopital.tg', type: 'email' },
                   { key: 'motDePasse', label: 'Mot de passe',  placeholder: 'Min. 8 caractères',  type: 'password' },
                   { key: 'telephone',  label: 'Téléphone',     placeholder: '+228 XX XX XX XX',   required: false },
                 ].map(({ key, label, type, placeholder, required }) => (
@@ -219,7 +219,7 @@ export default function MedecinsPage() {
 
               <Button type="submit" disabled={submitting || !form.centreId} className="w-full h-12 bg-brand hover:bg-brand-dark text-white rounded-xl shadow-sm shadow-brand/20">
                 {submitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                Créer le médecin
+                Créer le personnel
               </Button>
             </form>
           </DialogContent>
@@ -231,7 +231,7 @@ export default function MedecinsPage() {
         <div className="relative flex-1 min-w-[200px] max-w-xs">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400 dark:text-zinc-500" />
           <Input
-            placeholder="Rechercher un médecin..."
+            placeholder="Rechercher un personnel..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className={`${inputCls} pl-9`}
@@ -301,17 +301,17 @@ export default function MedecinsPage() {
             <Users className="h-6 w-6 text-slate-300 dark:text-zinc-600" />
           </div>
           <p className="text-sm font-semibold text-slate-600 dark:text-zinc-300 mb-1">
-            {hasFilters ? 'Aucun résultat pour ces filtres' : 'Aucun médecin enregistré'}
+            {hasFilters ? 'Aucun résultat pour ces filtres' : 'Aucun personnel enregistré'}
           </p>
           <p className="text-xs text-slate-400 dark:text-zinc-500">
-            {hasFilters ? 'Modifiez les filtres ou' : 'Commencez par'} ajouter un médecin
+            {hasFilters ? 'Modifiez les filtres ou' : 'Commencez par'} ajouter un personnel
           </p>
         </div>
       ) : (
         <div className="dash-in delay-150 bg-white dark:bg-zinc-950 rounded-2xl border border-slate-100 dark:border-zinc-800 overflow-hidden">
           {/* Table header */}
           <div className="hidden lg:grid grid-cols-[1fr_1fr_1fr_auto] gap-4 px-5 py-2.5 bg-slate-50/60 dark:bg-zinc-800/40 border-b border-slate-100 dark:border-zinc-800">
-            <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-zinc-500">Médecin</span>
+            <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-zinc-500">Personnel</span>
             <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-zinc-500">Centre</span>
             <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-zinc-500">Spécialités</span>
             <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-zinc-500">Statut</span>
@@ -325,13 +325,13 @@ export default function MedecinsPage() {
                   key={m.id}
                   className={`dash-in delay-${[0,75,100,150,200,225,300][Math.min(i,6)]} flex flex-col lg:grid lg:grid-cols-[1fr_1fr_1fr_auto] items-start lg:items-center gap-3 lg:gap-4 px-5 py-4 border-b border-slate-50 dark:border-zinc-800/60 last:border-0 hover:bg-slate-50/60 dark:hover:bg-zinc-800/30 transition-colors`}
                 >
-                  {/* Médecin */}
+                  {/* Personnel */}
                   <div className="flex items-center gap-3 min-w-0 w-full lg:w-auto">
                     <div className="h-9 w-9 rounded-full bg-brand/10 dark:bg-brand/15 flex items-center justify-center flex-shrink-0">
                       <span className="text-brand font-bold text-xs">{m.nom[0]}{m.prenoms[0]}</span>
                     </div>
                     <div className="min-w-0">
-                      <p className="text-sm font-semibold text-slate-900 dark:text-white truncate">Dr. {m.nom} {m.prenoms}</p>
+                      <p className="text-sm font-semibold text-slate-900 dark:text-white truncate">{m.nom} {m.prenoms}</p>
                       <p className="text-xs text-slate-400 dark:text-zinc-500 truncate">{m.email}</p>
                     </div>
                   </div>
@@ -395,7 +395,7 @@ export default function MedecinsPage() {
 
           <div className="px-5 py-3 border-t border-slate-50 dark:border-zinc-800 bg-slate-50/40 dark:bg-zinc-800/20">
             <p className="text-xs text-slate-400 dark:text-zinc-500">
-              {filtered.length} médecin(s) affiché(s) sur {medecins.length} au total
+              {filtered.length} personnel(s) affiché(s) sur {medecins.length} au total
             </p>
           </div>
         </div>

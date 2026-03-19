@@ -8,21 +8,21 @@ import { SessionUser } from '@/types'
 
 /* ── Stat card style DentaClinic ── */
 function StatCard({
-  label, value, sub, icon: Icon, iconBg, iconColor, accentColor, delay,
+  label, value, sub, icon: Icon, iconBg, iconColor, accentColor, cardBg, delay,
 }: {
   label: string; value: number | string; sub?: string
   icon: React.ElementType
-  iconBg: string; iconColor: string; accentColor: string
+  iconBg: string; iconColor: string; accentColor: string; cardBg: string
   delay: string
 }) {
   return (
-    <div className={`dash-in ${delay} relative bg-white dark:bg-zinc-950 rounded-2xl border border-slate-100 dark:border-zinc-800 p-5 overflow-hidden hover:shadow-md transition-all duration-200 group`}>
+    <div className={`dash-in ${delay} relative ${cardBg} rounded-2xl border border-slate-100 dark:border-zinc-800 p-5 overflow-hidden hover:shadow-md transition-all duration-200 group`}>
       <div className={`absolute top-0 left-0 right-0 h-0.5 ${accentColor} rounded-t-2xl`} />
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-zinc-500">{label}</p>
+          <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500 dark:text-zinc-400">{label}</p>
           <p className="text-3xl font-extrabold text-slate-900 dark:text-white mt-2 tabular-nums leading-none">{value}</p>
-          {sub && <p className="text-xs text-slate-400 dark:text-zinc-500 mt-1.5">{sub}</p>}
+          {sub && <p className="text-xs text-slate-500 dark:text-zinc-400 mt-1.5">{sub}</p>}
         </div>
         <div className={`h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0 ${iconBg} group-hover:scale-110 transition-transform duration-200`}>
           <Icon className={`h-5 w-5 ${iconColor}`} />
@@ -121,15 +121,17 @@ export default async function AdminDashboardPage() {
             <StatCard
               label="Personnel actif" value={personnelActif} sub={`${totalPersonnel} au total`}
               icon={Users}
-              iconBg="bg-brand/10 dark:bg-brand/15" iconColor="text-brand"
+              iconBg="bg-brand/20 dark:bg-brand/25" iconColor="text-brand"
               accentColor="bg-brand"
+              cardBg="bg-brand/10 dark:bg-brand/15"
               delay="delay-75"
             />
             <StatCard
               label="Patients du centre" value={totalPatients}
               icon={Activity}
-              iconBg="bg-blue-50 dark:bg-blue-400/15" iconColor="text-blue-600 dark:text-blue-300"
+              iconBg="bg-blue-500/20 dark:bg-blue-400/25" iconColor="text-blue-600 dark:text-blue-300"
               accentColor="bg-blue-500"
+              cardBg="bg-blue-500/10 dark:bg-blue-500/15"
               delay="delay-150"
             />
           </div>

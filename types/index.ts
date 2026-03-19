@@ -8,6 +8,7 @@ export interface SessionUser {
   nom: string
   prenoms: string
   email?: string | null
+  photo?: string | null
   niveauAcces: NiveauAcces
   centreActif?: string
   centres: string[]

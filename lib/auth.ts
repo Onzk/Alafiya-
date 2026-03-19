@@ -37,6 +37,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           nom: user.nom,
           prenoms: user.prenoms,
           email: user.email,
+          photo: user.photo ?? null,
           niveauAcces: user.niveauAcces,
           centreActif: user.centreActifId ?? undefined,
           centres: user.centres.map((c) => c.centreId),
@@ -55,6 +56,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         token.id = u.id
         token.nom = u.nom
         token.prenoms = u.prenoms
+        token.photo = u.photo ?? null
         token.niveauAcces = u.niveauAcces
         token.centreActif = u.centreActif
         token.centres = u.centres
@@ -64,9 +66,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (trigger === 'update' && token.id) {
         const dbUser = await prisma.user.findUnique({
           where: { id: token.id as string },
-          select: { centreActifId: true },
+          select: { centreActifId: true, photo: true },
         })
-        if (dbUser) token.centreActif = dbUser.centreActifId ?? undefined
+        if (dbUser) {
+          token.centreActif = dbUser.centreActifId ?? undefined
+          token.photo = dbUser.photo ?? null
+        }
       }
       return token
     },
@@ -76,6 +81,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         id: token.id as string,
         nom: token.nom as string,
         prenoms: token.prenoms as string,
+        photo: token.photo as string | null,
         niveauAcces: token.niveauAcces as SessionUser['niveauAcces'],
         centreActif: token.centreActif as string | undefined,
         centres: token.centres as string[],

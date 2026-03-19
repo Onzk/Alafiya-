@@ -43,10 +43,12 @@ const DialogContent = React.forwardRef<
         // Positionnement desktop : centré, largeur max, arrondi partout
         'sm:bottom-auto sm:left-1/2 sm:top-1/2 sm:right-auto',
         'sm:-translate-x-1/2 sm:-translate-y-1/2 sm:max-w-lg sm:rounded-2xl',
-        // Fond + ombre + padding
+        // Fond + ombre
         'bg-white dark:bg-zinc-950 dark:border dark:border-zinc-800',
-        'p-6 shadow-2xl shadow-black/10 dark:shadow-black/40',
-        // Animation : slide depuis le bas à l'ouverture, slide vers le bas à la fermeture
+        'shadow-2xl shadow-black/10 dark:shadow-black/40',
+        // Layout flex column + hauteur max pour le scroll interne
+        'flex flex-col overflow-hidden max-h-[90dvh]',
+        // Animation
         'data-[state=open]:animate-in data-[state=closed]:animate-out',
         'data-[state=open]:slide-in-from-bottom-full data-[state=closed]:slide-out-to-bottom-full',
         'data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0',
@@ -56,19 +58,58 @@ const DialogContent = React.forwardRef<
       {...props}
     >
       {children}
-      <DialogPrimitive.Close className="absolute right-4 top-4 rounded-xl p-1.5 opacity-60 hover:opacity-100 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-all focus:outline-none focus:ring-2 focus:ring-ring disabled:pointer-events-none">
-        <X className="h-4 w-4" />
-        <span className="sr-only">Fermer</span>
-      </DialogPrimitive.Close>
     </DialogPrimitive.Content>
   </DialogPortal>
 ))
 DialogContent.displayName = DialogPrimitive.Content.displayName
 
-const DialogHeader = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
-  <div className={cn('flex flex-col space-y-1.5 text-left', className)} {...props} />
+interface DialogHeaderProps extends React.HTMLAttributes<HTMLDivElement> {
+  icon?: React.ElementType
+  danger?: boolean
+}
+
+const DialogHeader = ({ className, icon: Icon, danger, children, ...props }: DialogHeaderProps) => (
+  <div
+    className={cn(
+      'sticky top-0 z-10 flex-shrink-0',
+      'flex items-start gap-4',
+      'bg-white dark:bg-zinc-950',
+      'px-6 pt-5 pb-4',
+      'border-b border-slate-100 dark:border-zinc-800/60',
+      className
+    )}
+    {...props}
+  >
+    {Icon && (
+      <div className={cn(
+        'h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5',
+        danger
+          ? 'bg-red-50 dark:bg-red-500/10'
+          : 'bg-emerald-50 dark:bg-emerald-500/10'
+      )}>
+        <Icon className={cn(
+          'h-5 w-5',
+          danger
+            ? 'text-red-500 dark:text-red-400'
+            : 'text-emerald-600 dark:text-emerald-400'
+        )} />
+      </div>
+    )}
+    <div className="flex-1 min-w-0 space-y-1">
+      {children}
+    </div>
+    <DialogPrimitive.Close className="p-1.5 -mr-1 rounded-xl opacity-50 hover:opacity-100 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-all focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-0 flex-shrink-0 disabled:pointer-events-none">
+      <X className="h-4 w-4" />
+      <span className="sr-only">Fermer</span>
+    </DialogPrimitive.Close>
+  </div>
 )
 DialogHeader.displayName = 'DialogHeader'
+
+const DialogBody = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
+  <div className={cn('flex-1 overflow-y-auto px-6 py-5', className)} {...props} />
+)
+DialogBody.displayName = 'DialogBody'
 
 const DialogFooter = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
   <div className={cn('flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2', className)} {...props} />
@@ -81,7 +122,7 @@ const DialogTitle = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <DialogPrimitive.Title
     ref={ref}
-    className={cn('text-lg font-semibold leading-none tracking-tight', className)}
+    className={cn('text-base font-extrabold leading-tight text-slate-900 dark:text-white', className)}
     {...props}
   />
 ))
@@ -93,7 +134,7 @@ const DialogDescription = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <DialogPrimitive.Description
     ref={ref}
-    className={cn('text-sm text-gray-500 dark:text-zinc-400', className)}
+    className={cn('text-xs text-slate-500 dark:text-zinc-400 leading-relaxed', className)}
     {...props}
   />
 ))
@@ -107,6 +148,7 @@ export {
   DialogTrigger,
   DialogContent,
   DialogHeader,
+  DialogBody,
   DialogFooter,
   DialogTitle,
   DialogDescription,

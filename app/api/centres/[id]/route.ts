@@ -8,7 +8,24 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
 
   const centre = await prisma.centre.findUnique({
     where: { id: params.id },
-    include: { admin: { select: { nom: true, prenoms: true, email: true } } },
+    include: {
+      admin: { select: { nom: true, prenoms: true, email: true, telephone: true } },
+      _count: {
+        select: { utilisateurs: true, patients: true, enregistrements: true, accesUrgences: true },
+      },
+      utilisateurs: {
+        take: 6,
+        include: {
+          user: { select: { nom: true, prenoms: true, email: true, estActif: true, niveauAcces: true, createdAt: true } },
+        },
+        orderBy: { user: { createdAt: 'desc' } },
+      },
+      patients: {
+        take: 5,
+        orderBy: { createdAt: 'desc' },
+        select: { id: true, nom: true, prenoms: true, createdAt: true },
+      },
+    },
   })
 
   if (!centre) return NextResponse.json({ error: 'Centre introuvable' }, { status: 404 })
@@ -27,7 +44,33 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   const centre = await prisma.centre.update({
     where: { id: params.id },
     data: body,
+    include: { admin: { select: { nom: true, prenoms: true, email: true } } },
   })
 
   return NextResponse.json({ centre })
+}
+
+export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+  const session = await auth()
+  if (!session?.user || (session.user as { niveauAcces?: string }).niveauAcces !== 'MINISTERE') {
+    return NextResponse.json({ error: 'Réservé au Ministère' }, { status: 403 })
+  }
+
+  const centre = await prisma.centre.findUnique({
+    where: { id: params.id },
+    include: { _count: { select: { patients: true } } },
+  })
+
+  if (!centre) return NextResponse.json({ error: 'Centre introuvable' }, { status: 404 })
+
+  if (centre._count.patients > 0) {
+    return NextResponse.json(
+      { error: `Suppression impossible : ${centre._count.patients} patient(s) rattaché(s) à ce centre.` },
+      { status: 422 }
+    )
+  }
+
+  await prisma.centre.delete({ where: { id: params.id } })
+
+  return NextResponse.json({ success: true })
 }

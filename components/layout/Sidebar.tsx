@@ -22,9 +22,9 @@ const navigationMinistere: NavGroup[] = [
   ]},
   { section: 'RÉSEAU', items: [
     { href: '/ministere/centres',    label: 'Centres de santé',    icon: Building2 },
-    { href: '/ministere/medecins',   label: 'Médecins',            icon: Users },
+    { href: '/ministere/medecins',   label: 'Personnel médical',   icon: Users },
     { href: '/ministere/specialites',label: 'Spécialités',         icon: Stethoscope },
-    { href: '/ministere/roles',      label: 'Rôles & Permissions', icon: Shield },
+    { href: '/ministere/roles',      label: 'Types de personnel',  icon: Shield },
   ]},
   { section: 'SUIVI', items: [
     { href: '/logs', label: "Journaux d'activité", icon: Activity },
@@ -37,7 +37,7 @@ const navigationAdmin: NavGroup[] = [
   ]},
   { section: 'CENTRE', items: [
     { href: '/admin/personnels', label: 'Personnel médical', icon: Users },
-    { href: '/admin/roles',      label: 'Rôles',             icon: Shield },
+    { href: '/admin/roles',      label: 'Types de personnel',  icon: Shield },
   ]},
   { section: 'SUIVI', items: [
     { href: '/logs', label: "Journaux d'activité", icon: Activity },

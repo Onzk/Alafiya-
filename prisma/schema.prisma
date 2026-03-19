@@ -85,6 +85,7 @@ model User {
   motDePasse      String
   telephone       String?
   niveauAcces     NiveauAcces
+  photo           String?
   estActif        Boolean                 @default(true)
   createdAt       DateTime                @default(now())
   updatedAt       DateTime                @updatedAt
