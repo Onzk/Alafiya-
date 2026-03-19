@@ -13,103 +13,146 @@ import { SessionUser } from '@/types'
 
 interface SidebarProps { user: SessionUser }
 
-const navigationMinistere = [
-  { href: '/ministere/dashboard', label: 'Tableau de bord',   icon: LayoutDashboard },
-  { href: '/ministere/centres',   label: 'Centres de santé',  icon: Building2 },
-  { href: '/ministere/roles',     label: 'Rôles & Permissions', icon: Shield },
-  { href: '/ministere/specialites', label: 'Spécialités',     icon: Stethoscope },
-  { href: '/logs',                label: "Journaux d'activité", icon: Activity },
+type NavItem = { href: string; label: string; icon: React.ElementType; isUrgence?: boolean }
+type NavGroup = { section: string | null; items: NavItem[] }
+
+const navigationMinistere: NavGroup[] = [
+  { section: null, items: [
+    { href: '/ministere/dashboard', label: 'Tableau de bord', icon: LayoutDashboard },
+  ]},
+  { section: 'RÉSEAU', items: [
+    { href: '/ministere/centres',    label: 'Centres de santé',    icon: Building2 },
+    { href: '/ministere/medecins',   label: 'Médecins',            icon: Users },
+    { href: '/ministere/specialites',label: 'Spécialités',         icon: Stethoscope },
+    { href: '/ministere/roles',      label: 'Rôles & Permissions', icon: Shield },
+  ]},
+  { section: 'SUIVI', items: [
+    { href: '/logs', label: "Journaux d'activité", icon: Activity },
+  ]},
 ]
 
-const navigationAdmin = [
-  { href: '/admin/dashboard',   label: 'Tableau de bord',   icon: LayoutDashboard },
-  { href: '/admin/personnels',  label: 'Personnel médical', icon: Users },
-  { href: '/admin/roles',       label: 'Rôles',             icon: Shield },
-  { href: '/logs',              label: "Journaux d'activité", icon: Activity },
+const navigationAdmin: NavGroup[] = [
+  { section: null, items: [
+    { href: '/admin/dashboard', label: 'Tableau de bord', icon: LayoutDashboard },
+  ]},
+  { section: 'CENTRE', items: [
+    { href: '/admin/personnels', label: 'Personnel médical', icon: Users },
+    { href: '/admin/roles',      label: 'Rôles',             icon: Shield },
+  ]},
+  { section: 'SUIVI', items: [
+    { href: '/logs', label: "Journaux d'activité", icon: Activity },
+  ]},
 ]
 
-const navigationPersonnel = [
-  { href: '/dashboard',        label: 'Tableau de bord',  icon: LayoutDashboard },
-  { href: '/patients',         label: 'Patients',         icon: Users },
-  { href: '/patients/nouveau', label: 'Nouveau patient',  icon: FileText },
-  { href: '/scanner',          label: 'Scanner QR',       icon: QrCode },
-  { href: '/urgence',          label: 'Urgence',          icon: AlertCircle },
+const navigationPersonnel: NavGroup[] = [
+  { section: null, items: [
+    { href: '/dashboard', label: 'Tableau de bord', icon: LayoutDashboard },
+  ]},
+  { section: 'PATIENTS', items: [
+    { href: '/patients',         label: 'Patients',        icon: Users },
+    { href: '/patients/nouveau', label: 'Nouveau patient', icon: FileText },
+  ]},
+  { section: 'OUTILS', items: [
+    { href: '/scanner', label: 'Scanner QR', icon: QrCode },
+    { href: '/urgence', label: 'Urgence',    icon: AlertCircle, isUrgence: true },
+  ]},
 ]
 
 export function Sidebar({ user }: SidebarProps) {
   const pathname = usePathname()
 
-  const navigation =
+  const groups =
     user.niveauAcces === 'MINISTERE'    ? navigationMinistere :
     user.niveauAcces === 'ADMIN_CENTRE' ? navigationAdmin :
     navigationPersonnel
 
   const roleLabel =
-    user.niveauAcces === 'MINISTERE'    ? 'MINISTÈRE DE LA SANTÉ' :
-    user.niveauAcces === 'ADMIN_CENTRE' ? 'ADMINISTRATEUR' :
-    'PERSONNEL MÉDICAL'
-
-  const roleSubLabel =
-    user.niveauAcces === 'MINISTERE'    ? 'République Togolaise' :
-    user.niveauAcces === 'ADMIN_CENTRE' ? 'Centre de santé' :
-    `${user.nom} ${user.prenoms}`
+    user.niveauAcces === 'MINISTERE'    ? 'Ministère de la Santé' :
+    user.niveauAcces === 'ADMIN_CENTRE' ? 'Admin de centre' :
+    'Personnel médical'
 
   return (
-    <aside className="flex h-full w-64 flex-col bg-white dark:bg-zinc-950 border-r border-slate-100 dark:border-zinc-800">
+    <aside className="relative flex h-full w-64 flex-col overflow-hidden rounded-2xl
+      bg-gradient-to-b from-emerald-600 via-emerald-700 to-emerald-900
+      dark:from-zinc-950 dark:via-zinc-950 dark:to-zinc-950
+      dark:border dark:border-zinc-800">
+
+      {/* Radial glow — light mode only */}
+      <div className="pointer-events-none absolute inset-0 opacity-25 dark:opacity-0"
+        style={{ background: 'radial-gradient(ellipse at 30% 15%, #34d399 0%, transparent 65%)' }} />
+
+      {/* Decorative circles */}
+      <div className="pointer-events-none absolute right-4 top-8 h-24 w-24 rounded-full bg-white/5" />
+      <div className="pointer-events-none absolute bottom-36 left-0 h-16 w-16 rounded-full bg-white/5" />
+      <div className="pointer-events-none absolute bottom-0 right-0 h-32 w-32 rounded-full bg-white/5 translate-x-1/2 translate-y-1/2" />
 
       {/* Logo */}
-      <div className="flex items-center gap-2.5 px-5 h-16 border-b border-slate-100 dark:border-zinc-800 flex-shrink-0">
-        <div className="h-9 w-9 flex items-center justify-center flex-shrink-0">
-          <LogoIcon className="h-8 w-8 text-emerald-500 dark:text-emerald-400" />
-        </div>
-        <span className="font-extrabold text-slate-900 dark:text-white text-lg tracking-tight">
-          Alafiya <span className="text-brand">Plus</span>
+      <div className="relative z-10 flex h-24 flex-shrink-0 items-center gap-0 px-5 py-2">
+        <LogoIcon className="h-12 w-12 dark:text-primary text-white" />
+        <span className="text-2xl font-extrabold tracking-tight text-white">
+          Alafiya <span className="text-emerald-200 dark:text-emerald-700">Plus</span>
         </span>
       </div>
 
-      {/* Carte rôle utilisateur */}
-      <div className="mx-3 mt-4 mb-2 px-3 py-2.5 rounded-xl bg-brand/8 dark:bg-brand/12 border border-brand/15 dark:border-brand/20">
-        <p className="text-[9px] font-extrabold uppercase tracking-widest text-brand mb-0.5">{roleLabel}</p>
-        <p className="text-sm font-bold text-slate-800 dark:text-white leading-tight">{roleSubLabel}</p>
-      </div>
-
       {/* Navigation */}
-      <nav className="flex-1 overflow-y-auto px-3 py-2 space-y-0.5">
-        {navigation.map((item) => {
-          const Icon = item.icon
-          const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
-          const isUrgence = item.href === '/urgence'
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={cn(
-                'flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition-all',
-                isActive
-                  ? isUrgence
-                    ? 'bg-red-500 text-white shadow-sm'
-                    : 'bg-brand text-white shadow-sm shadow-brand/20'
-                  : isUrgence
-                  ? 'text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30'
-                  : 'text-slate-500 dark:text-zinc-400 hover:bg-slate-50 dark:hover:bg-zinc-800 hover:text-slate-900 dark:hover:text-white'
-              )}
-            >
-              <Icon className="h-4 w-4 flex-shrink-0" />
-              {item.label}
-            </Link>
-          )
-        })}
+      <nav className="relative z-10 flex-1 overflow-y-auto px-3 py-2 space-y-5">
+        {groups.map((group, gi) => (
+          <div key={gi}>
+            {group.section && (
+              <p className="px-3 mb-1.5 text-[10px] font-extrabold uppercase tracking-widest text-white/40 dark:text-zinc-500">
+                {group.section}
+              </p>
+            )}
+            <div className="space-y-1">
+              {group.items.map((item) => {
+                const Icon = item.icon
+                const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
+                const isUrgence = item.isUrgence
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={cn(
+                      'flex items-center gap-3 h-12 rounded-xl px-3 py-2.5 text-sm font-semibold transition-all duration-150',
+                      isActive
+                        ? isUrgence
+                          ? 'bg-red-500 text-white shadow-sm'
+                          : 'bg-white text-emerald-700 shadow-sm dark:bg-emerald-500 dark:text-white dark:border dark:border-emerald-500/30'
+                        : isUrgence
+                        ? 'text-red-300 hover:bg-red-500 hover:text-red-200 dark:text-red-400 dark:hover:bg-red-950/30 dark:hover:text-red-300'
+                        : 'text-white/75 hover:bg-white/15 hover:text-white dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-white'
+                    )}
+                  >
+                    <Icon className="h-4 w-4 flex-shrink-0" />
+                    {item.label}
+                  </Link>
+                )
+              })}
+            </div>
+          </div>
+        ))}
       </nav>
 
-      {/* Déconnexion */}
-      <div className="px-3 pb-4 border-t border-slate-100 dark:border-zinc-800 pt-3">
-        <button
-          onClick={() => signOut({ callbackUrl: '/login' })}
-          className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-slate-400 dark:text-zinc-500 hover:bg-red-50 dark:hover:bg-red-950/30 hover:text-red-600 dark:hover:text-red-400 transition-all"
-        >
-          <LogOut className="h-4 w-4" />
-          Déconnexion
-        </button>
+      {/* Bas : user + logout */}
+      <div className="relative z-10 flex-shrink-0 p-3 border-t border-white/10 dark:border-zinc-800">
+        <div className="flex items-center gap-3 rounded-xl px-3 py-2.5 bg-white/10 backdrop-blur-3xl dark:bg-zinc-800/60 border border-white/15 dark:border-zinc-700/50">
+          <div className="h-8 w-8 rounded-full bg-white/25 dark:bg-emerald-500 flex items-center justify-center flex-shrink-0 shadow-sm border border-white/30 dark:border-transparent">
+            <span className="text-white font-bold text-xs">
+              {user.nom[0]}{user.prenoms[0]}
+            </span>
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-bold text-white dark:text-zinc-100 truncate">{user.nom} {user.prenoms}</p>
+            <p className="text-[10px] text-white/50 dark:text-zinc-500 truncate">{roleLabel}</p>
+          </div>
+          <button
+            onClick={() => signOut({ callbackUrl: '/login' })}
+            className="p-1.5 rounded-lg text-white/50 dark:text-zinc-500 hover:text-white dark:hover:text-zinc-200 hover:bg-white/10 dark:hover:bg-zinc-700 transition-colors flex-shrink-0"
+            aria-label="Déconnexion"
+          >
+            <LogOut className="h-3.5 w-3.5" />
+          </button>
+        </div>
       </div>
     </aside>
   )

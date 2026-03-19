@@ -26,26 +26,26 @@
     --radius: 0.5rem;
   }
 
-  /* Mode nuit — zinc chaud, convivial */
+  /* Mode nuit — zinc-950 profond */
   .dark {
-    --background: 240 6% 10%;     /* zinc-900 */
+    --background: 240 6% 4%;      /* zinc-950 */
     --foreground: 240 5% 92%;
-    --card: 240 5% 14%;           /* zinc-800ish */
+    --card: 240 6% 4%;             /* zinc-950 */
     --card-foreground: 240 5% 92%;
-    --popover: 240 5% 14%;
+    --popover: 240 5% 8%;          /* zinc-900 pour les popovers/dialogs */
     --popover-foreground: 240 5% 92%;
     --primary: 158 72% 45%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 240 4% 20%;
+    --secondary: 240 4% 16%;
     --secondary-foreground: 240 5% 92%;
-    --muted: 240 4% 20%;
+    --muted: 240 4% 16%;
     --muted-foreground: 240 5% 56%;
-    --accent: 240 4% 20%;
+    --accent: 240 4% 16%;
     --accent-foreground: 240 5% 92%;
     --destructive: 0 62.8% 50%;
     --destructive-foreground: 0 0% 98%;
-    --border: 240 4% 22%;
-    --input: 240 4% 22%;
+    --border: 240 4% 18%;
+    --input: 240 4% 18%;
     --ring: 158 72% 45%;
   }
 }
@@ -59,7 +59,58 @@
   }
 }
 
-/* Scroll reveal animations */
+/* ── Page entrance animation ── */
+@keyframes page-in {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.page-in {
+  opacity: 0;
+  animation: page-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* ── Dashboard / section stagger animations ── */
+@keyframes dash-in {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes dash-in-left {
+  from { opacity: 0; transform: translateX(-14px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes dash-in-scale {
+  from { opacity: 0; transform: scale(0.97) translateY(8px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.dash-in {
+  opacity: 0;
+  animation: dash-in 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+.dash-in-left {
+  opacity: 0;
+  animation: dash-in-left 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+.dash-in-scale {
+  opacity: 0;
+  animation: dash-in-scale 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Delays */
+.delay-0   { animation-delay: 0ms; }
+.delay-50  { animation-delay: 50ms; }
+.delay-75  { animation-delay: 75ms; }
+.delay-100 { animation-delay: 100ms; }
+.delay-150 { animation-delay: 150ms; }
+.delay-200 { animation-delay: 200ms; }
+.delay-225 { animation-delay: 225ms; }
+.delay-300 { animation-delay: 300ms; }
+.delay-375 { animation-delay: 375ms; }
+.delay-400 { animation-delay: 400ms; }
+.delay-450 { animation-delay: 450ms; }
+.delay-500 { animation-delay: 500ms; }
+
+/* Scroll reveal */
 @layer utilities {
   .animate-on-scroll {
     opacity: 0;
@@ -70,53 +121,7 @@
     opacity: 1;
     transform: translateY(0);
   }
-  .animate-on-scroll-left {
-    opacity: 0;
-    transform: translateX(-24px);
-    transition: opacity 0.6s ease-out, transform 0.6s ease-out;
-  }
-  .animate-on-scroll-left.visible {
-    opacity: 1;
-    transform: translateX(0);
-  }
-  .animate-on-scroll-right {
-    opacity: 0;
-    transform: translateX(24px);
-    transition: opacity 0.6s ease-out, transform 0.6s ease-out;
-  }
-  .animate-on-scroll-right.visible {
-    opacity: 1;
-    transform: translateX(0);
-  }
 }
-
-/* ── Dashboard animations ── */
-@keyframes dash-in {
-  from { opacity: 0; transform: translateY(14px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-@keyframes dash-in-left {
-  from { opacity: 0; transform: translateX(-14px); }
-  to   { opacity: 1; transform: translateX(0); }
-}
-@keyframes count-glow {
-  0%, 100% { text-shadow: 0 0 0px transparent; }
-  50% { text-shadow: 0 0 20px currentColor; }
-}
-.dash-in {
-  opacity: 0;
-  animation: dash-in 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-.dash-in-left {
-  opacity: 0;
-  animation: dash-in-left 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-.delay-0   { animation-delay: 0ms; }
-.delay-75  { animation-delay: 75ms; }
-.delay-150 { animation-delay: 150ms; }
-.delay-225 { animation-delay: 225ms; }
-.delay-300 { animation-delay: 300ms; }
-.delay-375 { animation-delay: 375ms; }
 
 /* Glass card */
 .glass-card {
@@ -125,7 +130,7 @@
   border: 1px solid rgba(229, 231, 235, 0.5);
 }
 .dark .glass-card {
-  background: rgba(36, 36, 40, 0.85);
+  background: rgba(9, 9, 11, 0.85);
   border: 1px solid rgba(255, 255, 255, 0.07);
 }
 
@@ -136,7 +141,7 @@ html {
 
 /* Custom scrollbar */
 ::-webkit-scrollbar {
-  width: 6px;
+  width: 5px;
 }
 ::-webkit-scrollbar-track {
   background: transparent;

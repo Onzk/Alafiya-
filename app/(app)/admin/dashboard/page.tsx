@@ -2,51 +2,55 @@ import { auth } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import prisma from '@/lib/db'
-import { Users, Activity, UserPlus, Settings, Plus, ArrowRight, Building2 } from 'lucide-react'
+import { Users, Activity, UserPlus, Settings, Plus, ArrowRight, Building2, CheckCircle2, XCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { SessionUser } from '@/types'
 
+/* ── Stat card style DentaClinic ── */
 function StatCard({
-  label, value, sub, icon: Icon,
-  lightBg, lightIcon, darkBg, darkIcon, darkGlow, delay,
+  label, value, sub, icon: Icon, iconBg, iconColor, accentColor, delay,
 }: {
-  label: string; value: number; sub?: string; icon: React.ElementType
-  lightBg: string; lightIcon: string; darkBg: string; darkIcon: string; darkGlow: string; delay: string
+  label: string; value: number | string; sub?: string
+  icon: React.ElementType
+  iconBg: string; iconColor: string; accentColor: string
+  delay: string
 }) {
   return (
-    <div className={`dash-in ${delay} relative overflow-hidden bg-white dark:bg-zinc-950 rounded-2xl border border-slate-100 dark:border-zinc-700/60 p-5 hover:shadow-xl dark:hover:shadow-zinc-950/80 hover:-translate-y-1 transition-all duration-300 group`}>
-      <div className={`absolute -top-4 -right-4 w-20 h-20 rounded-full blur-2xl opacity-0 dark:opacity-100 ${darkGlow} pointer-events-none transition-all duration-500 group-hover:scale-150`} />
-      <div className="relative flex items-start justify-between mb-4">
-        <p className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400 dark:text-zinc-500 leading-tight pr-2">{label}</p>
-        <div className={`h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0 ${lightBg} dark:${darkBg} transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3`}>
-          <Icon className={`h-5 w-5 ${lightIcon} dark:${darkIcon}`} />
+    <div className={`dash-in ${delay} relative bg-white dark:bg-zinc-950 rounded-2xl border border-slate-100 dark:border-zinc-800 p-5 overflow-hidden hover:shadow-md transition-all duration-200 group`}>
+      <div className={`absolute top-0 left-0 right-0 h-0.5 ${accentColor} rounded-t-2xl`} />
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-zinc-500">{label}</p>
+          <p className="text-3xl font-extrabold text-slate-900 dark:text-white mt-2 tabular-nums leading-none">{value}</p>
+          {sub && <p className="text-xs text-slate-400 dark:text-zinc-500 mt-1.5">{sub}</p>}
+        </div>
+        <div className={`h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0 ${iconBg} group-hover:scale-110 transition-transform duration-200`}>
+          <Icon className={`h-5 w-5 ${iconColor}`} />
         </div>
       </div>
-      <p className="relative text-4xl font-extrabold text-slate-900 dark:text-white tabular-nums">{value}</p>
-      {sub && <p className="text-xs text-slate-400 dark:text-zinc-500 mt-1">{sub}</p>}
     </div>
   )
 }
 
+/* ── Action card ── */
 function ActionCard({
-  href, icon: Icon, lightBg, lightIcon, darkBg, darkIcon, darkBorder, label, sub, delay,
+  href, icon: Icon, iconBg, iconColor, label, sub, delay,
 }: {
   href: string; icon: React.ElementType
-  lightBg: string; lightIcon: string; darkBg: string; darkIcon: string; darkBorder: string
+  iconBg: string; iconColor: string
   label: string; sub: string; delay: string
 }) {
   return (
     <Link href={href}>
-      <div className={`dash-in ${delay} group relative overflow-hidden bg-white dark:bg-zinc-950 rounded-2xl border border-slate-100 dark:border-zinc-700/60 dark:hover:border-zinc-600 p-5 flex items-center gap-4 hover:shadow-xl dark:hover:shadow-zinc-950/80 hover:-translate-y-1 transition-all duration-300 cursor-pointer`}>
-        <div className={`absolute left-0 top-4 bottom-4 w-0.5 rounded-full opacity-0 dark:opacity-60 ${darkBorder} transition-opacity group-hover:opacity-100`} />
-        <div className={`h-12 w-12 rounded-xl flex items-center justify-center flex-shrink-0 ${lightBg} dark:${darkBg} transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3`}>
-          <Icon className={`h-6 w-6 ${lightIcon} dark:${darkIcon}`} />
+      <div className={`dash-in ${delay} group bg-white dark:bg-zinc-950 rounded-2xl border border-slate-100 dark:border-zinc-800 hover:border-brand/30 dark:hover:border-brand/30 p-4 flex items-center gap-3.5 hover:shadow-md transition-all duration-200 cursor-pointer`}>
+        <div className={`h-11 w-11 rounded-xl flex items-center justify-center flex-shrink-0 ${iconBg} group-hover:scale-110 transition-transform duration-200`}>
+          <Icon className={`h-5 w-5 ${iconColor}`} />
         </div>
         <div className="min-w-0 flex-1">
-          <p className="font-bold text-slate-900 dark:text-white text-sm">{label}</p>
+          <p className="font-bold text-slate-900 dark:text-white text-sm leading-tight">{label}</p>
           <p className="text-xs text-slate-400 dark:text-zinc-500 mt-0.5">{sub}</p>
         </div>
-        <ArrowRight className="h-4 w-4 text-slate-300 dark:text-zinc-600 flex-shrink-0 transition-transform group-hover:translate-x-1 group-hover:text-brand" />
+        <ArrowRight className="h-4 w-4 text-slate-300 dark:text-zinc-600 flex-shrink-0 group-hover:translate-x-0.5 group-hover:text-brand transition-all duration-200" />
       </div>
     </Link>
   )
@@ -63,7 +67,7 @@ export default async function AdminDashboardPage() {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="text-center">
-          <div className="h-14 w-14 rounded-2xl bg-slate-50 dark:bg-zinc-800 dark:border dark:border-zinc-700/60 flex items-center justify-center mx-auto mb-4">
+          <div className="h-14 w-14 rounded-2xl bg-slate-50 dark:bg-zinc-800 flex items-center justify-center mx-auto mb-4">
             <Activity className="h-7 w-7 text-slate-300 dark:text-zinc-600" />
           </div>
           <p className="text-slate-500 dark:text-zinc-400 font-medium">Aucun centre actif sélectionné.</p>
@@ -73,7 +77,7 @@ export default async function AdminDashboardPage() {
   }
 
   const [centre, totalPersonnel, personnelActif, totalPatients] = await Promise.all([
-    prisma.centre.findUnique({ where: { id: centreId }, select: { nom: true } }),
+    prisma.centre.findUnique({ where: { id: centreId }, select: { nom: true, type: true, region: true } }),
     prisma.user.count({ where: { centres: { some: { centreId } }, niveauAcces: 'PERSONNEL' } }),
     prisma.user.count({ where: { centres: { some: { centreId } }, niveauAcces: 'PERSONNEL', estActif: true } }),
     prisma.patient.count({ where: { centreCreationId: centreId } }),
@@ -86,77 +90,174 @@ export default async function AdminDashboardPage() {
     take: 5,
   })
 
+  const tauxActivite = totalPersonnel > 0 ? Math.round((personnelActif / totalPersonnel) * 100) : 0
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-5 max-w-[1400px]">
 
-      {/* Banner */}
-      <div className="dash-in delay-0 relative overflow-hidden rounded-2xl bg-gradient-to-r from-brand/8 via-emerald-50/80 to-white dark:from-emerald-900/30 dark:via-zinc-900 dark:to-zinc-900 border border-brand/15 dark:border-emerald-700/25 p-5 sm:p-6">
-        <div className="absolute right-0 top-0 w-48 h-48 bg-brand/10 dark:bg-brand/8 rounded-full blur-3xl -translate-y-1/3 translate-x-1/3 pointer-events-none" />
-        <div className="relative">
-          <div className="flex items-center gap-2 mb-2">
-            <span className="h-1.5 w-1.5 rounded-full bg-brand animate-pulse" />
-            <span className="text-[10px] font-extrabold uppercase tracking-widest text-brand">Tableau de bord administrateur</span>
+      {/* ── EN-TÊTE PAGE ── */}
+      <div className="dash-in delay-0 flex items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white leading-tight">
+            {centre?.nom ?? 'Centre de santé'}
+          </h1>
+          <p className="text-sm text-slate-500 dark:text-zinc-400 mt-0.5">
+            Tableau de bord administrateur · Vue d'ensemble du centre
+          </p>
+        </div>
+        <Button asChild size="sm" className="bg-brand hover:bg-brand-dark text-white rounded-xl gap-1.5 shadow-sm shadow-brand/20 flex-shrink-0">
+          <Link href="/admin/personnels"><Plus className="h-4 w-4" /> Ajouter personnel</Link>
+        </Button>
+      </div>
+
+      {/* ── LAYOUT 2 COLONNES ── */}
+      <div className="grid grid-cols-1 xl:grid-cols-[1fr_272px] gap-5">
+
+        {/* ══ COLONNE PRINCIPALE ══ */}
+        <div className="space-y-5">
+
+          {/* Stats */}
+          <div className="grid grid-cols-2 gap-4">
+            <StatCard
+              label="Personnel actif" value={personnelActif} sub={`${totalPersonnel} au total`}
+              icon={Users}
+              iconBg="bg-brand/10 dark:bg-brand/15" iconColor="text-brand"
+              accentColor="bg-brand"
+              delay="delay-75"
+            />
+            <StatCard
+              label="Patients du centre" value={totalPatients}
+              icon={Activity}
+              iconBg="bg-blue-50 dark:bg-blue-400/15" iconColor="text-blue-600 dark:text-blue-300"
+              accentColor="bg-blue-500"
+              delay="delay-150"
+            />
           </div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white">{centre?.nom ?? 'Centre de santé'}</h1>
-          <p className="text-sm text-slate-500 dark:text-zinc-400 mt-1">Gérez votre personnel et suivez l'activité du centre.</p>
+
+          {/* Actions */}
+          <div className="dash-in delay-150">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-zinc-500 mb-2.5">Gestion du centre</p>
+            <div className="grid sm:grid-cols-2 gap-3">
+              <ActionCard href="/admin/personnels" icon={UserPlus} iconBg="bg-brand/10 dark:bg-brand/15"   iconColor="text-brand"                       label="Gérer le personnel" sub="Créer et gérer les comptes" delay="delay-0" />
+              <ActionCard href="/admin/roles"      icon={Settings} iconBg="bg-blue-50 dark:bg-blue-400/15" iconColor="text-blue-600 dark:text-blue-300" label="Rôles du centre"    sub="Définir les accès locaux"  delay="delay-75" />
+            </div>
+          </div>
+
+          {/* Personnel récent */}
+          <div className="dash-in delay-225 bg-white dark:bg-zinc-950 rounded-2xl border border-slate-100 dark:border-zinc-800 overflow-hidden">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-slate-50 dark:border-zinc-800">
+              <div>
+                <h2 className="font-bold text-slate-900 dark:text-white text-sm">Personnel médical</h2>
+                <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-zinc-500 mt-0.5">
+                  Membres récents du centre
+                </p>
+              </div>
+              <Button asChild size="sm" className="bg-brand hover:bg-brand-dark text-white rounded-xl gap-1.5 shadow-sm shadow-brand/20 text-xs h-8 px-3">
+                <Link href="/admin/personnels"><Plus className="h-3.5 w-3.5" /> Ajouter</Link>
+              </Button>
+            </div>
+
+            {dernierPersonnel.length === 0 ? (
+              <div className="py-12 text-center">
+                <div className="h-12 w-12 rounded-2xl bg-slate-50 dark:bg-zinc-800 flex items-center justify-center mx-auto mb-3">
+                  <Users className="h-6 w-6 text-slate-300 dark:text-zinc-600" />
+                </div>
+                <p className="text-sm text-slate-400 dark:text-zinc-500">Aucun personnel enregistré</p>
+              </div>
+            ) : (
+              <>
+                {/* Table header */}
+                <div className="hidden sm:grid grid-cols-[1fr_1fr_auto] gap-4 px-5 py-2.5 bg-slate-50/60 dark:bg-zinc-800/40 border-b border-slate-100 dark:border-zinc-800">
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-zinc-500">Nom</span>
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-zinc-500">Email</span>
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-zinc-500">Statut</span>
+                </div>
+                <ul>
+                  {dernierPersonnel.map((p, i) => (
+                    <li key={p.id} className={`dash-in delay-${[0,75,150,225,300][i] ?? 300} flex sm:grid sm:grid-cols-[1fr_1fr_auto] items-center gap-4 px-5 py-3.5 border-b border-slate-50 dark:border-zinc-800/60 last:border-0 hover:bg-slate-50/60 dark:hover:bg-zinc-800/40 transition-colors`}>
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="h-8 w-8 rounded-full bg-brand/10 dark:bg-brand/15 flex items-center justify-center flex-shrink-0">
+                          <span className="text-brand font-bold text-xs">{p.nom[0]}{p.prenoms[0]}</span>
+                        </div>
+                        <p className="text-sm font-semibold text-slate-900 dark:text-white truncate">{p.nom} {p.prenoms}</p>
+                      </div>
+                      <p className="text-xs text-slate-400 dark:text-zinc-500 hidden sm:block truncate">{p.email}</p>
+                      <div className={`flex-shrink-0 flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[10px] font-bold ${
+                        p.estActif
+                          ? 'bg-brand/8 dark:bg-brand/12 border-brand/20 text-brand'
+                          : 'bg-slate-50 dark:bg-zinc-800 border-slate-200 dark:border-zinc-700 text-slate-400 dark:text-zinc-500'
+                      }`}>
+                        {p.estActif
+                          ? <><CheckCircle2 className="h-3 w-3" /> Actif</>
+                          : <><XCircle className="h-3 w-3" /> Inactif</>
+                        }
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </>
+            )}
+          </div>
+        </div>
+
+        {/* ══ PANNEAU DROIT ══ */}
+        <div className="space-y-4">
+
+          {/* Info centre */}
+          <div className="dash-in delay-75 bg-white dark:bg-zinc-950 rounded-2xl border border-slate-100 dark:border-zinc-800 overflow-hidden">
+            <div className="h-14 bg-gradient-to-r from-brand/20 to-brand/5 dark:from-brand/15 dark:to-transparent relative">
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_50%,rgba(33,196,136,0.15),transparent_70%)]" />
+            </div>
+            <div className="px-5 pb-5 -mt-6">
+              <div className="h-12 w-12 rounded-xl bg-brand flex items-center justify-center border-4 border-white dark:border-zinc-900 shadow-md mb-3">
+                <Building2 className="h-5 w-5 text-white" />
+              </div>
+              <p className="font-extrabold text-slate-900 dark:text-white text-sm leading-tight">{centre?.nom}</p>
+              {centre?.type && (
+                <span className="inline-flex mt-1.5 text-[9px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded bg-slate-100 dark:bg-zinc-800 text-slate-500 dark:text-zinc-400">
+                  {centre.type}
+                </span>
+              )}
+              {centre?.region && (
+                <p className="text-xs text-slate-400 dark:text-zinc-500 mt-1">{centre.region}</p>
+              )}
+            </div>
+          </div>
+
+          {/* Taux d'activité */}
+          <div className="dash-in delay-150 bg-white dark:bg-zinc-950 rounded-2xl border border-slate-100 dark:border-zinc-800 p-5">
+            <h3 className="text-xs font-extrabold uppercase tracking-widest text-slate-400 dark:text-zinc-500 mb-4">Taux d'activité</h3>
+            <div className="flex items-end justify-between mb-2">
+              <p className="text-3xl font-extrabold text-slate-900 dark:text-white tabular-nums">{tauxActivite}%</p>
+              <p className="text-xs text-slate-400 dark:text-zinc-500">{personnelActif}/{totalPersonnel}</p>
+            </div>
+            <div className="h-2 bg-slate-100 dark:bg-zinc-800 rounded-full overflow-hidden">
+              <div className="h-full bg-brand rounded-full transition-all duration-700" style={{ width: `${tauxActivite}%` }} />
+            </div>
+            <p className="text-xs text-slate-400 dark:text-zinc-500 mt-2">Personnel actif sur le total</p>
+          </div>
+
+          {/* Accès rapides */}
+          <div className="dash-in delay-225 bg-white dark:bg-zinc-950 rounded-2xl border border-slate-100 dark:border-zinc-800 p-5">
+            <h3 className="text-xs font-extrabold uppercase tracking-widest text-slate-400 dark:text-zinc-500 mb-3">Accès rapides</h3>
+            <div className="space-y-1.5">
+              <Link href="/admin/personnels" className="flex items-center gap-2.5 p-2.5 rounded-xl hover:bg-brand/5 dark:hover:bg-brand/10 transition-colors group">
+                <UserPlus className="h-4 w-4 text-brand flex-shrink-0" />
+                <span className="text-xs font-semibold text-slate-600 dark:text-zinc-300 group-hover:text-brand transition-colors">Gérer le personnel</span>
+              </Link>
+              <Link href="/admin/roles" className="flex items-center gap-2.5 p-2.5 rounded-xl hover:bg-blue-50 dark:hover:bg-blue-950/20 transition-colors group">
+                <Settings className="h-4 w-4 text-blue-500 flex-shrink-0" />
+                <span className="text-xs font-semibold text-slate-600 dark:text-zinc-300 group-hover:text-blue-500 transition-colors">Rôles & accès</span>
+              </Link>
+              <Link href="/logs" className="flex items-center gap-2.5 p-2.5 rounded-xl hover:bg-slate-50 dark:hover:bg-zinc-800 transition-colors group">
+                <Activity className="h-4 w-4 text-slate-400 flex-shrink-0" />
+                <span className="text-xs font-semibold text-slate-600 dark:text-zinc-300 group-hover:text-slate-900 dark:group-hover:text-white transition-colors">Journaux d'activité</span>
+              </Link>
+            </div>
+          </div>
+
         </div>
       </div>
-
-      {/* Stats */}
-      <div className="grid grid-cols-2 gap-3 sm:gap-4">
-        <StatCard label="Personnel actif"    value={personnelActif} sub={`${totalPersonnel} au total`} icon={Users}    lightBg="bg-green-50"  lightIcon="text-green-600"  darkBg="bg-emerald-400/15" darkIcon="text-emerald-300" darkGlow="bg-emerald-500/15" delay="delay-75" />
-        <StatCard label="Patients du centre" value={totalPatients}                                     icon={Activity} lightBg="bg-blue-50"   lightIcon="text-blue-600"   darkBg="bg-blue-400/15"   darkIcon="text-blue-300"   darkGlow="bg-blue-500/15"   delay="delay-150" />
-      </div>
-
-      {/* Actions */}
-      <div className="grid sm:grid-cols-2 gap-3 sm:gap-4">
-        <ActionCard href="/admin/personnels" icon={UserPlus} lightBg="bg-green-50"  lightIcon="text-green-600"  darkBg="bg-emerald-400/15" darkIcon="text-emerald-300" darkBorder="bg-emerald-400" label="Gérer le personnel" sub="Créer et gérer les comptes" delay="delay-75" />
-        <ActionCard href="/admin/roles"      icon={Settings} lightBg="bg-blue-50"   lightIcon="text-blue-600"   darkBg="bg-blue-400/15"   darkIcon="text-blue-300"   darkBorder="bg-blue-400"   label="Rôles du centre"    sub="Définir les accès locaux"  delay="delay-150" />
-      </div>
-
-      {/* Personnel récent */}
-      <div className="dash-in delay-150 bg-white dark:bg-zinc-950 rounded-2xl border border-slate-100 dark:border-zinc-700/60 overflow-hidden">
-        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-50 dark:border-zinc-800">
-          <div>
-            <h2 className="font-bold text-slate-900 dark:text-white">Personnel médical</h2>
-            <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-zinc-500 mt-0.5">Membres récents du centre</p>
-          </div>
-          <Button asChild size="sm" className="bg-brand hover:bg-brand-dark text-white rounded-xl gap-1.5 shadow-sm shadow-brand/20">
-            <Link href="/admin/personnels"><Plus className="h-4 w-4" /> Ajouter</Link>
-          </Button>
-        </div>
-        {dernierPersonnel.length === 0 ? (
-          <div className="py-12 text-center">
-            <div className="h-12 w-12 rounded-2xl bg-slate-50 dark:bg-zinc-800 dark:border dark:border-zinc-700/60 flex items-center justify-center mx-auto mb-3">
-              <Users className="h-6 w-6 text-slate-300 dark:text-zinc-600" />
-            </div>
-            <p className="text-sm text-slate-400 dark:text-zinc-500">Aucun personnel enregistré</p>
-          </div>
-        ) : (
-          <>
-            <ul>
-              {dernierPersonnel.map((p, i) => (
-                <li key={p.id} className={`dash-in delay-${[0,75,150,225,300][i] ?? 300} flex items-center gap-4 px-5 py-3.5 border-b border-slate-50 dark:border-zinc-800/60 last:border-0 hover:bg-slate-50/80 dark:hover:bg-zinc-800/50 transition-colors group`}>
-                  <div className="h-10 w-10 rounded-full bg-brand/8 dark:bg-emerald-400/12 border border-brand/10 dark:border-emerald-400/15 flex items-center justify-center flex-shrink-0 transition-transform group-hover:scale-110">
-                    <span className="text-brand dark:text-emerald-300 text-xs font-bold">{p.nom[0]}{p.prenoms[0]}</span>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-bold text-slate-900 dark:text-white truncate">{p.nom} {p.prenoms}</p>
-                    <p className="text-xs text-slate-400 dark:text-zinc-500 truncate">{p.email}</p>
-                  </div>
-                  <span className={`flex-shrink-0 text-[9px] font-extrabold uppercase tracking-widest px-2.5 py-1 rounded-full border ${p.estActif ? 'border-emerald-400/30 text-emerald-600 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-400/12' : 'border-slate-200 dark:border-zinc-700/60 text-slate-400 dark:text-zinc-500 bg-slate-50 dark:bg-zinc-800'}`}>
-                    {p.estActif ? 'Actif' : 'Inactif'}
-                  </span>
-                </li>
-              ))}
-            </ul>
-            <div className="py-3 text-center border-t border-slate-50 dark:border-zinc-800">
-              <p className="text-[9px] font-bold uppercase tracking-widest text-slate-300 dark:text-zinc-600">Fin de la liste du personnel récent</p>
-            </div>
-          </>
-        )}
-      </div>
-
     </div>
   )
 }

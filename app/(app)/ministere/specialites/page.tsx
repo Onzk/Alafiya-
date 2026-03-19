@@ -1,12 +1,10 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Plus, Loader2, Stethoscope } from 'lucide-react'
+import { Plus, Loader2, Stethoscope, CheckCircle2, XCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Card, CardContent } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 
 interface Specialite {
@@ -16,6 +14,9 @@ interface Specialite {
   description?: string
   estActive: boolean
 }
+
+const inputCls = 'h-12 border-slate-200 dark:border-zinc-700 rounded-lg text-sm bg-white dark:bg-zinc-900 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-zinc-500 focus-visible:ring-emerald-500 focus-visible:border-emerald-400'
+const labelCls = 'text-slate-700 dark:text-zinc-300 text-sm font-medium'
 
 export default function SpecialitesPage() {
   const [specialites, setSpecialites] = useState<Specialite[]>([])
@@ -49,29 +50,38 @@ export default function SpecialitesPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">Spécialités médicales</h1>
+    <div className="space-y-5 max-w-[1400px]">
+
+      {/* En-tête */}
+      <div className="dash-in delay-0 flex items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white leading-tight">Spécialités médicales</h1>
+          <p className="text-sm text-slate-500 dark:text-zinc-400 mt-0.5">{specialites.length} spécialité(s)</p>
+        </div>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
-            <Button><Plus className="mr-2 h-4 w-4" />Nouvelle spécialité</Button>
+            <Button className="h-12 bg-brand hover:bg-brand-dark text-white rounded-xl gap-1.5 shadow-sm shadow-brand/20">
+              <Plus className="h-4 w-4" />Nouvelle spécialité
+            </Button>
           </DialogTrigger>
           <DialogContent>
-            <DialogHeader><DialogTitle>Créer une spécialité</DialogTitle></DialogHeader>
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <DialogHeader>
+              <DialogTitle className="text-slate-900 dark:text-white font-extrabold">Créer une spécialité</DialogTitle>
+            </DialogHeader>
+            <form onSubmit={handleSubmit} className="space-y-4 mt-2">
               <div className="space-y-1.5">
-                <Label>Nom *</Label>
-                <Input value={form.nom} onChange={(e) => setForm((p) => ({ ...p, nom: e.target.value }))} required />
+                <Label className={labelCls}>Nom *</Label>
+                <Input value={form.nom} onChange={(e) => setForm((p) => ({ ...p, nom: e.target.value }))} placeholder="Ex: Cardiologie" required className={inputCls} />
               </div>
               <div className="space-y-1.5">
-                <Label>Code *</Label>
-                <Input value={form.code} onChange={(e) => setForm((p) => ({ ...p, code: e.target.value.toUpperCase() }))} placeholder="Ex: MED_GEN" required />
+                <Label className={labelCls}>Code *</Label>
+                <Input value={form.code} onChange={(e) => setForm((p) => ({ ...p, code: e.target.value.toUpperCase() }))} placeholder="Ex: MED_GEN" required className={inputCls} />
               </div>
               <div className="space-y-1.5">
-                <Label>Description</Label>
-                <Input value={form.description} onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))} />
+                <Label className={labelCls}>Description</Label>
+                <Input value={form.description} onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))} placeholder="Description optionnelle" className={inputCls} />
               </div>
-              <Button type="submit" className="w-full" disabled={submitting}>
+              <Button type="submit" className="w-full h-12 bg-brand hover:bg-brand-dark text-white rounded-xl shadow-sm shadow-brand/20" disabled={submitting}>
                 {submitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
                 Créer
               </Button>
@@ -81,24 +91,29 @@ export default function SpecialitesPage() {
       </div>
 
       {loading ? (
-        <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-green-600" /></div>
+        <div className="dash-in delay-75 flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-brand" /></div>
       ) : (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {specialites.map((sp) => (
-            <Card key={sp._id}>
-              <CardContent className="p-4 flex items-center gap-3">
-                <div className="h-10 w-10 rounded-full bg-blue-50 flex items-center justify-center flex-shrink-0">
-                  <Stethoscope className="h-5 w-5 text-blue-600" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="font-medium text-sm text-gray-900 truncate">{sp.nom}</p>
-                  <p className="text-xs text-gray-400 font-mono">{sp.code}</p>
-                </div>
-                <Badge variant={sp.estActive ? 'default' : 'outline'} className="text-xs">
-                  {sp.estActive ? 'Active' : 'Inactive'}
-                </Badge>
-              </CardContent>
-            </Card>
+          {specialites.map((sp, i) => (
+            <div
+              key={sp._id}
+              className={`dash-in delay-${[0,75,100,150,200,225,300][Math.min(i,6)]} bg-white dark:bg-zinc-950 rounded-2xl border border-slate-100 dark:border-zinc-800 p-4 flex items-center gap-3 hover:shadow-sm transition-shadow`}
+            >
+              <div className="h-10 w-10 rounded-xl bg-blue-50 dark:bg-blue-400/15 flex items-center justify-center flex-shrink-0">
+                <Stethoscope className="h-5 w-5 text-blue-600 dark:text-blue-300" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="font-bold text-sm text-slate-900 dark:text-white truncate">{sp.nom}</p>
+                <p className="text-xs text-slate-400 dark:text-zinc-500 font-mono mt-0.5">{sp.code}</p>
+              </div>
+              <div className={`flex-shrink-0 flex items-center gap-1 px-2 py-0.5 rounded-full border text-[10px] font-bold ${
+                sp.estActive
+                  ? 'bg-brand/8 dark:bg-brand/12 border-brand/20 text-brand'
+                  : 'bg-slate-50 dark:bg-zinc-800 border-slate-200 dark:border-zinc-700 text-slate-400 dark:text-zinc-500'
+              }`}>
+                {sp.estActive ? <><CheckCircle2 className="h-2.5 w-2.5" /> Active</> : <><XCircle className="h-2.5 w-2.5" /> Inactive</>}
+              </div>
+            </div>
           ))}
         </div>
       )}

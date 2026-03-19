@@ -65,7 +65,7 @@ const config: Config = {
         custom: '8px',
       },
       fontFamily: {
-        sans: ['Inter', 'sans-serif'],
+        sans: ['Lato', 'sans-serif'],
       },
       keyframes: {
         'accordion-down': {

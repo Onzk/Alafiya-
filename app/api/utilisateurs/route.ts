@@ -15,9 +15,10 @@ const creerUtilisateurSchema = z.object({
   roleId: z.string().optional(),
   specialites: z.array(z.string()).default([]),
   niveauAcces: z.enum(['ADMIN_CENTRE', 'PERSONNEL']),
+  centreId: z.string().optional(),
 })
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   const session = await auth()
   if (!session?.user) return NextResponse.json({ error: 'Non autorisé' }, { status: 401 })
 
@@ -27,9 +28,16 @@ export async function GET() {
     return NextResponse.json({ error: 'Non autorisé' }, { status: 403 })
   }
 
-  const where = user.niveauAcces === 'ADMIN_CENTRE'
+  const { searchParams } = new URL(req.url)
+  const niveauAccesFilter = searchParams.get('niveauAcces')
+
+  const where: Record<string, unknown> = user.niveauAcces === 'ADMIN_CENTRE'
     ? { centres: { some: { centreId: user.centreActif } } }
     : {}
+
+  if (niveauAccesFilter) {
+    where.niveauAcces = niveauAccesFilter
+  }
 
   const utilisateurs = await prisma.user.findMany({
     where,
@@ -38,6 +46,7 @@ export async function GET() {
       niveauAcces: true, estActif: true, createdAt: true,
       role: { select: { nom: true } },
       specialites: { include: { specialite: { select: { nom: true, code: true } } } },
+      centres: { include: { centre: { select: { id: true, nom: true, type: true } } } },
     },
     orderBy: { createdAt: 'desc' },
   })
@@ -60,8 +69,12 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Données invalides', details: validation.error.flatten() }, { status: 400 })
   }
 
-  const { specialites, motDePasse, roleId, telephone, ...rest } = validation.data
+  const { specialites, motDePasse, roleId, telephone, centreId, ...rest } = validation.data
   const hashedPwd = await bcrypt.hash(motDePasse, 12)
+
+  const effectiveCentreId = (user.niveauAcces === 'MINISTERE' && centreId)
+    ? centreId
+    : (user.centreActif || null)
 
   const utilisateur = await prisma.user.create({
     data: {
@@ -70,10 +83,10 @@ export async function POST(req: NextRequest) {
       telephone: telephone || null,
       roleId: roleId || null,
       creeParId: user.id,
-      centreActifId: user.centreActif || null,
+      centreActifId: effectiveCentreId,
       estActif: true,
-      centres: user.centreActif
-        ? { create: { centreId: user.centreActif } }
+      centres: effectiveCentreId
+        ? { create: { centreId: effectiveCentreId } }
         : undefined,
       specialites: specialites.length > 0
         ? { create: specialites.map((sid) => ({ specialiteId: sid })) }

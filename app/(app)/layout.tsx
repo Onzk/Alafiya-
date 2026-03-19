@@ -7,30 +7,51 @@ import { SessionUser } from '@/types'
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const session = await auth()
-
-  if (!session?.user) {
-    redirect('/login')
-  }
+  if (!session?.user) redirect('/login')
 
   const user = session.user as unknown as SessionUser
 
   return (
-    <div className="flex h-screen bg-slate-50 dark:bg-zinc-950 overflow-hidden">
-      {/* Sidebar — desktop uniquement */}
+    <div className="flex h-screen overflow-hidden
+      bg-white dark:bg-zinc-950
+      lg:bg-emerald-50
+      dark:bg-gradient-to-bl dark:from-emerald-950 dark:via-emerald-900 dark:to-emerald-950
+      lg:p-3 lg:gap-3">
+
+      {/* ── Sidebar verte — desktop uniquement ── */}
       <div className="hidden lg:flex flex-shrink-0">
         <Sidebar user={user} />
       </div>
 
-      {/* Contenu principal */}
-      <div className="flex flex-col flex-1 overflow-hidden">
+      {/* ── Panneau principal ── */}
+      <div className="flex flex-col flex-1 overflow-hidden
+        bg-white dark:bg-zinc-950 shadow-white shadow-lg
+        lg:rounded-2xl lg:shadow-sm lg:ring-1 lg:ring-slate-900/5 dark:lg:ring-zinc-800/60">
+
+        {/* Navbar — toujours visible */}
         <Header user={user} />
-        {/* pb-16 sur mobile pour laisser de la place à la nav bottom */}
-        <main className="flex-1 overflow-y-auto pb-16 lg:pb-0 p-4 sm:p-6 lg:p-8">
-          {children}
+
+        {/* Contenu de la page avec dégradé vert */}
+        <main className="flex-1 overflow-y-auto shadow-xl shadow-emerald-200 relative
+          dark:bg-zinc-950
+          p-4 sm:p-6 lg:p-8
+          pb-20 lg:pb-8">
+
+          {/* Cercles décoratifs de fond — light mode */}
+          {/* <div className="pointer-events-none absolute inset-0 overflow-hidden dark:hidden">
+            <div className="absolute -top-16 -left-16 h-64 w-64 rounded-full bg-emerald-100/70 blur-3xl" />
+            <div className="absolute top-1/2 -right-24 h-72 w-72 rounded-full bg-emerald-100/50 blur-3xl" />
+            <div className="absolute -bottom-8 left-1/3 h-48 w-48 rounded-full bg-emerald-50/80 blur-2xl" />
+          </div> */}
+
+          {/* Contenu au-dessus des décorations */}
+          <div className="relative z-10">
+            {children}
+          </div>
         </main>
       </div>
 
-      {/* Nav bottom mobile */}
+      {/* ── Navigation bottom — mobile uniquement ── */}
       <MobileNav user={user} />
     </div>
   )
