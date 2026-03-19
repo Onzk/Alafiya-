@@ -20,7 +20,7 @@ function StatCard({
   trend?: string; trendUp?: boolean
 }) {
   return (
-    <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-slate-100 dark:border-zinc-800 p-5 hover:shadow-lg transition-all duration-200">
+    <div className="bg-white dark:bg-zinc-950 rounded-2xl border border-slate-100 dark:border-zinc-800 p-5 hover:shadow-lg transition-all duration-200">
       <div className="flex items-start justify-between gap-2">
         <div className={`h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0 ${iconBg}`}>
           <Icon className={`h-5 w-5 ${iconColor}`} />
@@ -136,10 +136,10 @@ function QuickAction({ href, icon: Icon, iconBg, iconColor, label, sub }: {
         <Icon className={`h-4 w-4 ${iconColor}`} />
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-semibold text-slate-800 dark:text-white leading-tight">{label}</p>
-        <p className="text-xs text-slate-400 dark:text-zinc-500">{sub}</p>
+        <p className="text-sm font-semibold text-slate-800 dark:text-white leading-tight whitespace-nowrap truncate">{label}</p>
+        <p className="text-xs text-slate-400 dark:text-zinc-500 whitespace-nowrap truncate">{sub}</p>
       </div>
-      <ArrowRight className="h-4 w-4 text-slate-300 dark:text-zinc-600 group-hover:text-brand group-hover:translate-x-0.5 transition-all" />
+      <ArrowRight className="h-4 w-4 text-slate-300 dark:text-zinc-600 group-hover:text-brand group-hover:translate-x-0.5 transition-all flex-shrink-0" />
     </Link>
   )
 }
@@ -259,13 +259,13 @@ export default async function DashboardPage() {
           <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-5">
 
             {/* Bar chart */}
-            <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-slate-100 dark:border-zinc-800 p-5">
+            <div className="bg-white dark:bg-zinc-950 rounded-2xl border border-slate-100 dark:border-zinc-800 p-5">
               <div className="flex items-center justify-between">
                 <div>
                   <h2 className="font-bold text-slate-900 dark:text-white text-sm">Activité hebdomadaire</h2>
                   <p className="text-xs text-slate-400 dark:text-zinc-500 mt-0.5">Consultations des 7 derniers jours</p>
                 </div>
-                <span className="text-xs font-bold text-slate-400 dark:text-zinc-500 bg-slate-50 dark:bg-zinc-800 px-3 py-1 rounded-full">
+                <span className="text-xs font-bold text-slate-400 dark:text-zinc-500 bg-slate-50 dark:bg-zinc-950 px-3 py-1 rounded-full">
                   Total : {totalSemaine}
                 </span>
               </div>
@@ -273,7 +273,7 @@ export default async function DashboardPage() {
             </div>
 
             {/* Donut breakdown */}
-            <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-slate-100 dark:border-zinc-800 p-5 flex flex-col items-center justify-center gap-4 min-w-[180px]">
+            <div className="bg-white dark:bg-zinc-950 rounded-2xl border border-slate-100 dark:border-zinc-800 p-5 flex flex-col items-center justify-center gap-4 min-w-[180px]">
               <div className="text-center">
                 <h2 className="font-bold text-slate-900 dark:text-white text-sm">Spécialités</h2>
                 <p className="text-xs text-slate-400 dark:text-zinc-500">Répartition</p>
@@ -326,7 +326,7 @@ export default async function DashboardPage() {
           </div>
 
           {/* Dernières consultations */}
-          <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-slate-100 dark:border-zinc-800 overflow-hidden">
+          <div className="bg-white dark:bg-zinc-950 rounded-2xl border border-slate-100 dark:border-zinc-800 overflow-hidden">
             <div className="flex items-center justify-between px-5 py-4 border-b border-slate-50 dark:border-zinc-800">
               <div>
                 <h2 className="font-bold text-slate-900 dark:text-white text-sm">Dernières consultations</h2>
@@ -343,7 +343,7 @@ export default async function DashboardPage() {
 
             {derniersEnregistrements.length === 0 ? (
               <div className="py-12 text-center px-4">
-                <div className="h-12 w-12 rounded-2xl bg-slate-50 dark:bg-zinc-800 flex items-center justify-center mx-auto mb-3">
+                <div className="h-12 w-12 rounded-2xl bg-slate-50 dark:bg-zinc-950 flex items-center justify-center mx-auto mb-3">
                   <FileText className="h-6 w-6 text-slate-300 dark:text-zinc-600" />
                 </div>
                 <p className="text-sm font-semibold text-slate-600 dark:text-zinc-300 mb-1">Aucune consultation récente</p>
@@ -354,7 +354,7 @@ export default async function DashboardPage() {
               </div>
             ) : (
               <>
-                <div className="hidden sm:grid grid-cols-[1fr_1fr_auto] gap-4 px-5 py-2.5 bg-slate-50/60 dark:bg-zinc-800/40 border-b border-slate-100 dark:border-zinc-800">
+                <div className="hidden sm:grid grid-cols-[1fr_1fr_auto] gap-4 px-5 py-2.5 bg-slate-50/60 dark:bg-zinc-950/40 border-b border-slate-100 dark:border-zinc-800">
                   <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-zinc-500">Spécialité</span>
                   <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-zinc-500">Date</span>
                   <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-zinc-500">Statut</span>
@@ -385,7 +385,7 @@ export default async function DashboardPage() {
         <div className="space-y-4">
 
           {/* Carte profil */}
-          <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-slate-100 dark:border-zinc-800 overflow-hidden">
+          <div className="bg-white dark:bg-zinc-950 rounded-2xl border border-slate-100 dark:border-zinc-800 overflow-hidden">
             <div className="h-16 bg-gradient-to-r from-brand/20 via-brand/10 to-transparent dark:from-brand/15 dark:to-transparent relative">
               <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_50%,rgba(33,196,136,0.2),transparent_70%)]" />
             </div>
@@ -403,11 +403,11 @@ export default async function DashboardPage() {
               </div>
 
               <div className="mt-4 pt-4 border-t border-slate-50 dark:border-zinc-800 grid grid-cols-2 gap-3">
-                <div className="text-center p-3 rounded-xl bg-slate-50 dark:bg-zinc-800">
+                <div className="text-center p-3 rounded-xl bg-slate-50 dark:bg-zinc-950">
                   <p className="text-xl font-extrabold text-slate-900 dark:text-white tabular-nums">{totalPatients}</p>
                   <p className="text-[10px] font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wide mt-0.5">Patients</p>
                 </div>
-                <div className="text-center p-3 rounded-xl bg-slate-50 dark:bg-zinc-800">
+                <div className="text-center p-3 rounded-xl bg-slate-50 dark:bg-zinc-950">
                   <p className="text-xl font-extrabold text-slate-900 dark:text-white tabular-nums">{nbSpecialites}</p>
                   <p className="text-[10px] font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wide mt-0.5">Spécialités</p>
                 </div>
@@ -416,7 +416,7 @@ export default async function DashboardPage() {
           </div>
 
           {/* Actions rapides */}
-          <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-slate-100 dark:border-zinc-800 p-4">
+          <div className="bg-white dark:bg-zinc-950 rounded-2xl border border-slate-100 dark:border-zinc-800 p-4">
             <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-zinc-500 px-3 mb-2">Actions rapides</p>
             <div className="space-y-0.5">
               <QuickAction href="/patients/nouveau" icon={UserPlus} iconBg="bg-brand/10 dark:bg-brand/15" iconColor="text-brand" label="Nouveau patient" sub="Enregistrement" />

@@ -219,7 +219,7 @@ export default function ScannerPage() {
                     value={otpCode}
                     onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ''))}
                     placeholder="000000"
-                    className="w-full text-center text-2xl tracking-widest font-mono border border-slate-200 dark:border-zinc-700 rounded-xl py-3 bg-white dark:bg-zinc-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    className="w-full text-center text-2xl tracking-widest font-mono border border-slate-200 dark:border-zinc-700 rounded-xl py-3 bg-white dark:bg-zinc-950 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
                   />
                   <Button onClick={validerOTP} disabled={loading || otpCode.length !== 6} className="w-full bg-brand hover:bg-brand-dark text-white rounded-xl shadow-sm shadow-brand/20">
                     {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
@@ -250,7 +250,7 @@ export default function ScannerPage() {
                 <button
                   type="button"
                   onClick={() => padRef.current?.clear()}
-                  className="absolute top-2 right-2 p-1.5 rounded-lg bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-500 dark:text-zinc-400 transition-colors"
+                  className="absolute top-2 right-2 p-1.5 rounded-lg bg-slate-100 dark:bg-zinc-950 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-500 dark:text-zinc-400 transition-colors"
                   title="Effacer la signature"
                 >
                   <Trash2 className="h-4 w-4" />

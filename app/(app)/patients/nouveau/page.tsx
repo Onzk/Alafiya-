@@ -70,11 +70,11 @@ export default function NouveauPatientPage() {
     router.push(`/patients/${data.patient._id}/qrcode`)
   }
 
-  const inputCls = 'h-12 border-slate-200 dark:border-zinc-700 rounded-lg text-sm bg-white dark:bg-zinc-900 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-zinc-500 focus-visible:ring-emerald-500 focus-visible:border-emerald-400'
+  const inputCls = 'h-12 border-slate-200 dark:border-zinc-700 rounded-lg text-sm bg-white dark:bg-zinc-950 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-zinc-500 focus-visible:ring-emerald-500 focus-visible:border-emerald-400'
   const labelCls = 'text-slate-700 dark:text-zinc-300 text-sm font-medium'
 
   return (
-    <div className="max-w-3xl mx-auto space-y-5">
+    <div className="max-w-5xl mx-auto space-y-5">
 
       {/* En-tête */}
       <div className="dash-in delay-0 flex items-center gap-3">

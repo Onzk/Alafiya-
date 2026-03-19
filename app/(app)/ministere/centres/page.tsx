@@ -1,10 +1,10 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, Fragment } from 'react'
 import { useRouter } from 'next/navigation'
 import {
   Plus, Building2, Loader2, CheckCircle2, XCircle, Search,
-  Pencil, Trash2, X, MapPin, MoreHorizontal, Eye, Power,
+  Pencil, Trash2, X, MapPin, MoreHorizontal, Eye, Power, Users, Check,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -30,6 +30,7 @@ interface Centre {
   prefecture: string
   estActif: boolean
   admin?: { nom: string; prenoms: string; email: string }
+  _count?: { utilisateurs: number }
 }
 
 const TYPE_LABELS: Record<string, string> = {
@@ -47,6 +48,44 @@ const EMPTY_FORM = {
 
 type EditForm = { nom: string; adresse: string; telephone: string; email: string; region: string; prefecture: string; type: string }
 
+// ── Stepper indicator ──────────────────────────────────────────────────────────
+function StepBar({ steps, current }: { steps: string[]; current: number }) {
+  return (
+    <div className="flex items-start mb-8">
+      {steps.map((label, i) => (
+        <Fragment key={i}>
+          <div className="flex flex-col items-center shrink-0">
+            {/* Cercle étape */}
+            <div className={`h-10 w-10 rounded-full flex items-center justify-center text-xs font-extrabold transition-all duration-300 border-2 ${
+              i < current
+                ? 'bg-brand border-brand text-white shadow-md shadow-brand/30'
+                : i === current
+                ? 'bg-white dark:bg-zinc-800 border-brand text-brand shadow-lg shadow-brand/20 ring-4 ring-brand/15 scale-110'
+                : 'bg-slate-100 dark:bg-zinc-900 border-slate-200 dark:border-zinc-700 text-slate-400 dark:text-zinc-500'
+            }`}>
+              {i < current ? <Check className="h-4 w-4" strokeWidth={3} /> : i + 1}
+            </div>
+            {/* Label */}
+            <span className={`text-xs font-bold whitespace-nowrap mt-2 transition-all duration-300 ${
+              i === current ? 'text-slate-900 dark:text-white scale-105' : 'text-slate-500 dark:text-zinc-400'
+            }`}>
+              {label}
+            </span>
+          </div>
+          {/* Connecteur */}
+          {i < steps.length - 1 && (
+            <div className="flex-1 flex items-center">
+              <div className={`flex-1 h-1 mx-2 mt-0.5 rounded-full transition-all duration-500 ${
+                i < current ? 'bg-brand shadow-sm shadow-brand/30' : 'bg-slate-200 dark:bg-zinc-700'
+              }`} />
+            </div>
+          )}
+        </Fragment>
+      ))}
+    </div>
+  )
+}
+
 export default function CentresPage() {
   const { toast } = useToast()
   const router = useRouter()
@@ -57,11 +96,13 @@ export default function CentresPage() {
 
   // Create dialog
   const [createOpen, setCreateOpen] = useState(false)
+  const [createStep, setCreateStep] = useState(0)
   const [submitting, setSubmitting] = useState(false)
   const [form, setForm] = useState(EMPTY_FORM)
 
   // Edit dialog
   const [editTarget, setEditTarget] = useState<Centre | null>(null)
+  const [editStep, setEditStep] = useState(0)
   const [editForm, setEditForm] = useState<EditForm>({ nom: '', adresse: '', telephone: '', email: '', region: '', prefecture: '', type: 'HOPITAL' })
   const [editSubmitting, setEditSubmitting] = useState(false)
 
@@ -87,6 +128,26 @@ export default function CentresPage() {
     })
   }, [centres, search, filterStatut])
 
+  // Validate step 1 of creation form
+  function validateCreateStep1() {
+    const missing = (['nom', 'adresse', 'telephone', 'email', 'region', 'prefecture'] as const)
+      .filter((k) => !form[k].trim())
+    if (missing.length > 0) {
+      toast({ description: 'Veuillez remplir tous les champs obligatoires', variant: 'destructive' })
+      return false
+    }
+    return true
+  }
+
+  // Validate step 1 of edit form
+  function validateEditStep1() {
+    if (!editForm.nom.trim() || !editForm.type) {
+      toast({ description: 'Veuillez remplir tous les champs obligatoires', variant: 'destructive' })
+      return false
+    }
+    return true
+  }
+
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault()
     setSubmitting(true)
@@ -100,12 +161,14 @@ export default function CentresPage() {
     if (!res.ok) { toast({ description: data.error || 'Erreur', variant: 'destructive' }); return }
     setCentres((prev) => [data.centre, ...prev])
     setCreateOpen(false)
+    setCreateStep(0)
     setForm(EMPTY_FORM)
     toast({ description: 'Centre créé avec succès' })
   }
 
   function openEdit(centre: Centre) {
     setEditTarget(centre)
+    setEditStep(0)
     setEditForm({ nom: centre.nom, adresse: centre.adresse, telephone: centre.telephone, email: centre.email, region: centre.region, prefecture: centre.prefecture, type: centre.type })
   }
 
@@ -163,64 +226,106 @@ export default function CentresPage() {
           </p>
         </div>
 
-        <Dialog open={createOpen} onOpenChange={setCreateOpen}>
+        <Dialog open={createOpen} onOpenChange={(o) => { setCreateOpen(o); if (!o) { setCreateStep(0); setForm(EMPTY_FORM) } }}>
           <DialogTrigger asChild>
             <Button className="h-11 bg-brand hover:bg-brand-dark text-white rounded-xl gap-1.5 shadow-sm shadow-brand/20 flex-shrink-0">
               <Plus className="h-4 w-4" />Nouveau centre
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader title="Créer un centre de santé" description="Enregistrez les informations essentielles de votre centre pour permettre une meilleure coordination des services." icon={Plus} />
-            <form onSubmit={handleCreate} className="space-y-4 mt-2">
-              <div className="grid sm:grid-cols-2 gap-3">
-                {[
-                  { key: 'nom',        label: 'Nom du centre', placeholder: 'Ex: CHU de Lomé' },
-                  { key: 'adresse',    label: 'Adresse',       placeholder: 'Ex: Rue des Fleurs, Lomé' },
-                  { key: 'telephone',  label: 'Téléphone',     placeholder: '+228 XX XX XX XX' },
-                  { key: 'email',      label: 'Email',         placeholder: 'centre@sante.tg', type: 'email' },
-                  { key: 'region',     label: 'Région',        placeholder: 'Ex: Maritime' },
-                  { key: 'prefecture', label: 'Préfecture',    placeholder: 'Ex: Golfe' },
-                ].map(({ key, label, type, placeholder }) => (
-                  <div key={key} className="space-y-1.5">
-                    <Label className={labelCls}>{label} *</Label>
-                    <Input type={type || 'text'} placeholder={placeholder} value={(form as Record<string, string>)[key]}
-                      onChange={(e) => setForm((p) => ({ ...p, [key]: e.target.value }))} required className={inputCls} />
-                  </div>
-                ))}
-                <div className="space-y-1.5">
-                  <Label className={labelCls}>Type *</Label>
-                  <Select value={form.type} onValueChange={(v) => setForm((p) => ({ ...p, type: v as typeof form.type }))}>
-                    <SelectTrigger className={inputCls}><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      {Object.entries(TYPE_LABELS).map(([v, l]) => <SelectItem key={v} value={v}>{l}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader title="Créer un centre de santé" description="Enregistrez les informations de votre centre en 2 étapes." icon={Plus} />
 
-              <div className="border-t border-slate-100 dark:border-zinc-800 pt-4">
-                <p className="text-sm font-bold text-slate-700 dark:text-zinc-300 mb-3">Compte administrateur du centre</p>
-                <div className="grid sm:grid-cols-2 gap-3">
-                  {[
-                    { key: 'adminNom',        label: 'Nom',          placeholder: 'Nom' },
-                    { key: 'adminPrenoms',    label: 'Prénoms',      placeholder: 'Prénoms' },
-                    { key: 'adminEmail',      label: 'Email',        placeholder: 'admin@centre.tg', type: 'email' },
-                    { key: 'adminMotDePasse', label: 'Mot de passe', placeholder: 'Min. 8 caractères', type: 'password' },
-                    { key: 'adminTelephone',  label: 'Téléphone',    placeholder: '+228 XX XX XX XX', required: false },
-                  ].map(({ key, label, type, placeholder, required }) => (
-                    <div key={key} className="space-y-1.5">
-                      <Label className={labelCls}>{label}{required !== false && ' *'}</Label>
-                      <Input type={type || 'text'} placeholder={placeholder} value={(form as Record<string, string>)[key]}
-                        onChange={(e) => setForm((p) => ({ ...p, [key]: e.target.value }))} required={required !== false} className={inputCls} />
+            <form onSubmit={handleCreate} className="px-5 md:px-7 py-5 md:py-6 flex flex-col gap-4">
+              <StepBar steps={['Centre de santé', 'Administrateur']} current={createStep} />
+                {/* ── Étape 1 : Informations du centre ── */}
+                {createStep === 0 && (
+                  <div className="space-y-4">
+                    <div className="grid sm:grid-cols-2 gap-3">
+                      {[
+                        { key: 'nom',        label: 'Nom du centre', placeholder: 'Ex: CHU de Lomé' },
+                        { key: 'adresse',    label: 'Adresse',       placeholder: 'Ex: Rue des Fleurs, Lomé' },
+                        { key: 'telephone',  label: 'Téléphone',     placeholder: '+228 XX XX XX XX' },
+                        { key: 'email',      label: 'Email',         placeholder: 'centre@sante.tg', type: 'email' },
+                        { key: 'region',     label: 'Région',        placeholder: 'Ex: Maritime' },
+                        { key: 'prefecture', label: 'Préfecture',    placeholder: 'Ex: Golfe' },
+                      ].map(({ key, label, type, placeholder }) => (
+                        <div key={key} className="space-y-1.5">
+                          <Label className={labelCls}>{label} *</Label>
+                          <Input
+                            type={type || 'text'}
+                            placeholder={placeholder}
+                            value={(form as Record<string, string>)[key]}
+                            onChange={(e) => setForm((p) => ({ ...p, [key]: e.target.value }))}
+                            className={inputCls}
+                          />
+                        </div>
+                      ))}
+                      <div className="space-y-1.5">
+                        <Label className={labelCls}>Type *</Label>
+                        <Select value={form.type} onValueChange={(v) => setForm((p) => ({ ...p, type: v as typeof form.type }))}>
+                          <SelectTrigger className={inputCls}><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            {Object.entries(TYPE_LABELS).map(([v, l]) => <SelectItem key={v} value={v}>{l}</SelectItem>)}
+                          </SelectContent>
+                        </Select>
+                      </div>
                     </div>
-                  ))}
-                </div>
-              </div>
 
-              <Button type="submit" disabled={submitting} className="w-full h-11 bg-brand hover:bg-brand-dark text-white rounded-xl shadow-sm shadow-brand/20">
-                {submitting ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Création...</> : 'Créer le centre'}
-              </Button>
-            </form>
+                    <Button
+                      type="button"
+                      onClick={() => { if (validateCreateStep1()) setCreateStep(1) }}
+                      className="w-full h-11 bg-brand hover:bg-brand-dark text-white rounded-xl shadow-sm shadow-brand/20"
+                    >
+                      Suivant — Compte administrateur
+                    </Button>
+                  </div>
+                )}
+
+                {/* ── Étape 2 : Compte administrateur ── */}
+                {createStep === 1 && (
+                  <div className="space-y-4">
+                    <div className="grid sm:grid-cols-2 gap-3">
+                      {[
+                        { key: 'adminNom',        label: 'Nom',          placeholder: 'Nom' },
+                        { key: 'adminPrenoms',    label: 'Prénoms',      placeholder: 'Prénoms' },
+                        { key: 'adminEmail',      label: 'Email',        placeholder: 'admin@centre.tg', type: 'email' },
+                        { key: 'adminMotDePasse', label: 'Mot de passe', placeholder: 'Min. 8 caractères', type: 'password' },
+                        { key: 'adminTelephone',  label: 'Téléphone',    placeholder: '+228 XX XX XX XX', required: false },
+                      ].map(({ key, label, type, placeholder, required }) => (
+                        <div key={key} className="space-y-1.5">
+                          <Label className={labelCls}>{label}{required !== false && ' *'}</Label>
+                          <Input
+                            type={type || 'text'}
+                            placeholder={placeholder}
+                            value={(form as Record<string, string>)[key]}
+                            onChange={(e) => setForm((p) => ({ ...p, [key]: e.target.value }))}
+                            required={required !== false}
+                            className={inputCls}
+                          />
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="flex gap-3">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => setCreateStep(0)}
+                        className="flex-1 h-11 rounded-xl border-slate-200 dark:border-zinc-700"
+                      >
+                        Retour
+                      </Button>
+                      <Button
+                        type="submit"
+                        disabled={submitting}
+                        className="flex-1 h-11 bg-brand hover:bg-brand-dark text-white rounded-xl shadow-sm shadow-brand/20"
+                      >
+                        {submitting ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Création...</> : 'Créer le centre'}
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </form>
           </DialogContent>
         </Dialog>
       </div>
@@ -255,7 +360,7 @@ export default function CentresPage() {
         </div>
       ) : filtered.length === 0 ? (
         <div className="dash-in delay-75 py-16 text-center bg-white dark:bg-zinc-950 rounded-2xl border border-slate-100 dark:border-zinc-800">
-          <div className="h-12 w-12 rounded-2xl bg-slate-50 dark:bg-zinc-800 flex items-center justify-center mx-auto mb-3">
+          <div className="h-12 w-12 rounded-2xl bg-slate-50 dark:bg-zinc-950 flex items-center justify-center mx-auto mb-3">
             <Building2 className="h-6 w-6 text-slate-300 dark:text-zinc-600" />
           </div>
           <p className="text-sm font-semibold text-slate-600 dark:text-zinc-300 mb-1">Aucun centre trouvé</p>
@@ -265,8 +370,8 @@ export default function CentresPage() {
         <>
           {/* ── TABLE desktop ── */}
           <div className="dash-in delay-100 hidden lg:block bg-white dark:bg-zinc-950 rounded-2xl border border-slate-100 dark:border-zinc-800 overflow-hidden">
-            <div className="grid grid-cols-[2fr_100px_1fr_1fr_90px_44px] gap-4 px-5 py-2.5 bg-slate-50/60 dark:bg-zinc-800/40 border-b border-slate-100 dark:border-zinc-800">
-              {['Centre', 'Type', 'Localisation', 'Administrateur', 'Statut', ''].map((h, i) => (
+            <div className="grid grid-cols-[2fr_100px_1fr_1fr_70px_90px_44px] gap-4 px-5 py-2.5 bg-slate-50/60 dark:bg-zinc-950/40 border-b border-slate-100 dark:border-zinc-800">
+              {['Centre', 'Type', 'Localisation', 'Administrateur', 'Personnel', 'Statut', ''].map((h, i) => (
                 <span key={i} className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-zinc-500">{h}</span>
               ))}
             </div>
@@ -274,7 +379,7 @@ export default function CentresPage() {
               {filtered.map((c, i) => (
                 <li key={c.id}
                   onClick={() => router.push(`/ministere/centres/${c.id}`)}
-                  className={`dash-in delay-${[0,75,100,150,200,225,300][Math.min(i,6)]} grid grid-cols-[2fr_100px_1fr_1fr_90px_44px] items-center gap-4 px-5 py-3.5 border-b border-slate-50 dark:border-zinc-800/60 last:border-0 hover:bg-slate-50/60 dark:hover:bg-zinc-800/30 transition-colors cursor-pointer`}>
+                  className={`dash-in delay-${[0,75,100,150,200,225,300][Math.min(i,6)]} grid grid-cols-[2fr_100px_1fr_1fr_70px_90px_44px] items-center gap-4 px-5 py-3.5 border-b border-slate-50 dark:border-zinc-800/60 last:border-0 hover:bg-slate-50/60 dark:hover:bg-zinc-800/30 transition-colors cursor-pointer`}>
                   {/* Centre */}
                   <div className="flex items-center gap-3 min-w-0">
                     <div className="h-9 w-9 rounded-xl bg-brand/10 dark:bg-brand/15 flex items-center justify-center flex-shrink-0">
@@ -286,7 +391,7 @@ export default function CentresPage() {
                     </div>
                   </div>
                   {/* Type */}
-                  <span className="text-[10px] font-bold px-2 py-1 rounded-lg bg-slate-100 dark:bg-zinc-800 text-slate-500 dark:text-zinc-400 w-fit">{TYPE_LABELS[c.type] ?? c.type}</span>
+                  <span className="text-[10px] font-bold px-2 py-1 rounded-lg bg-slate-100 dark:bg-zinc-950 text-slate-500 dark:text-zinc-400 w-fit">{TYPE_LABELS[c.type] ?? c.type}</span>
                   {/* Localisation */}
                   <div className="flex items-center gap-1.5 min-w-0">
                     <MapPin className="h-3 w-3 text-slate-400 flex-shrink-0" />
@@ -300,8 +405,13 @@ export default function CentresPage() {
                       <span className="text-xs text-slate-300 dark:text-zinc-600">—</span>
                     )}
                   </div>
+                  {/* Personnel */}
+                  <div className="flex items-center gap-1.5">
+                    <Users className="h-3 w-3 text-slate-400 flex-shrink-0" />
+                    <span className="text-xs font-semibold text-slate-700 dark:text-zinc-300">{c._count?.utilisateurs ?? 0}</span>
+                  </div>
                   {/* Statut */}
-                  <div className={`flex items-center gap-1 px-2 py-1 rounded-full border text-[10px] font-bold w-fit ${c.estActif ? 'bg-brand/8 dark:bg-brand/12 border-brand/20 text-brand' : 'bg-slate-50 dark:bg-zinc-800 border-slate-200 dark:border-zinc-700 text-slate-400 dark:text-zinc-500'}`}>
+                  <div className={`flex items-center gap-1 px-2 py-1 rounded-full border text-[10px] font-bold w-fit ${c.estActif ? 'bg-brand/8 dark:bg-brand/12 border-brand/20 text-brand' : 'bg-slate-50 dark:bg-zinc-950 border-slate-200 dark:border-zinc-700 text-slate-400 dark:text-zinc-500'}`}>
                     {c.estActif ? <><CheckCircle2 className="h-2.5 w-2.5" />Actif</> : <><XCircle className="h-2.5 w-2.5" />Inactif</>}
                   </div>
                   {/* Dropdown actions */}
@@ -337,7 +447,7 @@ export default function CentresPage() {
                 </li>
               ))}
             </ul>
-            <div className="px-5 py-3 border-t border-slate-50 dark:border-zinc-800 bg-slate-50/40 dark:bg-zinc-800/20">
+            <div className="px-5 py-3 border-t border-slate-50 dark:border-zinc-800 bg-slate-50/40 dark:bg-zinc-950/20">
               <p className="text-xs text-slate-400 dark:text-zinc-500">{filtered.length} centre(s) affiché(s) sur {centres.length} au total</p>
             </div>
           </div>
@@ -357,7 +467,7 @@ export default function CentresPage() {
                       </div>
                       <div className="min-w-0">
                         <p className="font-bold text-sm text-slate-900 dark:text-white truncate">{c.nom}</p>
-                        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-100 dark:bg-zinc-800 text-slate-500 dark:text-zinc-400">{TYPE_LABELS[c.type] ?? c.type}</span>
+                        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-100 dark:bg-zinc-950 text-slate-500 dark:text-zinc-400">{TYPE_LABELS[c.type] ?? c.type}</span>
                       </div>
                     </div>
                     <div onClick={(e) => e.stopPropagation()}>
@@ -392,8 +502,9 @@ export default function CentresPage() {
                     <div className="text-xs text-slate-500 dark:text-zinc-400 space-y-0.5">
                       <p className="flex items-center gap-1.5"><MapPin className="h-3 w-3 flex-shrink-0" />{c.region}, {c.prefecture}</p>
                       {c.admin && <p>Admin : <span className="font-medium text-slate-700 dark:text-zinc-300">{c.admin.nom} {c.admin.prenoms}</span></p>}
+                      <p className="flex items-center gap-1.5"><Users className="h-3 w-3 flex-shrink-0" /><span className="font-medium text-slate-700 dark:text-zinc-300">{c._count?.utilisateurs ?? 0}</span> personnel(s)</p>
                     </div>
-                    <div className={`flex-shrink-0 flex items-center gap-1 px-2 py-0.5 rounded-full border text-[10px] font-bold ${c.estActif ? 'bg-brand/8 dark:bg-brand/12 border-brand/20 text-brand' : 'bg-slate-50 dark:bg-zinc-800 border-slate-200 dark:border-zinc-700 text-slate-400 dark:text-zinc-500'}`}>
+                    <div className={`flex-shrink-0 flex items-center gap-1 px-2 py-0.5 rounded-full border text-[10px] font-bold ${c.estActif ? 'bg-brand/8 dark:bg-brand/12 border-brand/20 text-brand' : 'bg-slate-50 dark:bg-zinc-950 border-slate-200 dark:border-zinc-700 text-slate-400 dark:text-zinc-500'}`}>
                       {c.estActif ? <><CheckCircle2 className="h-2.5 w-2.5" />Actif</> : <><XCircle className="h-2.5 w-2.5" />Inactif</>}
                     </div>
                   </div>
@@ -405,41 +516,92 @@ export default function CentresPage() {
       )}
 
       {/* ── Dialog modifier ── */}
-      <Dialog open={!!editTarget} onOpenChange={(o) => { if (!o) setEditTarget(null) }}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader title="Modifier le centre" description="Mettez à jour les informations du centre pour garder vos données à jour." icon={Pencil} />
-          <form onSubmit={handleEdit} className="space-y-3 mt-2">
-            <div className="grid sm:grid-cols-2 gap-3">
-              {[
-                { key: 'nom',        label: 'Nom',        placeholder: 'Nom du centre' },
-                { key: 'adresse',    label: 'Adresse',    placeholder: 'Adresse' },
-                { key: 'telephone',  label: 'Téléphone',  placeholder: '+228 XX XX XX XX' },
-                { key: 'email',      label: 'Email',      placeholder: 'email@centre.tg', type: 'email' },
-                { key: 'region',     label: 'Région',     placeholder: 'Région' },
-                { key: 'prefecture', label: 'Préfecture', placeholder: 'Préfecture' },
-              ].map(({ key, label, type, placeholder }) => (
-                <div key={key} className="space-y-1.5">
-                  <Label className={labelCls}>{label} *</Label>
-                  <Input type={type || 'text'} placeholder={placeholder}
-                    value={(editForm as Record<string, string>)[key]}
-                    onChange={(e) => setEditForm((p) => ({ ...p, [key]: e.target.value }))}
-                    required className={inputCls} />
+      <Dialog open={!!editTarget} onOpenChange={(o) => { if (!o) { setEditTarget(null); setEditStep(0) } }}>
+        <DialogContent className="max-w-xl">
+          <DialogHeader title="Modifier le centre" description="Mettez à jour les informations du centre en 2 étapes." icon={Pencil} />
+
+          <form onSubmit={handleEdit} className="px-5 md:px-7 py-5 md:py-6 flex flex-col gap-4">
+            <StepBar steps={['Identité', 'Coordonnées']} current={editStep} />
+              {/* ── Étape 1 : Identité ── */}
+              {editStep === 0 && (
+                <div className="space-y-4">
+                  <div className="grid sm:grid-cols-2 gap-3">
+                    <div className="space-y-1.5 sm:col-span-2">
+                      <Label className={labelCls}>Nom du centre *</Label>
+                      <Input
+                        placeholder="Nom du centre"
+                        value={editForm.nom}
+                        onChange={(e) => setEditForm((p) => ({ ...p, nom: e.target.value }))}
+                        className={inputCls}
+                      />
+                    </div>
+                    <div className="space-y-1.5 sm:col-span-2">
+                      <Label className={labelCls}>Type *</Label>
+                      <Select value={editForm.type} onValueChange={(v) => setEditForm((p) => ({ ...p, type: v }))}>
+                        <SelectTrigger className={inputCls}><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          {Object.entries(TYPE_LABELS).map(([v, l]) => <SelectItem key={v} value={v}>{l}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  <Button
+                    type="button"
+                    onClick={() => { if (validateEditStep1()) setEditStep(1) }}
+                    className="w-full h-11 bg-brand hover:bg-brand-dark text-white rounded-xl shadow-sm shadow-brand/20"
+                  >
+                    Suivant — Coordonnées
+                  </Button>
                 </div>
-              ))}
-              <div className="space-y-1.5">
-                <Label className={labelCls}>Type *</Label>
-                <Select value={editForm.type} onValueChange={(v) => setEditForm((p) => ({ ...p, type: v }))}>
-                  <SelectTrigger className={inputCls}><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(TYPE_LABELS).map(([v, l]) => <SelectItem key={v} value={v}>{l}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <Button type="submit" disabled={editSubmitting} className="w-full h-11 bg-brand hover:bg-brand-dark text-white rounded-xl shadow-sm shadow-brand/20">
-              {editSubmitting ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Enregistrement...</> : 'Enregistrer les modifications'}
-            </Button>
-          </form>
+              )}
+
+              {/* ── Étape 2 : Coordonnées ── */}
+              {editStep === 1 && (
+                <div className="space-y-4">
+                  <div className="grid sm:grid-cols-2 gap-3">
+                    {[
+                      { key: 'adresse',    label: 'Adresse',    placeholder: 'Adresse' },
+                      { key: 'telephone',  label: 'Téléphone',  placeholder: '+228 XX XX XX XX' },
+                      { key: 'email',      label: 'Email',      placeholder: 'email@centre.tg', type: 'email' },
+                      { key: 'region',     label: 'Région',     placeholder: 'Région' },
+                      { key: 'prefecture', label: 'Préfecture', placeholder: 'Préfecture' },
+                    ].map(({ key, label, type, placeholder }) => (
+                      <div key={key} className="space-y-1.5">
+                        <Label className={labelCls}>{label} *</Label>
+                        <Input
+                          type={type || 'text'}
+                          placeholder={placeholder}
+                          value={(editForm as Record<string, string>)[key]}
+                          onChange={(e) => setEditForm((p) => ({ ...p, [key]: e.target.value }))}
+                          required
+                          className={inputCls}
+                        />
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="flex gap-3">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => setEditStep(0)}
+                      className="flex-1 h-11 rounded-xl border-slate-200 dark:border-zinc-700"
+                    >
+                      Retour
+                    </Button>
+                    <Button
+                      type="submit"
+                      disabled={editSubmitting}
+                      className="flex-1 h-11 bg-brand hover:bg-brand-dark text-white rounded-xl shadow-sm shadow-brand/20"
+                    >
+                      {editSubmitting ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Enregistrement...</> : 'Enregistrer'}
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </form>
+
         </DialogContent>
       </Dialog>
 
@@ -447,7 +609,7 @@ export default function CentresPage() {
       <Dialog open={!!deleteTarget} onOpenChange={(o) => { if (!o) setDeleteTarget(null) }}>
         <DialogContent className="max-w-sm">
           <DialogHeader title="Supprimer le centre ?" description={`Vous êtes sur le point de supprimer ${deleteTarget?.nom}. Cette action est irréversible.`} icon={Trash2} danger />
-          <div className="flex gap-3 mt-4">
+          <div className="flex gap-3 px-5 md:px-7 pb-5 md:pb-6">
             <Button variant="outline" className="flex-1 h-11 rounded-xl" onClick={() => setDeleteTarget(null)}>Annuler</Button>
             <Button className="flex-1 h-11 rounded-xl bg-red-500 hover:bg-red-600 text-white shadow-sm" onClick={handleDelete} disabled={deleting}>
               {deleting ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Supprimer'}

@@ -14,9 +14,13 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
         select: { utilisateurs: true, patients: true, enregistrements: true, accesUrgences: true },
       },
       utilisateurs: {
-        take: 6,
         include: {
-          user: { select: { nom: true, prenoms: true, email: true, estActif: true, niveauAcces: true, createdAt: true } },
+          user: {
+            select: {
+              nom: true, prenoms: true, email: true, estActif: true, niveauAcces: true, createdAt: true,
+              specialites: { include: { specialite: { select: { nom: true, code: true } } } },
+            },
+          },
         },
         orderBy: { user: { createdAt: 'desc' } },
       },

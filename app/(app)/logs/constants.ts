@@ -1,0 +1,15 @@
+export const ACTION_LABELS: Record<string, string> = {
+  LOGIN: 'Connexion',
+  LOGOUT: 'Déconnexion',
+  SCAN_QR: 'Scan QR',
+  ENVOI_OTP: 'Envoi OTP',
+  VALIDATION_OTP: 'Validation OTP',
+  ACCES_DOSSIER: 'Accès dossier',
+  MODIFICATION_DOSSIER: 'Modification dossier',
+  URGENCE_ACTIVATION: 'Activation urgence',
+  CREATION_PATIENT: 'Création patient',
+  CREATION_USER: 'Création utilisateur',
+  CREATION_CENTRE: 'Création centre',
+  CREATION_ROLE: 'Création rôle',
+  MODIFICATION_PERMISSIONS: 'Modification permissions',
+}

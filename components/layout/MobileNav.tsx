@@ -10,6 +10,8 @@ import {
   Building2,
   Activity,
   FileText,
+  Stethoscope,
+  Shield,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { SessionUser } from '@/types'
@@ -24,21 +26,25 @@ export function MobileNav({ user }: MobileNavProps) {
   const items =
     user.niveauAcces === 'MINISTERE'
       ? [
-          { href: '/ministere/dashboard', label: 'Accueil',  icon: LayoutDashboard },
-          { href: '/ministere/centres',   label: 'Centres',  icon: Building2 },
-          { href: '/logs',                label: 'Journaux', icon: Activity },
+          { href: '/ministere/dashboard',   label: 'Accueil',     icon: LayoutDashboard },
+          { href: '/ministere/centres',     label: 'Centres',     icon: Building2 },
+          { href: '/ministere/medecins',    label: 'Personnel',   icon: Users },
+          { href: '/ministere/specialites', label: 'Spécialités', icon: Stethoscope },
+          { href: '/ministere/roles',       label: 'Rôles',       icon: Shield },
         ]
       : user.niveauAcces === 'ADMIN_CENTRE'
       ? [
-          { href: '/admin/dashboard',   label: 'Accueil',   icon: LayoutDashboard },
-          { href: '/admin/personnels',  label: 'Personnel', icon: Users },
-          { href: '/logs',              label: 'Journaux',  icon: Activity },
+          { href: '/admin/dashboard',  label: 'Accueil',   icon: LayoutDashboard },
+          { href: '/admin/personnels', label: 'Personnel', icon: Users },
+          { href: '/admin/roles',      label: 'Rôles',     icon: Shield },
+          { href: '/logs',             label: 'Journaux',  icon: Activity },
         ]
       : [
-          { href: '/dashboard',        label: 'Accueil',   icon: LayoutDashboard },
-          { href: '/patients',         label: 'Patients',  icon: Users },
-          { href: '/scanner',          label: 'Scanner',   icon: QrCode },
-          { href: '/urgence',          label: 'Urgence',   icon: AlertCircle },
+          { href: '/dashboard',        label: 'Accueil',  icon: LayoutDashboard },
+          { href: '/patients',         label: 'Patients', icon: Users },
+          { href: '/patients/nouveau', label: 'Nouveau',  icon: FileText },
+          { href: '/scanner',          label: 'Scanner',  icon: QrCode },
+          { href: '/urgence',          label: 'Urgence',  icon: AlertCircle },
         ]
 
   return (

@@ -49,17 +49,17 @@ export default async function AppLayout({ children }: { children: React.ReactNod
             {children}
           </div>
 
-        </main>
+          {/* ── Footer ── */}
+          <footer className="mt-8 -mx-4 sm:-mx-6 lg:-mx-8 px-12 py-6 flex flex-col sm:flex-row items-center justify-between gap-2 text-[11px] text-slate-400 dark:text-zinc-500">
+            <span className="font-medium">© {new Date().getFullYear()} Alafiya · Ministère de la Santé</span>
+            <div className="flex items-center gap-4">
+              <a href="/legal/conditions" className="hover:text-slate-600 dark:hover:text-zinc-300 transition-colors">Conditions d'utilisation</a>
+              <a href="/legal/confidentialite" className="hover:text-slate-600 dark:hover:text-zinc-300 transition-colors">Confidentialité</a>
+              <a href="/support" className="hover:text-slate-600 dark:hover:text-zinc-300 transition-colors">Support</a>
+            </div>
+          </footer>
 
-        {/* ── Mini footer sticky ── */}
-        <footer className="flex-shrink-0 bg-white dark:bg-zinc-950 px-8 py-6 flex flex-col sm:flex-row items-center justify-between gap-2 text-[11px] text-slate-400 dark:text-zinc-500">
-          <span className="font-medium">© {new Date().getFullYear()} Alafiya · Ministère de la Santé</span>
-          <div className="flex items-center gap-4">
-            <a href="/legal/conditions" className="hover:text-slate-600 dark:hover:text-zinc-300 transition-colors">Conditions d'utilisation</a>
-            <a href="/legal/confidentialite" className="hover:text-slate-600 dark:hover:text-zinc-300 transition-colors">Confidentialité</a>
-            <a href="/support" className="hover:text-slate-600 dark:hover:text-zinc-300 transition-colors">Support</a>
-          </div>
-        </footer>
+        </main>
       </div>
 
       {/* ── Navigation bottom — mobile uniquement ── */}

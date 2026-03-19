@@ -1,10 +1,15 @@
 import type { Metadata, Viewport } from 'next'
-import { Lato } from 'next/font/google'
+import { Plus_Jakarta_Sans } from 'next/font/google'
 import './globals.css'
 import { ThemeProvider } from '@/components/ThemeProvider'
 import { Providers } from '@/components/Providers'
+import { Toaster } from '@/components/ui/toaster'
 
-const lato = Lato({ subsets: ['latin'], weight: ['400', '700', '900'] })
+const jakarta = Plus_Jakarta_Sans({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700', '800'],
+  variable: '--font-jakarta',
+})
 
 export const metadata: Metadata = {
   title: 'Alafiya Plus — Dossiers médicaux nationaux',
@@ -23,9 +28,10 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="fr" suppressHydrationWarning>
-      <body className={lato.className}>
+      <body className={jakarta.className}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <Providers>{children}</Providers>
+          <Toaster />
         </ThemeProvider>
       </body>
     </html>

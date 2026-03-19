@@ -60,13 +60,13 @@ export default async function PatientsPage({
           name="q"
           defaultValue={searchParams.q}
           placeholder="Rechercher par nom ou prénom..."
-          className="w-full h-12 pl-10 pr-4 border border-slate-200 dark:border-zinc-700 rounded-xl text-sm bg-white dark:bg-zinc-900 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-400 transition-colors"
+          className="w-full h-12 pl-10 pr-4 border border-slate-200 dark:border-zinc-700 rounded-xl text-sm bg-white dark:bg-zinc-950 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-400 transition-colors"
         />
       </form>
 
       {patients.length === 0 ? (
         <div className="dash-in delay-150 py-16 text-center">
-          <div className="h-14 w-14 rounded-2xl bg-slate-50 dark:bg-zinc-800 dark:border dark:border-zinc-700/60 flex items-center justify-center mx-auto mb-3">
+          <div className="h-14 w-14 rounded-2xl bg-slate-50 dark:bg-zinc-950 dark:border dark:border-zinc-700/60 flex items-center justify-center mx-auto mb-3">
             <User className="h-7 w-7 text-slate-300 dark:text-zinc-600" />
           </div>
           <p className="text-sm font-semibold text-slate-600 dark:text-zinc-300 mb-1">Aucun patient trouvé</p>
@@ -79,7 +79,7 @@ export default async function PatientsPage({
       ) : (
         <div className="dash-in delay-150 bg-white dark:bg-zinc-950 rounded-2xl border border-slate-100 dark:border-zinc-800 overflow-hidden">
           {/* Table header */}
-          <div className="hidden sm:grid grid-cols-[1fr_auto_auto_auto] gap-4 px-5 py-2.5 bg-slate-50/60 dark:bg-zinc-800/40 border-b border-slate-100 dark:border-zinc-800">
+          <div className="hidden sm:grid grid-cols-[1fr_auto_auto_auto] gap-4 px-5 py-2.5 bg-slate-50/60 dark:bg-zinc-950/40 border-b border-slate-100 dark:border-zinc-800">
             <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-zinc-500">Patient</span>
             <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-zinc-500">Âge</span>
             <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-zinc-500">Genre</span>

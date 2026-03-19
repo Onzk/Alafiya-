@@ -92,6 +92,7 @@ model User {
   roleId          String?
   centreActifId   String?
   creeParId       String?
+  typePersonnelId String?
   accesEnCours    AccesDossier[]
   accesUrgences   AccesUrgence[]
   centreAdminDe   Centre?                 @relation("CentreAdmin")
@@ -102,6 +103,7 @@ model User {
   patientsCrees   Patient[]
   centreActif     Centre?                 @relation("CentreActif", fields: [centreActifId], references: [id])
   creePar         User?                   @relation("UserCreePar", fields: [creeParId], references: [id])
+  typePersonnel   TypePersonnel?          @relation(fields: [typePersonnelId], references: [id])
   creeParOf       User[]                  @relation("UserCreePar")
   role            Role?                   @relation(fields: [roleId], references: [id])
   centres         UserCentre[]
@@ -125,6 +127,17 @@ model UserSpecialite {
   user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@id([userId, specialiteId])
+}
+
+model TypePersonnel {
+  id           String   @id @default(cuid())
+  nom          String
+  code         String   @unique
+  description  String?
+  estActif     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  utilisateurs User[]
 }
 
 model UserPermission {

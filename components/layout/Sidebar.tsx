@@ -133,26 +133,15 @@ export function Sidebar({ user }: SidebarProps) {
         ))}
       </nav>
 
-      {/* Bas : user + logout */}
+      {/* Bas : logout */}
       <div className="relative z-10 flex-shrink-0 p-3 border-t border-white/10 dark:border-zinc-800">
-        <div className="flex items-center gap-3 rounded-xl px-3 py-2.5 bg-white/10 backdrop-blur-3xl dark:bg-zinc-800/60 border border-white/15 dark:border-zinc-700/50">
-          <div className="h-8 w-8 rounded-full bg-white/25 dark:bg-emerald-500 flex items-center justify-center flex-shrink-0 shadow-sm border border-white/30 dark:border-transparent">
-            <span className="text-white font-bold text-xs">
-              {user.nom[0]}{user.prenoms[0]}
-            </span>
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-xs font-bold text-white dark:text-zinc-100 truncate">{user.nom} {user.prenoms}</p>
-            <p className="text-[10px] text-white/50 dark:text-zinc-500 truncate">{roleLabel}</p>
-          </div>
-          <button
-            onClick={() => signOut({ callbackUrl: '/login' })}
-            className="p-1.5 rounded-lg text-white/50 dark:text-zinc-500 hover:text-white dark:hover:text-zinc-200 hover:bg-white/10 dark:hover:bg-zinc-700 transition-colors flex-shrink-0"
-            aria-label="Déconnexion"
-          >
-            <LogOut className="h-3.5 w-3.5" />
-          </button>
-        </div>
+        <button
+          onClick={() => signOut({ callbackUrl: '/login' })}
+          className="flex w-full items-center gap-3 h-12 rounded-xl px-3 py-2.5 text-sm font-semibold transition-all duration-150 text-white/75 hover:bg-white/15 hover:text-white dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-white"
+        >
+          <LogOut className="h-4 w-4 flex-shrink-0" />
+          Déconnexion
+        </button>
       </div>
     </aside>
   )

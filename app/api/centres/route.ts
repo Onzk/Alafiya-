@@ -25,7 +25,10 @@ export async function GET() {
   if (!session?.user) return NextResponse.json({ error: 'Non autorisé' }, { status: 401 })
 
   const centres = await prisma.centre.findMany({
-    include: { admin: { select: { nom: true, prenoms: true, email: true } } },
+    include: {
+      admin: { select: { nom: true, prenoms: true, email: true } },
+      _count: { select: { utilisateurs: true } },
+    },
     orderBy: { createdAt: 'desc' },
   })
 

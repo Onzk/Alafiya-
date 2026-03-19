@@ -14,7 +14,7 @@ const ToastViewport = React.forwardRef<
   <ToastPrimitives.Viewport
     ref={ref}
     className={cn(
-      'fixed top-0 right-0 z-[100] flex max-h-screen w-full flex-col-reverse gap-2 p-4 sm:top-4 sm:right-4 sm:flex-col sm:w-96',
+      'fixed bottom-0 right-0 z-[100] flex max-h-screen w-full flex-col-reverse gap-2 p-4 sm:bottom-4 sm:right-4 sm:flex-col sm:w-96',
       className
     )}
     {...props}
@@ -23,15 +23,16 @@ const ToastViewport = React.forwardRef<
 ToastViewport.displayName = ToastPrimitives.Viewport.displayName
 
 const toastVariants = cva(
-  'group pointer-events-auto relative flex w-full items-start gap-3 overflow-hidden rounded-xl border px-4 py-3 shadow-lg transition-all data-[swipe=cancel]:translate-x-0 data-[swipe=end]:translate-x-[var(--radix-toast-swipe-end-x)] data-[swipe=move]:translate-x-[var(--radix-toast-swipe-move-x)] data-[swipe=move]:transition-none data-[state=open]:animate-in data-[state=open]:slide-in-from-top-full data-[state=open]:fade-in-0 data-[state=closed]:animate-out data-[state=closed]:slide-out-to-right-full data-[state=closed]:fade-out-0 data-[state=closed]:duration-300',
+  'group pointer-events-auto relative flex w-full items-center gap-3 overflow-hidden rounded-xl border border-l-[3px] px-4 py-3 shadow-lg transition-all data-[swipe=cancel]:translate-x-0 data-[swipe=end]:translate-x-[var(--radix-toast-swipe-end-x)] data-[swipe=move]:translate-x-[var(--radix-toast-swipe-move-x)] data-[swipe=move]:transition-none data-[state=open]:animate-in data-[state=open]:slide-in-from-bottom-full data-[state=open]:fade-in-0 data-[state=closed]:animate-out data-[state=closed]:slide-out-to-right-full data-[state=closed]:fade-out-0 data-[state=closed]:duration-300',
   {
     variants: {
       variant: {
-        default: 'border-zinc-200 bg-white text-zinc-900 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50',
+        default:
+          'border-zinc-200 border-l-zinc-500 bg-white text-zinc-900 dark:border-zinc-700 dark:border-l-zinc-400 dark:bg-zinc-950 dark:text-zinc-50',
         destructive:
-          'border-red-200 bg-red-50 text-red-800 dark:border-red-800/60 dark:bg-red-950/80 dark:text-red-200',
+          'border-red-200 border-l-red-500 bg-red-50 text-red-900 dark:border-red-900 dark:border-l-red-400 dark:bg-red-950 dark:text-red-100',
         success:
-          'border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-800/60 dark:bg-emerald-950/80 dark:text-emerald-200',
+          'border-emerald-200 border-l-emerald-500 bg-emerald-50 text-emerald-900 dark:border-emerald-900 dark:border-l-emerald-400 dark:bg-emerald-950 dark:text-emerald-100',
       },
     },
     defaultVariants: {

@@ -7,22 +7,22 @@ import { AlertTriangle, ArrowLeft, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import { useToast } from '@/hooks/use-toast'
 
 export default function UrgencePage() {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const { toast } = useToast()
   const patientId = searchParams.get('patientId')
   const dossierId = searchParams.get('dossierId')
 
   const [justification, setJustification] = useState('')
   const [loading, setLoading] = useState(false)
-  const [erreur, setErreur] = useState('')
 
   async function handleUrgence(e: React.FormEvent) {
     e.preventDefault()
     if (!patientId || !dossierId) return
     setLoading(true)
-    setErreur('')
 
     const res = await fetch('/api/urgence', {
       method: 'POST',
@@ -34,7 +34,7 @@ export default function UrgencePage() {
     setLoading(false)
 
     if (!res.ok) {
-      setErreur(data.error || 'Erreur lors de l\'activation du mode urgence.')
+      toast({ description: data.error || "Erreur lors de l'activation du mode urgence.", variant: 'destructive' })
       return
     }
 
@@ -87,12 +87,6 @@ export default function UrgencePage() {
         </p>
       </div>
 
-      {erreur && (
-        <div className="dash-in delay-0 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 rounded-xl p-3 text-sm text-red-600 dark:text-red-400">
-          {erreur}
-        </div>
-      )}
-
       <form onSubmit={handleUrgence} className="dash-in delay-150">
         <div className="bg-white dark:bg-zinc-950 rounded-2xl border border-slate-100 dark:border-zinc-800 overflow-hidden">
           <div className="px-5 py-4 border-b border-slate-50 dark:border-zinc-800">
@@ -112,7 +106,7 @@ export default function UrgencePage() {
                 rows={5}
                 required
                 minLength={20}
-                className="border-slate-200 dark:border-zinc-700 rounded-xl text-sm bg-white dark:bg-zinc-900 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-zinc-500 focus-visible:ring-emerald-500 resize-none"
+                className="border-slate-200 dark:border-zinc-700 rounded-xl text-sm bg-white dark:bg-zinc-950 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-zinc-500 focus-visible:ring-emerald-500 resize-none"
               />
             </div>
 

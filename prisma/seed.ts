@@ -34,6 +34,21 @@ async function main() {
   ])
   console.log(`✓ ${specialites.length} spécialités créées`)
 
+  // Types de personnel
+  const typesPersonnel = await Promise.all([
+    prisma.typePersonnel.upsert({ where: { code: 'MEDECIN' }, update: {}, create: { nom: 'Médecin', code: 'MEDECIN', description: 'Docteur en médecine' } }),
+    prisma.typePersonnel.upsert({ where: { code: 'INFIRMIER' }, update: {}, create: { nom: 'Infirmier', code: 'INFIRMIER', description: 'Personnel infirmier' } }),
+    prisma.typePersonnel.upsert({ where: { code: 'PHARMACIEN' }, update: {}, create: { nom: 'Pharmacien', code: 'PHARMACIEN', description: 'Pharmacien d\'officine' } }),
+    prisma.typePersonnel.upsert({ where: { code: 'AGENT_SANTE' }, update: {}, create: { nom: 'Agent de santé', code: 'AGENT_SANTE', description: 'Agent de santé communautaire' } }),
+    prisma.typePersonnel.upsert({ where: { code: 'TECHNICIEN' }, update: {}, create: { nom: 'Technicien biomédicale', code: 'TECHNICIEN', description: 'Technicien en imagerie et laboratoire' } }),
+    prisma.typePersonnel.upsert({ where: { code: 'SAGE_FEMME' }, update: {}, create: { nom: 'Sage-femme', code: 'SAGE_FEMME', description: 'Sage-femme diplômée' } }),
+    prisma.typePersonnel.upsert({ where: { code: 'PSYCHOLOGUE' }, update: {}, create: { nom: 'Psychologue', code: 'PSYCHOLOGUE', description: 'Professionnel en psychologie' } }),
+    prisma.typePersonnel.upsert({ where: { code: 'NUTRITIONNISTE' }, update: {}, create: { nom: 'Nutritionniste', code: 'NUTRITIONNISTE', description: 'Spécialiste en nutrition' } }),
+    prisma.typePersonnel.upsert({ where: { code: 'KINESITHERAPEUTE' }, update: {}, create: { nom: 'Kinésithérapeute', code: 'KINESITHERAPEUTE', description: 'Spécialiste en réadaptation' } }),
+    prisma.typePersonnel.upsert({ where: { code: 'ADMINISTRATIF' }, update: {}, create: { nom: 'Personnel administratif', code: 'ADMINISTRATIF', description: 'Personnel administratif du centre' } }),
+  ])
+  console.log(`✓ ${typesPersonnel.length} types de personnel créés`)
+
   // Compte Ministère
   const ministerePwd = await bcrypt.hash('AlafiyaMinistere2024!', 12)
   const ministere = await prisma.user.upsert({

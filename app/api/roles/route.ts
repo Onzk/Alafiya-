@@ -26,7 +26,10 @@ export async function GET() {
 
   const roles = await prisma.role.findMany({
     where,
-    include: { permissions: { include: { permission: { select: { code: true, description: true } } } } },
+    include: {
+      permissions: { include: { permission: { select: { code: true, description: true } } } },
+      _count: { select: { utilisateurs: true } },
+    },
   })
 
   return NextResponse.json({ roles })

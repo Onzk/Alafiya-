@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useParams } from 'next/navigation'
 import {
   Building2, Loader2, ArrowLeft, Phone, Mail, MapPin, Users, UserCheck,
@@ -9,10 +9,24 @@ import {
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogScrollableWrapper } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useToast } from '@/hooks/use-toast'
 import Link from 'next/link'
+
+interface UserSpecialite {
+  specialite: { nom: string; code: string }
+}
+
+interface PersonnelUser {
+  nom: string
+  prenoms: string
+  email: string
+  estActif: boolean
+  niveauAcces: string
+  createdAt: string
+  specialites: UserSpecialite[]
+}
 
 interface CentreDetail {
   id: string
@@ -27,7 +41,7 @@ interface CentreDetail {
   createdAt: string
   admin?: { nom: string; prenoms: string; email: string; telephone?: string }
   _count: { utilisateurs: number; patients: number; enregistrements: number; accesUrgences: number }
-  utilisateurs: { user: { nom: string; prenoms: string; email: string; estActif: boolean; niveauAcces: string } }[]
+  utilisateurs: { user: PersonnelUser }[]
   patients: { id: string; nom: string; prenoms: string; createdAt: string }[]
 }
 
@@ -39,8 +53,10 @@ const NIVEAU_LABELS: Record<string, string> = {
   MINISTERE: 'Ministère', ADMIN_CENTRE: 'Admin centre', PERSONNEL: 'Personnel médical',
 }
 
-const inputCls = 'h-11 border-slate-200 dark:border-zinc-700 rounded-lg text-sm bg-white dark:bg-zinc-900 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-zinc-500 focus-visible:ring-emerald-500 focus-visible:border-emerald-400'
+const inputCls = 'h-11 border-slate-200 dark:border-zinc-700 rounded-lg text-sm bg-white dark:bg-zinc-950 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-zinc-500 focus-visible:ring-emerald-500 focus-visible:border-emerald-400'
 const labelCls = 'text-slate-700 dark:text-zinc-300 text-sm font-medium'
+
+const CHART_COLORS = ['#10b981', '#3b82f6', '#8b5cf6', '#f59e0b', '#ef4444', '#14b8a6', '#f97316', '#06b6d4', '#ec4899']
 
 function StatCard({ icon: Icon, label, value, color }: { icon: React.ElementType; label: string; value: number; color: string }) {
   return (
@@ -51,6 +67,56 @@ function StatCard({ icon: Icon, label, value, color }: { icon: React.ElementType
       <div>
         <p className="text-2xl font-extrabold text-slate-900 dark:text-white leading-none">{value}</p>
         <p className="text-xs text-slate-500 dark:text-zinc-400 mt-0.5">{label}</p>
+      </div>
+    </div>
+  )
+}
+
+function DonutChart({ data }: { data: { label: string; count: number }[] }) {
+  const total = data.reduce((s, d) => s + d.count, 0)
+  if (total === 0) return (
+    <div className="flex items-center justify-center py-6">
+      <p className="text-xs text-slate-400 dark:text-zinc-500">Aucune donnée</p>
+    </div>
+  )
+
+  const r = 38, cx = 52, cy = 52, strokeW = 16
+  const circ = 2 * Math.PI * r
+  let cumulativePct = 0
+
+  const segments = data.map((d, i) => {
+    const pct = d.count / total
+    const dashLen = pct * circ
+    const rotateAngle = cumulativePct * 360 - 90
+    cumulativePct += pct
+    return { ...d, dashLen, rotateAngle, color: CHART_COLORS[i % CHART_COLORS.length] }
+  })
+
+  return (
+    <div className="flex items-center gap-5 flex-wrap">
+      <svg width="104" height="104" viewBox="0 0 104 104" className="flex-shrink-0">
+        {segments.map((s, i) => (
+          <circle
+            key={i}
+            cx={cx} cy={cy} r={r}
+            fill="none"
+            stroke={s.color}
+            strokeWidth={strokeW}
+            strokeDasharray={`${s.dashLen} ${circ}`}
+            strokeDashoffset={0}
+            transform={`rotate(${s.rotateAngle} ${cx} ${cy})`}
+          />
+        ))}
+        <text x={cx} y={cy + 6} textAnchor="middle" fontSize="18" fontWeight="700" fill="currentColor">{total}</text>
+      </svg>
+      <div className="space-y-2 flex-1 min-w-[120px]">
+        {segments.map((s) => (
+          <div key={s.label} className="flex items-center gap-2">
+            <div className="w-2.5 h-2.5 rounded-sm flex-shrink-0" style={{ backgroundColor: s.color }} />
+            <span className="text-xs text-slate-600 dark:text-zinc-400 flex-1 truncate">{s.label}</span>
+            <span className="text-xs font-bold text-slate-900 dark:text-white">{s.count}</span>
+          </div>
+        ))}
       </div>
     </div>
   )
@@ -75,6 +141,25 @@ export default function CentreDetailPage() {
       .then((d) => { setCentre(d.centre); setLoading(false) })
       .catch(() => setLoading(false))
   }, [id])
+
+  // Compute personnel type stats
+  const personnelTypeData = useMemo(() => {
+    if (!centre) return []
+    const counts: Record<string, number> = {}
+    centre.utilisateurs.forEach((u) => {
+      if (u.user.specialites.length === 0) {
+        const label = NIVEAU_LABELS[u.user.niveauAcces] ?? u.user.niveauAcces
+        counts[label] = (counts[label] || 0) + 1
+      } else {
+        u.user.specialites.forEach((s) => {
+          counts[s.specialite.nom] = (counts[s.specialite.nom] || 0) + 1
+        })
+      }
+    })
+    return Object.entries(counts)
+      .map(([label, count]) => ({ label, count }))
+      .sort((a, b) => b.count - a.count)
+  }, [centre])
 
   function openEdit() {
     if (!centre) return
@@ -147,8 +232,8 @@ export default function CentreDetailPage() {
             <div>
               <div className="flex items-center gap-2 flex-wrap">
                 <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white">{centre.nom}</h1>
-                <span className="text-[10px] font-bold px-2 py-1 rounded-lg bg-slate-100 dark:bg-zinc-800 text-slate-500 dark:text-zinc-400">{TYPE_LABELS[centre.type] ?? centre.type}</span>
-                <span className={`flex items-center gap-1 px-2 py-1 rounded-full border text-[10px] font-bold ${centre.estActif ? 'bg-brand/8 dark:bg-brand/12 border-brand/20 text-brand' : 'bg-slate-50 dark:bg-zinc-800 border-slate-200 dark:border-zinc-700 text-slate-400 dark:text-zinc-500'}`}>
+                <span className="text-[10px] font-bold px-2 py-1 rounded-lg bg-slate-100 dark:bg-zinc-950 text-slate-500 dark:text-zinc-400">{TYPE_LABELS[centre.type] ?? centre.type}</span>
+                <span className={`flex items-center gap-1 px-2 py-1 rounded-full border text-[10px] font-bold ${centre.estActif ? 'bg-brand/8 dark:bg-brand/12 border-brand/20 text-brand' : 'bg-slate-50 dark:bg-zinc-950 border-slate-200 dark:border-zinc-700 text-slate-400 dark:text-zinc-500'}`}>
                   {centre.estActif ? <><CheckCircle2 className="h-3 w-3" />Actif</> : <><XCircle className="h-3 w-3" />Inactif</>}
                 </span>
               </div>
@@ -214,10 +299,10 @@ export default function CentreDetailPage() {
           )}
         </div>
 
-        {/* Personnel récent */}
+        {/* Personnel médical */}
         <div className="bg-white dark:bg-zinc-950 rounded-2xl border border-slate-100 dark:border-zinc-800 overflow-hidden">
           <div className="px-5 py-4 border-b border-slate-50 dark:border-zinc-800">
-            <h2 className="font-bold text-slate-900 dark:text-white text-sm">Personnel récent</h2>
+            <h2 className="font-bold text-slate-900 dark:text-white text-sm">Personnel médical</h2>
             <p className="text-xs text-slate-400 dark:text-zinc-500 mt-0.5">{centre._count.utilisateurs} au total</p>
           </div>
           {centre.utilisateurs.length === 0 ? (
@@ -226,17 +311,21 @@ export default function CentreDetailPage() {
               <p className="text-xs text-slate-400 dark:text-zinc-500">Aucun personnel</p>
             </div>
           ) : (
-            <ul>
+            <ul className="max-h-[340px] overflow-y-auto">
               {centre.utilisateurs.map((u, i) => (
                 <li key={i} className="flex items-center gap-3 px-5 py-3 border-b border-slate-50 dark:border-zinc-800/60 last:border-0">
-                  <div className="h-8 w-8 rounded-full bg-slate-100 dark:bg-zinc-800 flex items-center justify-center flex-shrink-0">
+                  <div className="h-8 w-8 rounded-full bg-slate-100 dark:bg-zinc-950 flex items-center justify-center flex-shrink-0">
                     <span className="text-slate-600 dark:text-zinc-300 font-bold text-xs">{u.user.nom[0]}{u.user.prenoms[0]}</span>
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="text-xs font-semibold text-slate-900 dark:text-white truncate">{u.user.nom} {u.user.prenoms}</p>
-                    <p className="text-[10px] text-slate-400 dark:text-zinc-500 truncate">{NIVEAU_LABELS[u.user.niveauAcces] ?? u.user.niveauAcces}</p>
+                    <p className="text-[10px] text-slate-400 dark:text-zinc-500 truncate">
+                      {u.user.specialites.length > 0
+                        ? u.user.specialites.map((s) => s.specialite.nom).join(', ')
+                        : NIVEAU_LABELS[u.user.niveauAcces] ?? u.user.niveauAcces}
+                    </p>
                   </div>
-                  <div className={`h-1.5 w-1.5 rounded-full flex-shrink-0 ${u.user.estActif ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-zinc-600'}`} />
+                  <div className={`h-1.5 w-1.5 rounded-full flex-shrink-0 ${u.user.estActif ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-zinc-950'}`} />
                 </li>
               ))}
             </ul>
@@ -258,7 +347,7 @@ export default function CentreDetailPage() {
             <ul>
               {centre.patients.map((p) => (
                 <li key={p.id} className="flex items-center gap-3 px-5 py-3 border-b border-slate-50 dark:border-zinc-800/60 last:border-0">
-                  <div className="h-8 w-8 rounded-full bg-slate-100 dark:bg-zinc-800 flex items-center justify-center flex-shrink-0">
+                  <div className="h-8 w-8 rounded-full bg-slate-100 dark:bg-zinc-950 flex items-center justify-center flex-shrink-0">
                     <span className="text-slate-600 dark:text-zinc-300 font-bold text-xs">{p.nom[0]}{p.prenoms[0]}</span>
                   </div>
                   <div className="min-w-0">
@@ -274,42 +363,90 @@ export default function CentreDetailPage() {
         </div>
       </div>
 
+      {/* Graphique répartition du personnel */}
+      <div className="dash-in delay-150 bg-white dark:bg-zinc-950 rounded-2xl border border-slate-100 dark:border-zinc-800 p-5">
+        <div className="mb-4">
+          <h2 className="font-bold text-slate-900 dark:text-white text-sm">Répartition du personnel par type</h2>
+          <p className="text-xs text-slate-400 dark:text-zinc-500 mt-0.5">
+            Distribution des {centre._count.utilisateurs} membres du personnel par spécialité ou rôle
+          </p>
+        </div>
+        {personnelTypeData.length === 0 ? (
+          <div className="py-8 text-center">
+            <Users className="h-8 w-8 text-slate-200 dark:text-zinc-700 mx-auto mb-2" />
+            <p className="text-xs text-slate-400 dark:text-zinc-500">Aucun personnel enregistré</p>
+          </div>
+        ) : (
+          <div className="grid md:grid-cols-2 gap-8 items-center">
+            {/* Donut chart */}
+            <DonutChart data={personnelTypeData} />
+
+            {/* Barres horizontales */}
+            <div className="space-y-3">
+              {personnelTypeData.map((d, i) => {
+                const max = personnelTypeData[0].count
+                const pct = Math.round((d.count / (centre._count.utilisateurs || 1)) * 100)
+                return (
+                  <div key={d.label}>
+                    <div className="flex items-center justify-between text-xs mb-1">
+                      <span className="font-medium text-slate-700 dark:text-zinc-300 truncate max-w-[180px]">{d.label}</span>
+                      <span className="font-bold text-slate-900 dark:text-white ml-2 flex-shrink-0">{d.count} <span className="font-normal text-slate-400">({pct}%)</span></span>
+                    </div>
+                    <div className="h-2 bg-slate-100 dark:bg-zinc-950 rounded-full overflow-hidden">
+                      <div
+                        className="h-2 rounded-full transition-all duration-500"
+                        style={{
+                          width: `${(d.count / max) * 100}%`,
+                          backgroundColor: CHART_COLORS[i % CHART_COLORS.length],
+                        }}
+                      />
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        )}
+      </div>
+
       {/* ── Dialog modifier ── */}
       <Dialog open={editOpen} onOpenChange={setEditOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-2xl">
           <DialogHeader title="Modifier le centre" description="Mettez à jour les informations du centre pour garder vos données à jour." icon={Pencil} />
-          <form onSubmit={handleEdit} className="space-y-3 mt-2">
-            <div className="grid sm:grid-cols-2 gap-3">
-              {[
-                { key: 'nom',        label: 'Nom',        placeholder: 'Nom du centre' },
-                { key: 'adresse',    label: 'Adresse',    placeholder: 'Adresse' },
-                { key: 'telephone',  label: 'Téléphone',  placeholder: '+228 XX XX XX XX' },
-                { key: 'email',      label: 'Email',      placeholder: 'email@centre.tg', type: 'email' },
-                { key: 'region',     label: 'Région',     placeholder: 'Région' },
-                { key: 'prefecture', label: 'Préfecture', placeholder: 'Préfecture' },
-              ].map(({ key, label, type, placeholder }) => (
-                <div key={key} className="space-y-1.5">
-                  <Label className={labelCls}>{label} *</Label>
-                  <Input type={type || 'text'} placeholder={placeholder}
-                    value={(editForm as Record<string, string>)[key]}
-                    onChange={(e) => setEditForm((p) => ({ ...p, [key]: e.target.value }))}
-                    required className={inputCls} />
+          <DialogScrollableWrapper>
+            <form onSubmit={handleEdit} className="space-y-3">
+              <div className="grid sm:grid-cols-2 gap-3">
+                {[
+                  { key: 'nom',        label: 'Nom',        placeholder: 'Nom du centre' },
+                  { key: 'adresse',    label: 'Adresse',    placeholder: 'Adresse' },
+                  { key: 'telephone',  label: 'Téléphone',  placeholder: '+228 XX XX XX XX' },
+                  { key: 'email',      label: 'Email',      placeholder: 'email@centre.tg', type: 'email' },
+                  { key: 'region',     label: 'Région',     placeholder: 'Région' },
+                  { key: 'prefecture', label: 'Préfecture', placeholder: 'Préfecture' },
+                ].map(({ key, label, type, placeholder }) => (
+                  <div key={key} className="space-y-1.5">
+                    <Label className={labelCls}>{label} *</Label>
+                    <Input type={type || 'text'} placeholder={placeholder}
+                      value={(editForm as Record<string, string>)[key]}
+                      onChange={(e) => setEditForm((p) => ({ ...p, [key]: e.target.value }))}
+                      required className={inputCls} />
+                  </div>
+                ))}
+                <div className="space-y-1.5">
+                  <Label className={labelCls}>Type *</Label>
+                  <Select value={editForm.type} onValueChange={(v) => setEditForm((p) => ({ ...p, type: v }))}>
+                    <SelectTrigger className={inputCls}><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {Object.entries(TYPE_LABELS).map(([v, l]) => <SelectItem key={v} value={v}>{l}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
                 </div>
-              ))}
-              <div className="space-y-1.5">
-                <Label className={labelCls}>Type *</Label>
-                <Select value={editForm.type} onValueChange={(v) => setEditForm((p) => ({ ...p, type: v }))}>
-                  <SelectTrigger className={inputCls}><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(TYPE_LABELS).map(([v, l]) => <SelectItem key={v} value={v}>{l}</SelectItem>)}
-                  </SelectContent>
-                </Select>
               </div>
-            </div>
-            <Button type="submit" disabled={editSubmitting} className="w-full h-11 bg-brand hover:bg-brand-dark text-white rounded-xl shadow-sm shadow-brand/20">
-              {editSubmitting ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Enregistrement...</> : 'Enregistrer les modifications'}
-            </Button>
-          </form>
+              <Button type="submit" disabled={editSubmitting} className="w-full h-11 bg-brand hover:bg-brand-dark text-white rounded-xl shadow-sm shadow-brand/20">
+                {editSubmitting ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Enregistrement...</> : 'Enregistrer les modifications'}
+              </Button>
+            </form>
+          </DialogScrollableWrapper>
         </DialogContent>
       </Dialog>
     </div>

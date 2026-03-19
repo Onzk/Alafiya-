@@ -47,8 +47,8 @@ function ActionCard({
           <Icon className={`h-5 w-5 ${iconColor}`} />
         </div>
         <div className="min-w-0 flex-1">
-          <p className="font-bold text-slate-900 dark:text-white text-sm leading-tight">{label}</p>
-          <p className="text-xs text-slate-400 dark:text-zinc-500 mt-0.5">{sub}</p>
+          <p className="font-bold text-slate-900 dark:text-white text-sm leading-tight line-clamp-1">{label}</p>
+          <p className="text-xs text-slate-400 dark:text-zinc-500 mt-0.5 line-clamp-1">{sub}</p>
         </div>
         <ArrowRight className="h-4 w-4 text-slate-300 dark:text-zinc-600 flex-shrink-0 group-hover:translate-x-0.5 group-hover:text-brand transition-all duration-200" />
       </div>
@@ -165,7 +165,7 @@ export default async function MinistereDashboardPage() {
 
           {derniersCentres.length === 0 ? (
             <div className="py-12 text-center">
-              <div className="h-12 w-12 rounded-2xl bg-slate-50 dark:bg-zinc-800 flex items-center justify-center mx-auto mb-3">
+              <div className="h-12 w-12 rounded-2xl bg-slate-50 dark:bg-zinc-950 flex items-center justify-center mx-auto mb-3">
                 <Building2 className="h-6 w-6 text-slate-300 dark:text-zinc-600" />
               </div>
               <p className="text-sm text-slate-400 dark:text-zinc-500">Aucun centre enregistré</p>
@@ -173,7 +173,7 @@ export default async function MinistereDashboardPage() {
           ) : (
             <>
               {/* Table header */}
-              <div className="hidden sm:grid grid-cols-[1fr_auto_auto] gap-4 px-5 py-2.5 bg-slate-50/60 dark:bg-zinc-800/40 border-b border-slate-100 dark:border-zinc-800">
+              <div className="hidden sm:grid grid-cols-[1fr_auto_auto] gap-4 px-5 py-2.5 bg-slate-50/60 dark:bg-zinc-950/40 border-b border-slate-100 dark:border-zinc-800">
                 <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-zinc-500">Centre</span>
                 <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-zinc-500">Région</span>
                 <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-zinc-500">Statut</span>
@@ -182,13 +182,13 @@ export default async function MinistereDashboardPage() {
                 {derniersCentres.map((centre, i) => (
                   <li key={centre.id} className={`dash-in delay-${[0, 75, 150, 225, 300][i] ?? 300} flex sm:grid sm:grid-cols-[1fr_auto_auto] items-center gap-4 px-5 py-3.5 border-b border-slate-50 dark:border-zinc-800/60 last:border-0 hover:bg-slate-50/60 dark:hover:bg-zinc-800/40 transition-colors`}>
                     <div className="flex items-center gap-3 min-w-0">
-                      <div className="h-9 w-9 rounded-xl bg-slate-50 dark:bg-zinc-800 border border-slate-100 dark:border-zinc-700 flex items-center justify-center flex-shrink-0">
+                      <div className="h-9 w-9 rounded-xl bg-slate-50 dark:bg-zinc-950 border border-slate-100 dark:border-zinc-700 flex items-center justify-center flex-shrink-0">
                         <Building2 className="h-4 w-4 text-slate-400 dark:text-zinc-500" />
                       </div>
                       <div className="min-w-0">
                         <p className="text-sm font-semibold text-slate-900 dark:text-white truncate">{centre.nom}</p>
                         <div className="flex items-center gap-1.5 mt-0.5">
-                          <span className="text-[9px] font-extrabold uppercase tracking-wider px-1.5 py-0.5 rounded bg-slate-100 dark:bg-zinc-800 text-slate-500 dark:text-zinc-400">{centre.type}</span>
+                          <span className="text-[9px] font-extrabold uppercase tracking-wider px-1.5 py-0.5 rounded bg-slate-100 dark:bg-zinc-950 text-slate-500 dark:text-zinc-400">{centre.type}</span>
                           {centre.admin && (
                             <span className="text-[10px] text-slate-400 dark:text-zinc-500 hidden sm:inline truncate">· {centre.admin.nom} {centre.admin.prenoms}</span>
                           )}
@@ -198,7 +198,7 @@ export default async function MinistereDashboardPage() {
                     <span className="text-xs text-slate-500 dark:text-zinc-400 hidden sm:block whitespace-nowrap">{centre.region}</span>
                     <div className={`flex-shrink-0 flex items-center gap-1 px-2.5 py-1 rounded-full border text-[10px] font-bold ${centre.estActif
                         ? 'bg-brand/8 dark:bg-brand/12 border-brand/20 text-brand'
-                        : 'bg-slate-50 dark:bg-zinc-800 border-slate-200 dark:border-zinc-700 text-slate-400 dark:text-zinc-500'
+                        : 'bg-slate-50 dark:bg-zinc-950 border-slate-200 dark:border-zinc-700 text-slate-400 dark:text-zinc-500'
                       }`}>
                       {centre.estActif ? 'Actif' : 'Inactif'}
                     </div>
@@ -220,14 +220,14 @@ export default async function MinistereDashboardPage() {
 
           {derniersMedecins.length === 0 ? (
             <div className="py-12 text-center">
-              <div className="h-12 w-12 rounded-2xl bg-slate-50 dark:bg-zinc-800 flex items-center justify-center mx-auto mb-3">
+              <div className="h-12 w-12 rounded-2xl bg-slate-50 dark:bg-zinc-950 flex items-center justify-center mx-auto mb-3">
                 <Users className="h-6 w-6 text-slate-300 dark:text-zinc-600" />
               </div>
               <p className="text-sm text-slate-400 dark:text-zinc-500">Aucun personnel enregistré</p>
             </div>
           ) : (
             <>
-              <div className="hidden sm:grid grid-cols-[1fr_1fr_1fr_auto] gap-4 px-5 py-2.5 bg-slate-50/60 dark:bg-zinc-800/40 border-b border-slate-100 dark:border-zinc-800">
+              <div className="hidden sm:grid grid-cols-[1fr_1fr_1fr_auto] gap-4 px-5 py-2.5 bg-slate-50/60 dark:bg-zinc-950/40 border-b border-slate-100 dark:border-zinc-800">
                 <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-zinc-500">Personnel</span>
                 <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-zinc-500">Centre</span>
                 <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-zinc-500">Spécialités</span>
@@ -262,7 +262,7 @@ export default async function MinistereDashboardPage() {
                       </div>
                       <div className={`flex-shrink-0 flex items-center gap-1 px-2.5 py-1 rounded-full border text-[10px] font-bold ${m.estActif
                           ? 'bg-brand/8 dark:bg-brand/12 border-brand/20 text-brand'
-                          : 'bg-slate-50 dark:bg-zinc-800 border-slate-200 dark:border-zinc-700 text-slate-400 dark:text-zinc-500'
+                          : 'bg-slate-50 dark:bg-zinc-950 border-slate-200 dark:border-zinc-700 text-slate-400 dark:text-zinc-500'
                         }`}>
                         {m.estActif ? <><UserCheck className="h-2.5 w-2.5" /> Actif</> : <><XCircle className="h-2.5 w-2.5" /> Inactif</>}
                       </div>

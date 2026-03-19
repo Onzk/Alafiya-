@@ -56,7 +56,7 @@ export default async function DossierPatientPage({ params }: { params: { id: str
   }
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6">
+    <div className="max-w-5xl mx-auto space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <Link href="/patients">

@@ -67,7 +67,7 @@ export default async function AdminDashboardPage() {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="text-center">
-          <div className="h-14 w-14 rounded-2xl bg-slate-50 dark:bg-zinc-800 flex items-center justify-center mx-auto mb-4">
+          <div className="h-14 w-14 rounded-2xl bg-slate-50 dark:bg-zinc-950 flex items-center justify-center mx-auto mb-4">
             <Activity className="h-7 w-7 text-slate-300 dark:text-zinc-600" />
           </div>
           <p className="text-slate-500 dark:text-zinc-400 font-medium">Aucun centre actif sélectionné.</p>
@@ -161,7 +161,7 @@ export default async function AdminDashboardPage() {
 
             {dernierPersonnel.length === 0 ? (
               <div className="py-12 text-center">
-                <div className="h-12 w-12 rounded-2xl bg-slate-50 dark:bg-zinc-800 flex items-center justify-center mx-auto mb-3">
+                <div className="h-12 w-12 rounded-2xl bg-slate-50 dark:bg-zinc-950 flex items-center justify-center mx-auto mb-3">
                   <Users className="h-6 w-6 text-slate-300 dark:text-zinc-600" />
                 </div>
                 <p className="text-sm text-slate-400 dark:text-zinc-500">Aucun personnel enregistré</p>
@@ -169,7 +169,7 @@ export default async function AdminDashboardPage() {
             ) : (
               <>
                 {/* Table header */}
-                <div className="hidden sm:grid grid-cols-[1fr_1fr_auto] gap-4 px-5 py-2.5 bg-slate-50/60 dark:bg-zinc-800/40 border-b border-slate-100 dark:border-zinc-800">
+                <div className="hidden sm:grid grid-cols-[1fr_1fr_auto] gap-4 px-5 py-2.5 bg-slate-50/60 dark:bg-zinc-950/40 border-b border-slate-100 dark:border-zinc-800">
                   <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-zinc-500">Nom</span>
                   <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-zinc-500">Email</span>
                   <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-zinc-500">Statut</span>
@@ -187,7 +187,7 @@ export default async function AdminDashboardPage() {
                       <div className={`flex-shrink-0 flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[10px] font-bold ${
                         p.estActif
                           ? 'bg-brand/8 dark:bg-brand/12 border-brand/20 text-brand'
-                          : 'bg-slate-50 dark:bg-zinc-800 border-slate-200 dark:border-zinc-700 text-slate-400 dark:text-zinc-500'
+                          : 'bg-slate-50 dark:bg-zinc-950 border-slate-200 dark:border-zinc-700 text-slate-400 dark:text-zinc-500'
                       }`}>
                         {p.estActif
                           ? <><CheckCircle2 className="h-3 w-3" /> Actif</>
@@ -216,7 +216,7 @@ export default async function AdminDashboardPage() {
               </div>
               <p className="font-extrabold text-slate-900 dark:text-white text-sm leading-tight">{centre?.nom}</p>
               {centre?.type && (
-                <span className="inline-flex mt-1.5 text-[9px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded bg-slate-100 dark:bg-zinc-800 text-slate-500 dark:text-zinc-400">
+                <span className="inline-flex mt-1.5 text-[9px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded bg-slate-100 dark:bg-zinc-950 text-slate-500 dark:text-zinc-400">
                   {centre.type}
                 </span>
               )}
@@ -233,7 +233,7 @@ export default async function AdminDashboardPage() {
               <p className="text-3xl font-extrabold text-slate-900 dark:text-white tabular-nums">{tauxActivite}%</p>
               <p className="text-xs text-slate-400 dark:text-zinc-500">{personnelActif}/{totalPersonnel}</p>
             </div>
-            <div className="h-2 bg-slate-100 dark:bg-zinc-800 rounded-full overflow-hidden">
+            <div className="h-2 bg-slate-100 dark:bg-zinc-950 rounded-full overflow-hidden">
               <div className="h-full bg-brand rounded-full transition-all duration-700" style={{ width: `${tauxActivite}%` }} />
             </div>
             <p className="text-xs text-slate-400 dark:text-zinc-500 mt-2">Personnel actif sur le total</p>

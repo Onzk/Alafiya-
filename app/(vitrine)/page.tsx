@@ -317,7 +317,7 @@ export default function LandingPage() {
                 <span className="h-3 w-3 rounded-full bg-red-400/80" />
                 <span className="h-3 w-3 rounded-full bg-yellow-400/80" />
                 <span className="h-3 w-3 rounded-full bg-green-400/80" />
-                <div className="ml-3 flex-1 max-w-xs bg-slate-200 dark:bg-zinc-700 rounded-md h-5 flex items-center px-3">
+                <div className="ml-3 flex-1 max-w-xs bg-slate-200 dark:bg-zinc-950 rounded-md h-5 flex items-center px-3">
                   <span className="text-[10px] text-slate-400 dark:text-zinc-500">app.alafiya.tg/dashboard</span>
                 </div>
               </div>
@@ -544,7 +544,7 @@ export default function LandingPage() {
 
             <div className="grid md:grid-cols-4 gap-8 relative">
               {/* Ligne de connexion */}
-              <div className="hidden md:block absolute top-9 left-[calc(12.5%+2rem)] right-[calc(12.5%+2rem)] h-0.5 bg-slate-200 dark:bg-zinc-700" />
+              <div className="hidden md:block absolute top-9 left-[calc(12.5%+2rem)] right-[calc(12.5%+2rem)] h-0.5 bg-slate-200 dark:bg-zinc-950" />
 
               {[
                 { step: '1', title: 'Inscription',    desc: 'Créez votre profil en quelques minutes avec vos informations de base.', d: 0 },
@@ -737,10 +737,10 @@ export default function LandingPage() {
                   La solution de santé numérique de référence au Togo.
                 </p>
                 <div className="flex gap-2">
-                  <a href="#" className="h-9 w-9 rounded-xl bg-slate-100 dark:bg-zinc-800 flex items-center justify-center text-slate-500 dark:text-zinc-400 hover:bg-brand hover:text-white transition-all">
+                  <a href="#" className="h-9 w-9 rounded-xl bg-slate-100 dark:bg-zinc-950 flex items-center justify-center text-slate-500 dark:text-zinc-400 hover:bg-brand hover:text-white transition-all">
                     <Facebook className="h-4 w-4" />
                   </a>
-                  <a href="#" className="h-9 w-9 rounded-xl bg-slate-100 dark:bg-zinc-800 flex items-center justify-center text-slate-500 dark:text-zinc-400 hover:bg-brand hover:text-white transition-all">
+                  <a href="#" className="h-9 w-9 rounded-xl bg-slate-100 dark:bg-zinc-950 flex items-center justify-center text-slate-500 dark:text-zinc-400 hover:bg-brand hover:text-white transition-all">
                     <Twitter className="h-4 w-4" />
                   </a>
                 </div>

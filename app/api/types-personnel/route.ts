@@ -3,7 +3,7 @@ import { auth } from '@/lib/auth'
 import prisma from '@/lib/db'
 import { z } from 'zod'
 
-const creerSpecialiteSchema = z.object({
+const schema = z.object({
   nom: z.string().min(1),
   code: z.string().min(1),
   description: z.string().optional(),
@@ -13,12 +13,13 @@ export async function GET() {
   const session = await auth()
   if (!session?.user) return NextResponse.json({ error: 'Non autorisé' }, { status: 401 })
 
-  const specialites = await prisma.specialite.findMany({
+  const types = await prisma.typePersonnel.findMany({
+    where: { estActif: true },
     orderBy: { nom: 'asc' },
-    include: { _count: { select: { userSpecialites: true } } },
+    include: { _count: { select: { utilisateurs: true } } },
   })
 
-  return NextResponse.json({ specialites })
+  return NextResponse.json({ types })
 }
 
 export async function POST(req: NextRequest) {
@@ -28,12 +29,12 @@ export async function POST(req: NextRequest) {
   }
 
   const body = await req.json()
-  const validation = creerSpecialiteSchema.safeParse(body)
+  const validation = schema.safeParse(body)
   if (!validation.success) return NextResponse.json({ error: 'Données invalides' }, { status: 400 })
 
-  const specialite = await prisma.specialite.create({
-    data: { ...validation.data, code: validation.data.code.toUpperCase(), estActive: true },
+  const type = await prisma.typePersonnel.create({
+    data: { ...validation.data, code: validation.data.code.toUpperCase() },
   })
 
-  return NextResponse.json({ specialite }, { status: 201 })
+  return NextResponse.json({ type }, { status: 201 })
 }

@@ -154,7 +154,7 @@ export function ProfileClient({ user, photo: initialPhoto }: { user: SessionUser
                 value={pwd.ancien}
                 onChange={e => setPwd(p => ({ ...p, ancien: e.target.value }))}
                 required
-                className="w-full h-10 rounded-xl border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-900 px-3 pr-10 text-sm text-slate-900 dark:text-white placeholder:text-slate-300 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-brand/40 focus:border-brand transition-all"
+                className="w-full h-10 rounded-xl border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-950 px-3 pr-10 text-sm text-slate-900 dark:text-white placeholder:text-slate-300 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-brand/40 focus:border-brand transition-all"
                 placeholder="••••••••"
               />
               <button type="button" onClick={() => setShowAncien(s => !s)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-zinc-500 hover:text-slate-600 dark:hover:text-zinc-300">
@@ -175,7 +175,7 @@ export function ProfileClient({ user, photo: initialPhoto }: { user: SessionUser
                 onChange={e => setPwd(p => ({ ...p, nouveau: e.target.value }))}
                 required
                 minLength={8}
-                className="w-full h-10 rounded-xl border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-900 px-3 pr-10 text-sm text-slate-900 dark:text-white placeholder:text-slate-300 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-brand/40 focus:border-brand transition-all"
+                className="w-full h-10 rounded-xl border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-950 px-3 pr-10 text-sm text-slate-900 dark:text-white placeholder:text-slate-300 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-brand/40 focus:border-brand transition-all"
                 placeholder="••••••••"
               />
               <button type="button" onClick={() => setShowNouveau(s => !s)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-zinc-500 hover:text-slate-600 dark:hover:text-zinc-300">
@@ -194,7 +194,7 @@ export function ProfileClient({ user, photo: initialPhoto }: { user: SessionUser
               value={pwd.confirmer}
               onChange={e => setPwd(p => ({ ...p, confirmer: e.target.value }))}
               required
-              className="w-full h-10 rounded-xl border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-900 px-3 text-sm text-slate-900 dark:text-white placeholder:text-slate-300 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-brand/40 focus:border-brand transition-all"
+              className="w-full h-10 rounded-xl border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-950 px-3 text-sm text-slate-900 dark:text-white placeholder:text-slate-300 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-brand/40 focus:border-brand transition-all"
               placeholder="••••••••"
             />
           </div>

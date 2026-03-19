@@ -335,7 +335,7 @@ export default function LoginPage() {
             </div>
 
             {/* Administrateur de centre */}
-            <div className="bg-slate-50 dark:bg-zinc-800/50 border border-slate-200 dark:border-zinc-700/50 rounded-xl p-4 flex items-start gap-3">
+            <div className="bg-slate-50 dark:bg-zinc-950/50 border border-slate-200 dark:border-zinc-700/50 rounded-xl p-4 flex items-start gap-3">
               <ShieldAlert className="h-5 w-5 text-slate-500 dark:text-zinc-400 flex-shrink-0 mt-0.5" />
               <div>
                 <p className="text-xs font-semibold text-slate-500 dark:text-zinc-400 mb-0.5 uppercase tracking-wide">Administrateur de centre</p>
