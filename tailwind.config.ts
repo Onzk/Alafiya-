@@ -52,20 +52,20 @@ const config: Config = {
           DEFAULT: 'hsl(var(--card))',
           foreground: 'hsl(var(--card-foreground))',
         },
-        // Palette Alafiya Plus
-        alafiya: {
-          vert: '#16a34a',
-          'vert-clair': '#dcfce7',
-          'vert-fonce': '#15803d',
-          bleu: '#2563eb',
-          'bleu-clair': '#dbeafe',
-          'bleu-fonce': '#1d4ed8',
+        brand: {
+          DEFAULT: '#21c488',
+          dark: '#1ba371',
+          light: '#e9f9f2',
         },
       },
       borderRadius: {
         lg: 'var(--radius)',
         md: 'calc(var(--radius) - 2px)',
         sm: 'calc(var(--radius) - 4px)',
+        custom: '8px',
+      },
+      fontFamily: {
+        sans: ['Inter', 'sans-serif'],
       },
       keyframes: {
         'accordion-down': {
@@ -76,10 +76,45 @@ const config: Config = {
           from: { height: 'var(--radix-accordion-content-height)' },
           to: { height: '0' },
         },
+        'fade-up': {
+          from: { opacity: '0', transform: 'translateY(24px)' },
+          to: { opacity: '1', transform: 'translateY(0)' },
+        },
+        'fade-in': {
+          from: { opacity: '0' },
+          to: { opacity: '1' },
+        },
+        'slide-in-left': {
+          from: { opacity: '0', transform: 'translateX(-24px)' },
+          to: { opacity: '1', transform: 'translateX(0)' },
+        },
+        'slide-in-right': {
+          from: { opacity: '0', transform: 'translateX(24px)' },
+          to: { opacity: '1', transform: 'translateX(0)' },
+        },
+        'scale-in': {
+          from: { opacity: '0', transform: 'scale(0.95)' },
+          to: { opacity: '1', transform: 'scale(1)' },
+        },
+        float: {
+          '0%, 100%': { transform: 'translateY(0px)' },
+          '50%': { transform: 'translateY(-8px)' },
+        },
+        pulse: {
+          '0%, 100%': { opacity: '1' },
+          '50%': { opacity: '0.5' },
+        },
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
+        'fade-up': 'fade-up 0.6s ease-out forwards',
+        'fade-in': 'fade-in 0.5s ease-out forwards',
+        'slide-in-left': 'slide-in-left 0.6s ease-out forwards',
+        'slide-in-right': 'slide-in-right 0.6s ease-out forwards',
+        'scale-in': 'scale-in 0.4s ease-out forwards',
+        float: 'float 3s ease-in-out infinite',
+        'pulse-slow': 'pulse 3s ease-in-out infinite',
       },
     },
   },

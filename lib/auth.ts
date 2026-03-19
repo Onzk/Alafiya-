@@ -74,7 +74,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         centres: token.centres as string[],
         specialites: token.specialites as string[],
         permissions: token.permissions as string[],
-      } as SessionUser & { email: string; image?: string; name?: string }
+      } as unknown as typeof session.user
       return session
     },
   },

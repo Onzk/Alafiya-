@@ -21,7 +21,7 @@ export async function logger(params: LogParams): Promise<void> {
         cible: params.cible,
         cibleId: params.cibleId,
         centreId: params.centreId ?? null,
-        details: params.details ?? {},
+        details: (params.details ?? {}) as object,
         ip: params.ip,
         userAgent: params.userAgent,
       },

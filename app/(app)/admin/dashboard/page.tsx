@@ -2,23 +2,72 @@ import { auth } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import prisma from '@/lib/db'
-import { Users, UserPlus, Settings, Activity } from 'lucide-react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Users, Activity, UserPlus, Settings, Plus, ArrowRight, Building2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { SessionUser } from '@/types'
+
+function StatCard({
+  label, value, sub, icon: Icon,
+  lightBg, lightIcon, darkBg, darkIcon, darkGlow, delay,
+}: {
+  label: string; value: number; sub?: string; icon: React.ElementType
+  lightBg: string; lightIcon: string; darkBg: string; darkIcon: string; darkGlow: string; delay: string
+}) {
+  return (
+    <div className={`dash-in ${delay} relative overflow-hidden bg-white dark:bg-zinc-900 rounded-2xl border border-slate-100 dark:border-zinc-700/60 p-5 hover:shadow-xl dark:hover:shadow-zinc-950/80 hover:-translate-y-1 transition-all duration-300 group`}>
+      <div className={`absolute -top-4 -right-4 w-20 h-20 rounded-full blur-2xl opacity-0 dark:opacity-100 ${darkGlow} pointer-events-none transition-all duration-500 group-hover:scale-150`} />
+      <div className="relative flex items-start justify-between mb-4">
+        <p className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400 dark:text-zinc-500 leading-tight pr-2">{label}</p>
+        <div className={`h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0 ${lightBg} dark:${darkBg} transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3`}>
+          <Icon className={`h-5 w-5 ${lightIcon} dark:${darkIcon}`} />
+        </div>
+      </div>
+      <p className="relative text-4xl font-extrabold text-slate-900 dark:text-white tabular-nums">{value}</p>
+      {sub && <p className="text-xs text-slate-400 dark:text-zinc-500 mt-1">{sub}</p>}
+    </div>
+  )
+}
+
+function ActionCard({
+  href, icon: Icon, lightBg, lightIcon, darkBg, darkIcon, darkBorder, label, sub, delay,
+}: {
+  href: string; icon: React.ElementType
+  lightBg: string; lightIcon: string; darkBg: string; darkIcon: string; darkBorder: string
+  label: string; sub: string; delay: string
+}) {
+  return (
+    <Link href={href}>
+      <div className={`dash-in ${delay} group relative overflow-hidden bg-white dark:bg-zinc-900 rounded-2xl border border-slate-100 dark:border-zinc-700/60 dark:hover:border-zinc-600 p-5 flex items-center gap-4 hover:shadow-xl dark:hover:shadow-zinc-950/80 hover:-translate-y-1 transition-all duration-300 cursor-pointer`}>
+        <div className={`absolute left-0 top-4 bottom-4 w-0.5 rounded-full opacity-0 dark:opacity-60 ${darkBorder} transition-opacity group-hover:opacity-100`} />
+        <div className={`h-12 w-12 rounded-xl flex items-center justify-center flex-shrink-0 ${lightBg} dark:${darkBg} transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3`}>
+          <Icon className={`h-6 w-6 ${lightIcon} dark:${darkIcon}`} />
+        </div>
+        <div className="min-w-0 flex-1">
+          <p className="font-bold text-slate-900 dark:text-white text-sm">{label}</p>
+          <p className="text-xs text-slate-400 dark:text-zinc-500 mt-0.5">{sub}</p>
+        </div>
+        <ArrowRight className="h-4 w-4 text-slate-300 dark:text-zinc-600 flex-shrink-0 transition-transform group-hover:translate-x-1 group-hover:text-brand" />
+      </div>
+    </Link>
+  )
+}
 
 export default async function AdminDashboardPage() {
   const session = await auth()
   if (!session?.user) redirect('/login')
-
   const user = session.user as unknown as SessionUser
   if (!['MINISTERE', 'ADMIN_CENTRE'].includes(user.niveauAcces)) redirect('/dashboard')
 
   const centreId = user.centreActif
   if (!centreId) {
     return (
-      <div className="text-center py-16">
-        <p className="text-gray-500">Aucun centre actif sélectionné.</p>
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="text-center">
+          <div className="h-14 w-14 rounded-2xl bg-slate-50 dark:bg-zinc-800 dark:border dark:border-zinc-700/60 flex items-center justify-center mx-auto mb-4">
+            <Activity className="h-7 w-7 text-slate-300 dark:text-zinc-600" />
+          </div>
+          <p className="text-slate-500 dark:text-zinc-400 font-medium">Aucun centre actif sélectionné.</p>
+        </div>
       </div>
     )
   }
@@ -39,97 +88,75 @@ export default async function AdminDashboardPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">{centre?.nom ?? 'Centre de santé'}</h1>
-        <p className="text-gray-500 text-sm mt-1">Tableau de bord administrateur</p>
+
+      {/* Banner */}
+      <div className="dash-in delay-0 relative overflow-hidden rounded-2xl bg-gradient-to-r from-brand/8 via-emerald-50/80 to-white dark:from-emerald-900/30 dark:via-zinc-900 dark:to-zinc-900 border border-brand/15 dark:border-emerald-700/25 p-5 sm:p-6">
+        <div className="absolute right-0 top-0 w-48 h-48 bg-brand/10 dark:bg-brand/8 rounded-full blur-3xl -translate-y-1/3 translate-x-1/3 pointer-events-none" />
+        <div className="relative">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="h-1.5 w-1.5 rounded-full bg-brand animate-pulse" />
+            <span className="text-[10px] font-extrabold uppercase tracking-widest text-brand">Tableau de bord administrateur</span>
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white">{centre?.nom ?? 'Centre de santé'}</h1>
+          <p className="text-sm text-slate-500 dark:text-zinc-400 mt-1">Gérez votre personnel et suivez l'activité du centre.</p>
+        </div>
       </div>
 
-      <div className="grid sm:grid-cols-2 gap-4">
-        {[
-          { label: 'Personnel actif', value: personnelActif, total: totalPersonnel, color: 'text-green-600', bg: 'bg-green-50', icon: Users },
-          { label: 'Patients du centre', value: totalPatients, color: 'text-blue-600', bg: 'bg-blue-50', icon: Activity },
-        ].map((stat) => {
-          const Icon = stat.icon
-          return (
-            <Card key={stat.label}>
-              <CardContent className="p-5 flex items-center justify-between">
-                <div>
-                  <p className="text-xs text-gray-500">{stat.label}</p>
-                  <p className={`text-3xl font-bold mt-1 ${stat.color}`}>{stat.value}</p>
-                  {'total' in stat && stat.total !== stat.value && (
-                    <p className="text-xs text-gray-400">{stat.total} au total</p>
-                  )}
-                </div>
-                <div className={`h-12 w-12 rounded-full ${stat.bg} flex items-center justify-center`}>
-                  <Icon className={`h-6 w-6 ${stat.color}`} />
-                </div>
-              </CardContent>
-            </Card>
-          )
-        })}
+      {/* Stats */}
+      <div className="grid grid-cols-2 gap-3 sm:gap-4">
+        <StatCard label="Personnel actif"    value={personnelActif} sub={`${totalPersonnel} au total`} icon={Users}    lightBg="bg-green-50"  lightIcon="text-green-600"  darkBg="bg-emerald-400/15" darkIcon="text-emerald-300" darkGlow="bg-emerald-500/15" delay="delay-75" />
+        <StatCard label="Patients du centre" value={totalPatients}                                     icon={Activity} lightBg="bg-blue-50"   lightIcon="text-blue-600"   darkBg="bg-blue-400/15"   darkIcon="text-blue-300"   darkGlow="bg-blue-500/15"   delay="delay-150" />
       </div>
 
-      <div className="grid sm:grid-cols-2 gap-4">
-        <Link href="/admin/personnels">
-          <Card className="hover:shadow-md transition-shadow cursor-pointer">
-            <CardContent className="p-5 flex items-center gap-3">
-              <div className="h-10 w-10 rounded-lg bg-green-100 flex items-center justify-center">
-                <UserPlus className="h-5 w-5 text-green-600" />
-              </div>
-              <div>
-                <p className="font-semibold text-sm">Gérer le personnel</p>
-                <p className="text-xs text-gray-400">Créer et gérer les comptes</p>
-              </div>
-            </CardContent>
-          </Card>
-        </Link>
-        <Link href="/admin/roles">
-          <Card className="hover:shadow-md transition-shadow cursor-pointer">
-            <CardContent className="p-5 flex items-center gap-3">
-              <div className="h-10 w-10 rounded-lg bg-blue-100 flex items-center justify-center">
-                <Settings className="h-5 w-5 text-blue-600" />
-              </div>
-              <div>
-                <p className="font-semibold text-sm">Rôles du centre</p>
-                <p className="text-xs text-gray-400">Définir les accès locaux</p>
-              </div>
-            </CardContent>
-          </Card>
-        </Link>
+      {/* Actions */}
+      <div className="grid sm:grid-cols-2 gap-3 sm:gap-4">
+        <ActionCard href="/admin/personnels" icon={UserPlus} lightBg="bg-green-50"  lightIcon="text-green-600"  darkBg="bg-emerald-400/15" darkIcon="text-emerald-300" darkBorder="bg-emerald-400" label="Gérer le personnel" sub="Créer et gérer les comptes" delay="delay-75" />
+        <ActionCard href="/admin/roles"      icon={Settings} lightBg="bg-blue-50"   lightIcon="text-blue-600"   darkBg="bg-blue-400/15"   darkIcon="text-blue-300"   darkBorder="bg-blue-400"   label="Rôles du centre"    sub="Définir les accès locaux"  delay="delay-150" />
       </div>
 
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="text-base">Personnel médical</CardTitle>
-          <Link href="/admin/personnels">
-            <Button size="sm"><UserPlus className="mr-1 h-4 w-4" />Ajouter</Button>
-          </Link>
-        </CardHeader>
-        <CardContent>
-          {dernierPersonnel.length === 0 ? (
-            <p className="text-gray-400 text-sm text-center py-4">Aucun personnel enregistré</p>
-          ) : (
-            <div className="space-y-3">
-              {dernierPersonnel.map((p) => (
-                <div key={p.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <div className="h-8 w-8 rounded-full bg-green-100 flex items-center justify-center">
-                      <span className="text-green-700 text-xs font-semibold">{p.nom[0]}{p.prenoms[0]}</span>
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium">{p.nom} {p.prenoms}</p>
-                      <p className="text-xs text-gray-400">{p.email}</p>
-                    </div>
+      {/* Personnel récent */}
+      <div className="dash-in delay-150 bg-white dark:bg-zinc-900 rounded-2xl border border-slate-100 dark:border-zinc-700/60 overflow-hidden">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-50 dark:border-zinc-800">
+          <div>
+            <h2 className="font-bold text-slate-900 dark:text-white">Personnel médical</h2>
+            <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-zinc-500 mt-0.5">Membres récents du centre</p>
+          </div>
+          <Button asChild size="sm" className="bg-brand hover:bg-brand-dark text-white rounded-xl gap-1.5 shadow-sm shadow-brand/20">
+            <Link href="/admin/personnels"><Plus className="h-4 w-4" /> Ajouter</Link>
+          </Button>
+        </div>
+        {dernierPersonnel.length === 0 ? (
+          <div className="py-12 text-center">
+            <div className="h-12 w-12 rounded-2xl bg-slate-50 dark:bg-zinc-800 dark:border dark:border-zinc-700/60 flex items-center justify-center mx-auto mb-3">
+              <Users className="h-6 w-6 text-slate-300 dark:text-zinc-600" />
+            </div>
+            <p className="text-sm text-slate-400 dark:text-zinc-500">Aucun personnel enregistré</p>
+          </div>
+        ) : (
+          <>
+            <ul>
+              {dernierPersonnel.map((p, i) => (
+                <li key={p.id} className={`dash-in delay-${[0,75,150,225,300][i] ?? 300} flex items-center gap-4 px-5 py-3.5 border-b border-slate-50 dark:border-zinc-800/60 last:border-0 hover:bg-slate-50/80 dark:hover:bg-zinc-800/50 transition-colors group`}>
+                  <div className="h-10 w-10 rounded-full bg-brand/8 dark:bg-emerald-400/12 border border-brand/10 dark:border-emerald-400/15 flex items-center justify-center flex-shrink-0 transition-transform group-hover:scale-110">
+                    <span className="text-brand dark:text-emerald-300 text-xs font-bold">{p.nom[0]}{p.prenoms[0]}</span>
                   </div>
-                  <span className={`text-xs px-2 py-1 rounded-full font-medium ${p.estActif ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-bold text-slate-900 dark:text-white truncate">{p.nom} {p.prenoms}</p>
+                    <p className="text-xs text-slate-400 dark:text-zinc-500 truncate">{p.email}</p>
+                  </div>
+                  <span className={`flex-shrink-0 text-[9px] font-extrabold uppercase tracking-widest px-2.5 py-1 rounded-full border ${p.estActif ? 'border-emerald-400/30 text-emerald-600 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-400/12' : 'border-slate-200 dark:border-zinc-700/60 text-slate-400 dark:text-zinc-500 bg-slate-50 dark:bg-zinc-800'}`}>
                     {p.estActif ? 'Actif' : 'Inactif'}
                   </span>
-                </div>
+                </li>
               ))}
+            </ul>
+            <div className="py-3 text-center border-t border-slate-50 dark:border-zinc-800">
+              <p className="text-[9px] font-bold uppercase tracking-widest text-slate-300 dark:text-zinc-600">Fin de la liste du personnel récent</p>
             </div>
-          )}
-        </CardContent>
-      </Card>
+          </>
+        )}
+      </div>
+
     </div>
   )
 }

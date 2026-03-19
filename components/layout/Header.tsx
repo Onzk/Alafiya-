@@ -1,39 +1,60 @@
 'use client'
 
-import { useState } from 'react'
-import { Menu, X, Bell } from 'lucide-react'
+import Image from 'next/image'
+import Link from 'next/link'
+import { Bell } from 'lucide-react'
 import { SessionUser } from '@/types'
+import { ThemeToggle } from '@/components/ThemeToggle'
 
-interface HeaderProps {
-  user: SessionUser
-  onMenuToggle?: () => void
-}
+interface HeaderProps { user: SessionUser }
 
-export function Header({ user, onMenuToggle }: HeaderProps) {
+export function Header({ user }: HeaderProps) {
+  const roleLabel =
+    user.niveauAcces === 'MINISTERE'    ? 'Administrateur National' :
+    user.niveauAcces === 'ADMIN_CENTRE' ? 'Administrateur de centre' :
+    'Personnel médical'
+
+  const displayName =
+    user.niveauAcces === 'MINISTERE'
+      ? `MINISTÈRE de la Santé`
+      : `${user.nom} ${user.prenoms}`
+
   return (
-    <header className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-4 shadow-sm">
-      <button
-        onClick={onMenuToggle}
-        className="p-2 rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100 lg:hidden"
-      >
-        <Menu className="h-5 w-5" />
-      </button>
+    <header className="h-16 bg-white dark:bg-zinc-900 border-b border-slate-100 dark:border-zinc-800 flex items-center justify-between px-4 sm:px-6 flex-shrink-0">
 
-      <div className="flex-1 lg:ml-0" />
+      {/* Logo mobile */}
+      <div className="flex lg:hidden items-center gap-2.5">
+        <Link href="/" className="flex items-center gap-2">
+          <div className="h-8 w-8 bg-white rounded-lg border border-slate-100 dark:border-zinc-700 shadow-sm flex items-center justify-center">
+            <Image src="/logo.png" alt="Alafia Plus" width={24} height={24} className="rounded-md" priority />
+          </div>
+          <span className="font-extrabold text-slate-900 dark:text-white text-base">
+            Alafia <span className="text-brand">Plus</span>
+          </span>
+        </Link>
+      </div>
 
-      <div className="flex items-center gap-3">
-        <button className="p-2 rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-100">
+      <div className="hidden lg:flex flex-1" />
+
+      {/* Actions droite */}
+      <div className="flex items-center gap-2">
+        <ThemeToggle />
+
+        <button className="p-2 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-zinc-200 hover:bg-slate-50 dark:hover:bg-zinc-800 transition-colors relative">
           <Bell className="h-5 w-5" />
         </button>
-        <div className="flex items-center gap-2">
-          <div className="h-8 w-8 rounded-full bg-green-100 flex items-center justify-center">
-            <span className="text-green-700 font-semibold text-xs">
+
+        {/* Infos utilisateur */}
+        <div className="flex items-center gap-3 ml-1 pl-3 border-l border-slate-100 dark:border-zinc-800">
+          <div className="hidden sm:block text-right leading-tight">
+            <p className="text-sm font-bold text-slate-900 dark:text-white">{displayName}</p>
+            <p className="text-xs text-slate-400 dark:text-zinc-500">{roleLabel}</p>
+          </div>
+          <div className="h-9 w-9 rounded-full bg-brand flex items-center justify-center flex-shrink-0 shadow-sm">
+            <span className="text-white font-bold text-xs">
               {user.nom[0]}{user.prenoms[0]}
             </span>
           </div>
-          <span className="hidden sm:block text-sm font-medium text-gray-700">
-            {user.nom} {user.prenoms}
-          </span>
         </div>
       </div>
     </header>

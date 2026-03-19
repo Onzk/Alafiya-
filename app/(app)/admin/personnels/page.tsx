@@ -105,7 +105,7 @@ export default function PersonnelsPage() {
                     <Label>{label}{required !== false && ' *'}</Label>
                     <Input
                       type={type || 'text'}
-                      value={(form as Record<string, string>)[key]}
+                      value={(form as Record<string, unknown>)[key] as string}
                       onChange={(e) => setForm((p) => ({ ...p, [key]: e.target.value }))}
                       required={required !== false}
                     />
