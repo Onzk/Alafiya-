@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useRef } from 'react'
-import { Html5Qrcode } from 'html5-qrcode'
 
 interface QRScannerProps {
   onScan: (result: string) => void
@@ -9,34 +8,66 @@ interface QRScannerProps {
 }
 
 export function QRScanner({ onScan, onError }: QRScannerProps) {
-  const scannerRef = useRef<Html5Qrcode | null>(null)
   const elementId = 'qr-reader'
+  // Refs pour toujours avoir les callbacks les plus récents sans les mettre en deps
+  const onScanRef = useRef(onScan)
+  const onErrorRef = useRef(onError)
 
   useEffect(() => {
-    const scanner = new Html5Qrcode(elementId)
-    scannerRef.current = scanner
+    onScanRef.current = onScan
+    onErrorRef.current = onError
+  })
 
-    scanner
-      .start(
-        { facingMode: 'environment' },
-        { fps: 10, qrbox: { width: 250, height: 250 } },
-        (decodedText) => {
-          onScan(decodedText)
-          scanner.stop().catch(() => {})
-        },
-        (errorMessage) => {
-          onError?.(errorMessage)
+  useEffect(() => {
+    let stopped = false
+    let scannerInstance: import('html5-qrcode').Html5Qrcode | null = null
+
+    async function start() {
+      const { Html5Qrcode } = await import('html5-qrcode')
+
+      // StrictMode : si le cleanup a déjà tourné avant que l'import finisse, on abandonne
+      if (stopped) return
+
+      const scanner = new Html5Qrcode(elementId)
+      scannerInstance = scanner
+
+      try {
+        await scanner.start(
+          { facingMode: 'environment' },
+          { fps: 10, qrbox: { width: 250, height: 250 } },
+          (decodedText: string) => {
+            onScanRef.current(decodedText)
+          },
+          () => {
+            // Erreurs de frame (QR non détecté sur la frame) — ignorées volontairement
+          }
+        )
+      } catch {
+        if (!stopped) {
+          onErrorRef.current?.("Impossible d'accéder à la caméra.")
         }
-      )
-      .catch((err) => {
-        console.error('Erreur démarrage scanner:', err)
-        onError?.('Impossible d\'accéder à la caméra.')
-      })
+      }
+    }
+
+    start()
 
     return () => {
-      scanner.stop().catch(() => {})
+      stopped = true
+      if (scannerInstance) {
+        // stop() puis clear() pour nettoyer l'état interne de html5-qrcode
+        try {
+          scannerInstance
+            .stop()
+            .catch(() => {})
+            .finally(() => {
+              scannerInstance?.clear()
+            })
+        } catch {
+          scannerInstance.clear()
+        }
+      }
     }
-  }, [onScan, onError])
+  }, [])
 
   return (
     <div className="w-full max-w-sm mx-auto">

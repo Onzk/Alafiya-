@@ -25,7 +25,6 @@ const navigationAdmin = [
   { href: '/admin/dashboard',   label: 'Tableau de bord',   icon: LayoutDashboard },
   { href: '/admin/personnels',  label: 'Personnel médical', icon: Users },
   { href: '/admin/roles',       label: 'Rôles',             icon: Shield },
-  { href: '/admin/specialites', label: 'Spécialités',       icon: Stethoscope },
   { href: '/logs',              label: "Journaux d'activité", icon: Activity },
 ]
 

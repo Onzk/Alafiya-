@@ -49,7 +49,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   session: { strategy: 'jwt' },
   pages: { signIn: '/login' },
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger }) {
       if (user) {
         const u = user as unknown as SessionUser & { id: string }
         token.id = u.id
@@ -60,6 +60,13 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         token.centres = u.centres
         token.specialites = u.specialites
         token.permissions = u.permissions
+      }
+      if (trigger === 'update' && token.id) {
+        const dbUser = await prisma.user.findUnique({
+          where: { id: token.id as string },
+          select: { centreActifId: true },
+        })
+        if (dbUser) token.centreActif = dbUser.centreActifId ?? undefined
       }
       return token
     },

@@ -93,6 +93,7 @@ export default function LandingPage() {
   }, [])
 
   const navItems: { href: string; label: string; id: Section }[] = [
+    { href: '#accueil', label: 'Accueil',   id: 'accueil' },
     { href: '#fonctionnalites', label: 'Fonctionnalités',   id: 'fonctionnalites' },
     { href: '#comment',         label: 'Comment ça marche', id: 'comment' },
     { href: '#securite',        label: 'Sécurité',          id: 'securite' },
@@ -114,7 +115,7 @@ export default function LandingPage() {
 
         {/* ══════════════════════════ NAVBAR ══════════════════════════ */}
         <nav className={`sticky top-0 z-50 transition-all duration-300 ${
-          scrolled ? 'bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl border-b border-slate-200 dark:border-zinc-800 shadow-sm' : 'bg-white dark:bg-zinc-950'
+          scrolled ? 'bg-white/95 dark:bg-zinc-950 backdrop-blur-xl shadow-sm' : 'bg-transparent dark:bg-zinc-950'
         }`}>
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-8">
 
@@ -163,7 +164,7 @@ export default function LandingPage() {
 
           {/* Mobile menu */}
           {mobileOpen && (
-            <div className="md:hidden border-t border-slate-100 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-4 py-3 space-y-1">
+            <div className="md:hidden border-t border-slate-100 dark:border-zinc-800 bg-white dark:bg-zinc-950 px-4 py-3 space-y-1">
               {navItems.map(({ href, label, id }) => (
                 <a key={href} href={href} onClick={() => setMobileOpen(false)}
                   className={`block px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
@@ -180,7 +181,7 @@ export default function LandingPage() {
         </nav>
 
         {/* ══════════════════════════ HERO ══════════════════════════ */}
-        <section id="accueil" className="bg-slate-50 dark:bg-zinc-950 pt-16 pb-20 overflow-hidden">
+        <section id="accueil" className="bg-slate-50 dark:bg-zinc-950 pt-16 pb-20 overflow-hidden sm:min-h-[90vh] flex justify-center items-center">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
 
@@ -223,7 +224,7 @@ export default function LandingPage() {
                 {/* Card principale — simule l'interface */}
                 <div className="relative w-full max-w-sm">
                   {/* Badge flottant haut droite */}
-                  <div className="absolute -top-3 -right-4 z-20 flex items-center gap-2 bg-white dark:bg-zinc-800 rounded-full px-3 py-1.5 shadow-lg border border-slate-100 dark:border-zinc-700">
+                  <div className="absolute -top-6 -right-4 z-20 flex items-center gap-2 bg-white dark:bg-zinc-800 rounded-full px-3 py-1.5 shadow-lg border border-slate-100 dark:border-zinc-700">
                     <span className="h-5 w-5 rounded-full bg-brand/10 flex items-center justify-center flex-shrink-0">
                       <CheckCircle className="h-3 w-3 text-brand" />
                     </span>
@@ -234,14 +235,14 @@ export default function LandingPage() {
                   </div>
 
                   {/* Carte principale */}
-                  <div className="bg-white dark:bg-zinc-900 rounded-3xl shadow-2xl border border-slate-100 dark:border-zinc-800 p-5 overflow-hidden">
+                  <div className="bg-white dark:bg-zinc-950 rounded-3xl shadow-2xl border border-slate-100 dark:border-zinc-800 p-5 overflow-hidden">
                     {/* Photo patient placeholder */}
                     <div className="relative h-52 bg-gradient-to-br from-amber-100 to-orange-100 dark:from-amber-950/40 dark:to-orange-950/40 rounded-2xl mb-4 overflow-hidden">
                       <Image
-                        src="https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&w=600&q=80"
+                        src="/patient-card.png"
                         alt="Patient"
                         fill
-                        className="object-cover mix-blend-luminosity opacity-80"
+                        className="object-cover opacity-80"
                       />
                       {/* Status badge sur la photo */}
                       <div className="absolute top-3 left-3 flex items-center gap-1.5 bg-brand text-white text-xs font-bold px-2.5 py-1 rounded-full">
@@ -282,7 +283,7 @@ export default function LandingPage() {
                   </div>
 
                   {/* Badge flottant bas — QR */}
-                  <div className="absolute -bottom-3 left-6 z-20 flex items-center gap-2 bg-white dark:bg-zinc-800 rounded-full px-4 py-2 shadow-lg border border-slate-100 dark:border-zinc-700">
+                  <div className="absolute -bottom-6 left-6 z-20 flex items-center gap-2 bg-white dark:bg-zinc-800 rounded-full px-4 py-2 shadow-lg border border-slate-100 dark:border-zinc-700">
                     <QrCode className="h-4 w-4 text-brand" />
                     <span className="text-xs font-bold text-slate-900 dark:text-white">Scan QR Code</span>
                   </div>
@@ -293,8 +294,8 @@ export default function LandingPage() {
         </section>
 
         {/* ══════════════════════════ STATS ══════════════════════════ */}
-        <section className="bg-white dark:bg-zinc-900 border-y border-slate-100 dark:border-zinc-800 py-14">
-          <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+        <section className="py-14 bg-emerald-950 dark:bg-emerald-950">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
               {[
                 { value: '150+',    label: 'Centres de Santé' },
@@ -365,7 +366,7 @@ export default function LandingPage() {
               ].map((feat) => {
                 const Icon = feat.icon
                 return (
-                  <div key={feat.title} className="anim-up bg-white dark:bg-zinc-900 rounded-2xl p-7 border border-slate-100 dark:border-zinc-800 hover:shadow-lg hover:-translate-y-0.5 transition-all" {...d(feat.d)}>
+                  <div key={feat.title} className="anim-up bg-white dark:bg-zinc-950 rounded-2xl p-7 border border-slate-100 dark:border-zinc-800 hover:shadow-lg hover:-translate-y-0.5 transition-all" {...d(feat.d)}>
                     <div className="h-11 w-11 rounded-xl bg-slate-50 dark:bg-zinc-800 flex items-center justify-center mb-5">
                       <Icon className="h-5 w-5 text-slate-500 dark:text-zinc-400" />
                     </div>
@@ -379,7 +380,7 @@ export default function LandingPage() {
         </section>
 
         {/* ══════════════════════════ COMMENT ÇA MARCHE ══════════════════════════ */}
-        <section id="comment" className="py-24 bg-white dark:bg-zinc-900">
+        <section id="comment" className="py-24 bg-white dark:bg-zinc-950">
           <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-16 anim-up">
               <h2 className="text-3xl md:text-4xl font-extrabold text-slate-900 dark:text-white mb-4">Comment ça marche ?</h2>
@@ -493,7 +494,7 @@ export default function LandingPage() {
                   { value: '3×',  label: 'plus rapide' },
                   { value: '0',   label: 'perte de dossier' },
                 ].map((s) => (
-                  <div key={s.label} className="bg-slate-50 dark:bg-zinc-900 rounded-2xl p-4 border border-slate-100 dark:border-zinc-800">
+                  <div key={s.label} className="bg-slate-50 dark:bg-zinc-950 rounded-2xl p-4 border border-slate-100 dark:border-zinc-800">
                     <p className="text-2xl font-extrabold text-brand mb-1">{s.value}</p>
                     <p className="text-xs text-slate-500 dark:text-zinc-400">{s.label}</p>
                   </div>
@@ -513,7 +514,7 @@ export default function LandingPage() {
         </section>
 
         {/* ══════════════════════════ FOOTER ══════════════════════════ */}
-        <footer className="bg-slate-50 dark:bg-zinc-900 border-t border-slate-200 dark:border-zinc-800">
+        <footer className="bg-slate-50 dark:bg-zinc-950 border-t border-slate-200 dark:border-zinc-800">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
             <div className="grid md:grid-cols-4 gap-10">
 

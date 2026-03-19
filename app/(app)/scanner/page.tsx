@@ -1,12 +1,13 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { QrCode, AlertTriangle, Loader2, ArrowLeft } from 'lucide-react'
+import { QrCode, AlertTriangle, Loader2, ArrowLeft, PenLine, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { QRScanner } from '@/components/qrcode/QRScanner'
+import SignaturePad from 'signature_pad'
 
 type Etape = 'scan' | 'chargement' | 'acces'
 
@@ -28,11 +29,33 @@ export default function ScannerPage() {
   const [otpEnvoye, setOtpEnvoye] = useState(false)
   const [loading, setLoading] = useState(false)
 
+  // Signature pad
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+  const padRef = useRef<SignaturePad | null>(null)
+
+  useEffect(() => {
+    if (etape === 'acces' && patient && !patient.aTelephone && canvasRef.current) {
+      // Redimensionner le canvas AVANT de construire SignaturePad
+      const canvas = canvasRef.current
+      const ratio = Math.max(window.devicePixelRatio || 1, 1)
+      canvas.width = canvas.offsetWidth * ratio
+      canvas.height = canvas.offsetHeight * ratio
+      canvas.getContext('2d')?.scale(ratio, ratio)
+      padRef.current = new SignaturePad(canvas, { backgroundColor: 'rgb(255,255,255)' })
+    }
+  }, [etape, patient])
+
+  const handleScanError = useCallback((e: string) => {
+    // N'afficher que les erreurs caméra réelles, pas les "QR not found" de chaque frame
+    if (e.includes('caméra') || e.includes('camera') || e.includes('accéder')) {
+      setErreur(e)
+    }
+  }, [])
+
   const handleScan = useCallback(async (qrText: string) => {
     setEtape('chargement')
     setErreur('')
 
-    // Extraire le token depuis l'URL ou utiliser le texte directement
     let token = qrText
     try {
       const url = new URL(qrText)
@@ -67,7 +90,7 @@ export default function ScannerPage() {
     setLoading(false)
 
     if (!res.ok) {
-      setErreur(data.error || 'Erreur lors de l\'envoi du code.')
+      setErreur(data.error || "Erreur lors de l'envoi du code.")
       return
     }
 
@@ -82,11 +105,7 @@ export default function ScannerPage() {
     const res = await fetch('/api/otp/valider', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        patientId: patient.id,
-        dossierId: patient.dossierId,
-        code: otpCode,
-      }),
+      body: JSON.stringify({ patientId: patient.id, dossierId: patient.dossierId, code: otpCode }),
     })
 
     const data = await res.json()
@@ -100,7 +119,41 @@ export default function ScannerPage() {
     router.push(`/patients/${patient.id}`)
   }
 
-  async function activerUrgence() {
+  async function validerSignature() {
+    if (!patient || !padRef.current) return
+
+    if (padRef.current.isEmpty()) {
+      setErreur('La signature est requise. Le patient doit signer dans le cadre.')
+      return
+    }
+
+    setLoading(true)
+    setErreur('')
+
+    const signatureBase64 = padRef.current.toDataURL('image/png')
+
+    const res = await fetch('/api/signature/valider', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        patientId: patient.id,
+        dossierId: patient.dossierId,
+        signatureBase64,
+      }),
+    })
+
+    const data = await res.json()
+    setLoading(false)
+
+    if (!res.ok) {
+      setErreur(data.error || "Erreur lors de la validation de la signature.")
+      return
+    }
+
+    router.push(`/patients/${patient.id}`)
+  }
+
+  function activerUrgence() {
     router.push(`/urgence?patientId=${patient?.id}&dossierId=${patient?.dossierId}`)
   }
 
@@ -115,7 +168,7 @@ export default function ScannerPage() {
         </Link>
         <div>
           <h1 className="text-xl font-bold text-gray-900">Scanner QR Code</h1>
-          <p className="text-gray-500 text-sm">Accéder au dossier d'un patient</p>
+          <p className="text-gray-500 text-sm">Accéder au dossier d&apos;un patient</p>
         </div>
       </div>
 
@@ -129,7 +182,7 @@ export default function ScannerPage() {
       {etape === 'scan' && (
         <Card>
           <CardContent className="p-6">
-            <QRScanner onScan={handleScan} onError={(e) => setErreur(e)} />
+            <QRScanner onScan={handleScan} onError={handleScanError} />
           </CardContent>
         </Card>
       )}
@@ -166,13 +219,16 @@ export default function ScannerPage() {
             </CardContent>
           </Card>
 
-          {/* Validation accès */}
+          {/* Validation accès — OTP */}
           {patient.aTelephone ? (
             <Card>
               <CardContent className="p-5 space-y-4">
-                <h2 className="font-semibold text-gray-900">Validation par SMS</h2>
+                <div className="flex items-center gap-2">
+                  <QrCode className="h-4 w-4 text-green-600" />
+                  <h2 className="font-semibold text-gray-900">Validation par SMS</h2>
+                </div>
                 <p className="text-sm text-gray-600">
-                  Un code à 6 chiffres sera envoyé par SMS au téléphone enregistré du patient.
+                  Un code à 6 chiffres sera envoyé par SMS au téléphone du patient.
                   Le patient vous communique oralement ce code.
                 </p>
 
@@ -183,9 +239,7 @@ export default function ScannerPage() {
                   </Button>
                 ) : (
                   <div className="space-y-3">
-                    <p className="text-sm text-green-600 font-medium">
-                      Code envoyé. Valable 10 minutes.
-                    </p>
+                    <p className="text-sm text-green-600 font-medium">Code envoyé. Valable 10 minutes.</p>
                     <input
                       type="text"
                       inputMode="numeric"
@@ -204,17 +258,44 @@ export default function ScannerPage() {
               </CardContent>
             </Card>
           ) : (
+            /* Validation par signature numérique */
             <Card>
-              <CardContent className="p-5">
-                <p className="text-sm text-gray-600 mb-3">
-                  Ce patient n'a pas de numéro de téléphone enregistré. Une signature numérique
-                  est requise pour valider l'accès.
+              <CardContent className="p-5 space-y-4">
+                <div className="flex items-center gap-2">
+                  <PenLine className="h-4 w-4 text-blue-600" />
+                  <h2 className="font-semibold text-gray-900">Signature du patient</h2>
+                </div>
+                <p className="text-sm text-gray-600">
+                  Ce patient n&apos;a pas de numéro de téléphone. Présentez cet écran au patient
+                  pour qu&apos;il signe dans le cadre ci-dessous. Sa signature vaut consentement d&apos;accès.
                 </p>
+
+                <div className="relative border-2 border-dashed border-gray-300 rounded-xl bg-white overflow-hidden">
+                  <canvas
+                    ref={canvasRef}
+                    className="w-full touch-none"
+                    style={{ height: '200px', display: 'block' }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => padRef.current?.clear()}
+                    className="absolute top-2 right-2 p-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-500 transition-colors"
+                    title="Effacer la signature"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                  <p className="absolute bottom-2 left-0 right-0 text-center text-xs text-gray-300 pointer-events-none">
+                    Signez ici
+                  </p>
+                </div>
+
                 <Button
-                  onClick={() => router.push(`/patients/${patient.id}`)}
+                  onClick={validerSignature}
+                  disabled={loading}
                   className="w-full"
                 >
-                  Procéder à la signature
+                  {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                  Valider la signature et accéder au dossier
                 </Button>
               </CardContent>
             </Card>
@@ -223,11 +304,7 @@ export default function ScannerPage() {
           {/* Mode urgence */}
           <Card className="border-red-200">
             <CardContent className="p-4">
-              <Button
-                variant="urgence"
-                className="w-full"
-                onClick={activerUrgence}
-              >
+              <Button variant="urgence" className="w-full" onClick={activerUrgence}>
                 <AlertTriangle className="mr-2 h-4 w-4" />
                 MODE URGENCE
               </Button>

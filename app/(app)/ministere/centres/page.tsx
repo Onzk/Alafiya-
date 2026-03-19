@@ -11,13 +11,13 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 
 interface Centre {
-  _id: string
+  id: string
   nom: string
   type: string
   region: string
   prefecture: string
   estActif: boolean
-  adminId?: { nom: string; prenoms: string; email: string }
+  admin?: { nom: string; prenoms: string; email: string }
 }
 
 export default function CentresPage() {
@@ -64,7 +64,7 @@ export default function CentresPage() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ estActif: !actuel }),
     })
-    setCentres((prev) => prev.map((c) => c._id === id ? { ...c, estActif: !actuel } : c))
+    setCentres((prev) => prev.map((c) => c.id === id ? { ...c, estActif: !actuel } : c))
   }
 
   return (
@@ -150,7 +150,7 @@ export default function CentresPage() {
       ) : (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {centres.map((centre) => (
-            <Card key={centre._id}>
+            <Card key={centre.id}>
               <CardHeader className="pb-2">
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-2">
@@ -164,14 +164,14 @@ export default function CentresPage() {
               </CardHeader>
               <CardContent className="space-y-2 text-xs text-gray-500">
                 <p>{centre.type} • {centre.region}, {centre.prefecture}</p>
-                {centre.adminId && (
-                  <p>Admin : {centre.adminId.nom} {centre.adminId.prenoms}</p>
+                {centre.admin && (
+                  <p>Admin : {centre.admin.nom} {centre.admin.prenoms}</p>
                 )}
                 <Button
                   size="sm"
                   variant={centre.estActif ? 'outline' : 'default'}
                   className="w-full mt-2"
-                  onClick={() => toggleActif(centre._id, centre.estActif)}
+                  onClick={() => toggleActif(centre.id, centre.estActif)}
                 >
                   {centre.estActif ? 'Désactiver' : 'Activer'}
                 </Button>

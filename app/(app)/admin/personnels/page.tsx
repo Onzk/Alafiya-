@@ -10,17 +10,17 @@ import { Badge } from '@/components/ui/badge'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 
 interface Personnel {
-  _id: string
+  id: string
   nom: string
   prenoms: string
   email: string
   telephone?: string
   estActif: boolean
-  specialites?: { nom: string }[]
+  specialites?: { specialite: { nom: string } }[]
 }
 
 interface Specialite {
-  _id: string
+  id: string
   nom: string
   code: string
 }
@@ -118,11 +118,11 @@ export default function PersonnelsPage() {
                 <div className="flex flex-wrap gap-2">
                   {specialites.map((sp) => (
                     <button
-                      key={sp._id}
+                      key={sp.id}
                       type="button"
-                      onClick={() => toggleSpecialite(sp._id)}
+                      onClick={() => toggleSpecialite(sp.id)}
                       className={`px-3 py-1 rounded-full text-xs font-medium border transition-colors ${
-                        form.specialites.includes(sp._id)
+                        form.specialites.includes(sp.id)
                           ? 'bg-green-600 text-white border-green-600'
                           : 'border-gray-300 text-gray-600 hover:border-green-400'
                       }`}
@@ -147,7 +147,7 @@ export default function PersonnelsPage() {
       ) : (
         <div className="space-y-3">
           {personnel.map((p) => (
-            <Card key={p._id}>
+            <Card key={p.id}>
               <CardContent className="p-4 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="h-10 w-10 rounded-full bg-green-100 flex items-center justify-center">
@@ -158,9 +158,9 @@ export default function PersonnelsPage() {
                     <p className="text-xs text-gray-400">{p.email}</p>
                     {p.specialites && p.specialites.length > 0 && (
                       <div className="flex gap-1 mt-1 flex-wrap">
-                        {p.specialites.map((sp: { nom: string }) => (
-                          <span key={sp.nom} className="text-xs bg-blue-50 text-blue-600 px-2 py-0.5 rounded">
-                            {sp.nom}
+                        {p.specialites.map((sp) => (
+                          <span key={sp.specialite.nom} className="text-xs bg-blue-50 text-blue-600 px-2 py-0.5 rounded">
+                            {sp.specialite.nom}
                           </span>
                         ))}
                       </div>

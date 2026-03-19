@@ -2,22 +2,39 @@
 
 import { useState } from 'react'
 import { signIn } from 'next-auth/react'
+import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
-import { Eye, EyeOff, Loader2 } from 'lucide-react'
+import { Eye, EyeOff, Loader2, Building2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { ThemeToggle } from '@/components/ThemeToggle'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+
+interface CentreOption {
+  id: string
+  nom: string
+  type: string
+  region: string
+}
 
 export default function LoginPage() {
   const router = useRouter()
+  const { update } = useSession()
+
   const [email, setEmail] = useState('')
   const [motDePasse, setMotDePasse] = useState('')
   const [showPwd, setShowPwd] = useState(false)
   const [loading, setLoading] = useState(false)
   const [erreur, setErreur] = useState('')
+
+  // Modale sélection centre
+  const [centresDisponibles, setCentresDisponibles] = useState<CentreOption[]>([])
+  const [centreModalOpen, setCentreModalOpen] = useState(false)
+  const [redirectionApresSelection, setRedirectionApresSelection] = useState('')
+  const [selectionLoading, setSelectionLoading] = useState(false)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -39,15 +56,51 @@ export default function LoginPage() {
 
     const sessionRes = await fetch('/api/auth/session')
     const session = await sessionRes.json()
-    const niveau = session?.user?.niveauAcces
+    const user = session?.user
 
-    if (niveau === 'MINISTERE') {
-      router.push('/ministere/dashboard')
-    } else if (niveau === 'ADMIN_CENTRE') {
-      router.push('/admin/dashboard')
-    } else {
-      router.push('/dashboard')
+    if (!user) {
+      setErreur('Erreur de session. Réessayez.')
+      return
     }
+
+    const niveau = user.niveauAcces
+    const destination =
+      niveau === 'MINISTERE' ? '/ministere/dashboard' :
+      niveau === 'ADMIN_CENTRE' ? '/admin/dashboard' :
+      '/dashboard'
+
+    // Si l'utilisateur a plusieurs centres, afficher la modale de sélection
+    if (niveau !== 'MINISTERE' && user.centres && user.centres.length > 1) {
+      setRedirectionApresSelection(destination)
+
+      // Récupérer les détails des centres de l'utilisateur
+      const centresRes = await fetch('/api/centres')
+      const centresData = await centresRes.json()
+      const mesCentres = (centresData.centres || []).filter(
+        (c: CentreOption & { id: string }) => user.centres.includes(c.id)
+      )
+      setCentresDisponibles(mesCentres)
+      setCentreModalOpen(true)
+      return
+    }
+
+    router.push(destination)
+  }
+
+  async function choisirCentre(centreId: string) {
+    setSelectionLoading(true)
+
+    await fetch('/api/session/centre', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ centreId }),
+    })
+
+    // Rafraîchir le JWT avec le nouveau centre actif
+    await update()
+
+    setCentreModalOpen(false)
+    router.push(redirectionApresSelection)
   }
 
   return (
@@ -140,6 +193,37 @@ export default function LoginPage() {
           En cas de problème, contactez votre administrateur.
         </p>
       </div>
+
+      {/* Modale sélection du centre actif */}
+      <Dialog open={centreModalOpen} onOpenChange={() => {}}>
+        <DialogContent className="max-w-sm" onInteractOutside={(e) => e.preventDefault()}>
+          <DialogHeader>
+            <DialogTitle>Choisissez votre centre de travail</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-gray-500 mb-2">
+            Vous êtes affecté(e) à plusieurs centres. Sélectionnez celui sur lequel vous travaillez aujourd&apos;hui.
+          </p>
+          <div className="space-y-2">
+            {centresDisponibles.map((centre) => (
+              <button
+                key={centre.id}
+                onClick={() => choisirCentre(centre.id)}
+                disabled={selectionLoading}
+                className="w-full flex items-center gap-3 p-3 rounded-xl border border-gray-200 hover:border-green-400 hover:bg-green-50 transition-all text-left disabled:opacity-50"
+              >
+                <div className="h-9 w-9 rounded-lg bg-green-100 flex items-center justify-center flex-shrink-0">
+                  <Building2 className="h-5 w-5 text-green-600" />
+                </div>
+                <div>
+                  <p className="font-semibold text-sm text-gray-900">{centre.nom}</p>
+                  <p className="text-xs text-gray-400">{centre.type} • {centre.region}</p>
+                </div>
+                {selectionLoading && <Loader2 className="ml-auto h-4 w-4 animate-spin text-green-600" />}
+              </button>
+            ))}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

@@ -55,6 +55,7 @@ export async function POST(req: NextRequest) {
         ? { create: validation.data.permissions.map((pid) => ({ permissionId: pid })) }
         : undefined,
     },
+    include: { permissions: { include: { permission: { select: { code: true, description: true } } } } },
   })
 
   const { ip, userAgent } = getRequestInfo(req)
