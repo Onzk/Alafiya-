@@ -1,8 +1,8 @@
 'use client'
 
 import Link from 'next/link'
-import Image from 'next/image'
 import { usePathname } from 'next/navigation'
+import { LogoIcon } from '@/components/ui/logo'
 import { signOut } from 'next-auth/react'
 import {
   LayoutDashboard, Users, QrCode, FileText, Building2,
@@ -55,15 +55,15 @@ export function Sidebar({ user }: SidebarProps) {
     `${user.nom} ${user.prenoms}`
 
   return (
-    <aside className="flex h-full w-64 flex-col bg-white dark:bg-zinc-900 border-r border-slate-100 dark:border-zinc-800">
+    <aside className="flex h-full w-64 flex-col bg-white dark:bg-zinc-950 border-r border-slate-100 dark:border-zinc-800">
 
       {/* Logo */}
       <div className="flex items-center gap-2.5 px-5 h-16 border-b border-slate-100 dark:border-zinc-800 flex-shrink-0">
-        <div className="h-9 w-9 bg-white rounded-xl border border-slate-100 dark:border-zinc-700 shadow-sm flex items-center justify-center flex-shrink-0">
-          <Image src="/logo.png" alt="Alafia Plus" width={28} height={28} className="rounded-lg" priority />
+        <div className="h-9 w-9 flex items-center justify-center flex-shrink-0">
+          <LogoIcon className="h-8 w-8 text-emerald-500 dark:text-emerald-400" />
         </div>
         <span className="font-extrabold text-slate-900 dark:text-white text-lg tracking-tight">
-          Alafia <span className="text-brand">Plus</span>
+          Alafiya <span className="text-brand">Plus</span>
         </span>
       </div>
 

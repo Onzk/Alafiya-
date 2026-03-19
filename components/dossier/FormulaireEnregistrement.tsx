@@ -9,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { DicteeVocale } from '@/components/ia/DicteeVocale'
 import { StructureIA } from '@/types'
+import { useToast } from '@/hooks/use-toast'
 
 interface FormulaireEnregistrementProps {
   dossierId: string
@@ -22,8 +23,8 @@ export function FormulaireEnregistrement({
   specialiteNom,
 }: FormulaireEnregistrementProps) {
   const router = useRouter()
+  const { toast } = useToast()
   const [loading, setLoading] = useState(false)
-  const [erreur, setErreur] = useState('')
   const [transcriptionBrute, setTranscriptionBrute] = useState('')
 
   const [form, setForm] = useState({
@@ -58,7 +59,6 @@ export function FormulaireEnregistrement({
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setLoading(true)
-    setErreur('')
 
     const res = await fetch(`/api/dossiers/${dossierId}`, {
       method: 'POST',
@@ -75,7 +75,7 @@ export function FormulaireEnregistrement({
     setLoading(false)
 
     if (!res.ok) {
-      setErreur(data.error || 'Erreur lors de l\'enregistrement.')
+      toast({ description: data.error || "Erreur lors de l'enregistrement.", variant: "destructive" })
       return
     }
 
@@ -98,12 +98,6 @@ export function FormulaireEnregistrement({
           Nouvelle consultation — {specialiteNom}
         </h2>
       </div>
-
-      {erreur && (
-        <div className="p-3 bg-red-50 border border-red-200 rounded-md text-sm text-red-700">
-          {erreur}
-        </div>
-      )}
 
       {/* Dictée vocale */}
       <DicteeVocale onStructure={handleStructureIA} />

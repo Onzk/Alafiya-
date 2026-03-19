@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { QRScanner } from '@/components/qrcode/QRScanner'
 import SignaturePad from 'signature_pad'
+import { toast } from '@/hooks/use-toast'
 
 type Etape = 'scan' | 'chargement' | 'acces'
 
@@ -24,7 +25,6 @@ export default function ScannerPage() {
   const router = useRouter()
   const [etape, setEtape] = useState<Etape>('scan')
   const [patient, setPatient] = useState<PatientInfo | null>(null)
-  const [erreur, setErreur] = useState('')
   const [otpCode, setOtpCode] = useState('')
   const [otpEnvoye, setOtpEnvoye] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -48,13 +48,12 @@ export default function ScannerPage() {
   const handleScanError = useCallback((e: string) => {
     // N'afficher que les erreurs caméra réelles, pas les "QR not found" de chaque frame
     if (e.includes('caméra') || e.includes('camera') || e.includes('accéder')) {
-      setErreur(e)
+      toast({ description: e, variant: 'destructive' })
     }
   }, [])
 
   const handleScan = useCallback(async (qrText: string) => {
     setEtape('chargement')
-    setErreur('')
 
     let token = qrText
     try {
@@ -66,7 +65,7 @@ export default function ScannerPage() {
     const data = await res.json()
 
     if (!res.ok) {
-      setErreur(data.error || 'Patient introuvable.')
+      toast({ description: data.error || 'Patient introuvable.', variant: 'destructive' })
       setEtape('scan')
       return
     }
@@ -78,7 +77,6 @@ export default function ScannerPage() {
   async function envoyerOTP() {
     if (!patient) return
     setLoading(true)
-    setErreur('')
 
     const res = await fetch('/api/otp/envoyer', {
       method: 'POST',
@@ -90,7 +88,7 @@ export default function ScannerPage() {
     setLoading(false)
 
     if (!res.ok) {
-      setErreur(data.error || "Erreur lors de l'envoi du code.")
+      toast({ description: data.error || "Erreur lors de l'envoi du code.", variant: 'destructive' })
       return
     }
 
@@ -100,7 +98,6 @@ export default function ScannerPage() {
   async function validerOTP() {
     if (!patient || !otpCode) return
     setLoading(true)
-    setErreur('')
 
     const res = await fetch('/api/otp/valider', {
       method: 'POST',
@@ -112,7 +109,7 @@ export default function ScannerPage() {
     setLoading(false)
 
     if (!res.ok) {
-      setErreur(data.error || 'Code invalide ou expiré.')
+      toast({ description: data.error || 'Code invalide ou expiré.', variant: 'destructive' })
       return
     }
 
@@ -123,12 +120,11 @@ export default function ScannerPage() {
     if (!patient || !padRef.current) return
 
     if (padRef.current.isEmpty()) {
-      setErreur('La signature est requise. Le patient doit signer dans le cadre.')
+      toast({ description: 'La signature est requise. Le patient doit signer dans le cadre.', variant: 'destructive' })
       return
     }
 
     setLoading(true)
-    setErreur('')
 
     const signatureBase64 = padRef.current.toDataURL('image/png')
 
@@ -146,7 +142,7 @@ export default function ScannerPage() {
     setLoading(false)
 
     if (!res.ok) {
-      setErreur(data.error || "Erreur lors de la validation de la signature.")
+      toast({ description: data.error || "Erreur lors de la validation de la signature.", variant: 'destructive' })
       return
     }
 
@@ -171,13 +167,6 @@ export default function ScannerPage() {
           <p className="text-gray-500 text-sm">Accéder au dossier d&apos;un patient</p>
         </div>
       </div>
-
-      {erreur && (
-        <div className="p-3 bg-red-50 border border-red-200 rounded-md text-sm text-red-700 flex gap-2">
-          <AlertTriangle className="h-4 w-4 flex-shrink-0 mt-0.5" />
-          {erreur}
-        </div>
-      )}
 
       {etape === 'scan' && (
         <Card>

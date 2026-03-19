@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { useToast } from '@/hooks/use-toast'
 
 interface Personnel {
   id: string
@@ -26,12 +27,12 @@ interface Specialite {
 }
 
 export default function PersonnelsPage() {
+  const { toast } = useToast()
   const [personnel, setPersonnel] = useState<Personnel[]>([])
   const [specialites, setSpecialites] = useState<Specialite[]>([])
   const [loading, setLoading] = useState(true)
   const [dialogOpen, setDialogOpen] = useState(false)
   const [submitting, setSubmitting] = useState(false)
-  const [erreur, setErreur] = useState('')
 
   const [form, setForm] = useState({
     nom: '', prenoms: '', email: '', motDePasse: '', telephone: '',
@@ -62,7 +63,6 @@ export default function PersonnelsPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setSubmitting(true)
-    setErreur('')
 
     const res = await fetch('/api/utilisateurs', {
       method: 'POST',
@@ -72,7 +72,7 @@ export default function PersonnelsPage() {
     const data = await res.json()
     setSubmitting(false)
 
-    if (!res.ok) { setErreur(data.error || 'Erreur'); return }
+    if (!res.ok) { toast({ description: data.error || 'Erreur', variant: 'destructive' }); return }
 
     setPersonnel((prev) => [data.utilisateur, ...prev])
     setDialogOpen(false)
@@ -91,7 +91,6 @@ export default function PersonnelsPage() {
           </DialogTrigger>
           <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
             <DialogHeader><DialogTitle>Nouveau compte personnel</DialogTitle></DialogHeader>
-            {erreur && <p className="text-sm text-red-600 bg-red-50 p-2 rounded">{erreur}</p>}
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid sm:grid-cols-2 gap-3">
                 {[

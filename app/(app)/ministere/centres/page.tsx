@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { useToast } from '@/hooks/use-toast'
 
 interface Centre {
   id: string
@@ -21,11 +22,11 @@ interface Centre {
 }
 
 export default function CentresPage() {
+  const { toast } = useToast()
   const [centres, setCentres] = useState<Centre[]>([])
   const [loading, setLoading] = useState(true)
   const [dialogOpen, setDialogOpen] = useState(false)
   const [submitting, setSubmitting] = useState(false)
-  const [erreur, setErreur] = useState('')
 
   const [form, setForm] = useState({
     nom: '', adresse: '', telephone: '', email: '', region: '', prefecture: '',
@@ -42,7 +43,6 @@ export default function CentresPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setSubmitting(true)
-    setErreur('')
 
     const res = await fetch('/api/centres', {
       method: 'POST',
@@ -52,7 +52,7 @@ export default function CentresPage() {
     const data = await res.json()
     setSubmitting(false)
 
-    if (!res.ok) { setErreur(data.error || 'Erreur'); return }
+    if (!res.ok) { toast({ description: data.error || 'Erreur', variant: 'destructive' }); return }
 
     setCentres((prev) => [data.centre, ...prev])
     setDialogOpen(false)
@@ -82,7 +82,6 @@ export default function CentresPage() {
             <DialogHeader>
               <DialogTitle>Créer un centre de santé</DialogTitle>
             </DialogHeader>
-            {erreur && <p className="text-sm text-red-600 bg-red-50 p-2 rounded">{erreur}</p>}
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid sm:grid-cols-2 gap-3">
                 {[

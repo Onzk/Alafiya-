@@ -1,8 +1,8 @@
 'use client'
 
 import Link from 'next/link'
-import Image from 'next/image'
 import { useEffect, useState } from 'react'
+import { LogoIcon } from '@/components/ui/logo'
 import {
   Shield,
   QrCode,
@@ -24,22 +24,13 @@ import {
   ShieldCheck,
   Heart,
   AlertCircle,
+  Building2,
+  Stethoscope,
+  Server,
+  Key,
 } from 'lucide-react'
 import { ThemeToggle } from '@/components/ThemeToggle'
 
-/* ═══════════════════════════════════════════
-   Logo — fond blanc pour visibilité garantie
-═══════════════════════════════════════════ */
-function Logo({ size = 32 }: { size?: number }) {
-  return (
-    <div
-      className="flex-shrink-0 bg-white rounded-xl border border-slate-100 dark:border-zinc-700 flex items-center justify-center shadow-sm"
-      style={{ width: size + 8, height: size + 8 }}
-    >
-      <Image src="/logo.png" alt="Alafiya" width={size} height={size} className="rounded-lg" priority />
-    </div>
-  )
-}
 
 /* ═══════════════════════════════════════════
    Scroll reveal
@@ -120,10 +111,10 @@ export default function LandingPage() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-8">
 
             {/* Logo */}
-            <Link href="/" className="flex items-center gap-2.5 flex-shrink-0">
-              <Logo size={28} />
+            <Link href="/" className="flex items-center gap-1 flex-shrink-0">
+              <LogoIcon className="h-7 w-7 text-emerald-500 dark:text-emerald-400" />
               <span className="text-lg font-extrabold text-slate-900 dark:text-white tracking-tight">
-                Alafia <span className="text-brand">Plus</span>
+                Alafiya <span className="text-brand">+</span>
               </span>
             </Link>
 
@@ -181,115 +172,219 @@ export default function LandingPage() {
         </nav>
 
         {/* ══════════════════════════ HERO ══════════════════════════ */}
-        <section id="accueil" className="bg-slate-50 dark:bg-zinc-950 pt-16 pb-20 overflow-hidden sm:min-h-[90vh] flex justify-center items-center">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+        <section id="accueil" className="relative bg-white dark:bg-zinc-950 overflow-hidden pt-24 pb-0">
 
-              {/* Texte gauche */}
-              <div>
-                <div className="anim-fade inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-brand/10 border border-brand/20 text-brand text-xs font-bold uppercase tracking-widest mb-6">
-                  <span className="h-1.5 w-1.5 rounded-full bg-brand" />
-                  Plateforme nationale de santé
+          {/* Glows de fond */}
+          <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[900px] h-[500px] rounded-full"
+              style={{ background: 'radial-gradient(ellipse, rgba(33,196,136,0.12) 0%, transparent 70%)' }} />
+            <div className="absolute top-32 left-0 w-72 h-72 rounded-full"
+              style={{ background: 'radial-gradient(ellipse, rgba(33,196,136,0.06) 0%, transparent 70%)' }} />
+            <div className="absolute top-32 right-0 w-72 h-72 rounded-full"
+              style={{ background: 'radial-gradient(ellipse, rgba(20,184,166,0.06) 0%, transparent 70%)' }} />
+          </div>
+
+          {/* ── Items flottants ── */}
+          <div className="absolute inset-0 pointer-events-none overflow-hidden" aria-hidden="true">
+
+            {/* QR Code — haut gauche */}
+            <div className="absolute top-16 left-[6%] animate-float opacity-70" style={{ animationDelay: '0s', animationDuration: '4s' }}>
+              <div className="bg-white dark:bg-zinc-950 rounded-2xl p-3 shadow-lg border border-slate-100 dark:border-zinc-800">
+                <QrCode className="h-7 w-7 text-brand" />
+              </div>
+            </div>
+
+            {/* Croix médicale — haut droite */}
+            <div className="absolute top-20 right-[7%] animate-float opacity-60" style={{ animationDelay: '0.8s', animationDuration: '5s' }}>
+              <div className="bg-brand/10 rounded-2xl p-3 shadow-sm border border-brand/20">
+                <svg className="h-7 w-7 text-brand" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M19 8h-4V4a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v4H5a1 1 0 0 0-1 1v4a1 1 0 0 0 1 1h4v4a1 1 0 0 0 1 1h4a1 1 0 0 0 1-1v-4h4a1 1 0 0 0 1-1V9a1 1 0 0 0-1-1z"/>
+                </svg>
+              </div>
+            </div>
+
+            {/* Shield — milieu gauche */}
+            <div className="absolute top-[38%] left-[3%] animate-float opacity-50" style={{ animationDelay: '1.4s', animationDuration: '6s' }}>
+              <div className="bg-white dark:bg-zinc-950 rounded-2xl p-3 shadow-md border border-slate-100 dark:border-zinc-800">
+                <ShieldCheck className="h-6 w-6 text-emerald-500" />
+              </div>
+            </div>
+
+            {/* Cœur — milieu droite */}
+            <div className="absolute top-[35%] right-[4%] animate-float opacity-65" style={{ animationDelay: '0.4s', animationDuration: '4.5s' }}>
+              <div className="bg-rose-50 dark:bg-rose-950/30 rounded-2xl p-3 shadow-sm border border-rose-100 dark:border-rose-900/40">
+                <Heart className="h-6 w-6 text-rose-400 fill-rose-400" />
+              </div>
+            </div>
+
+            {/* Activité ECG — bas gauche */}
+            <div className="absolute top-[58%] left-[8%] animate-float opacity-55" style={{ animationDelay: '2s', animationDuration: '5.5s' }}>
+              <div className="bg-white dark:bg-zinc-950 rounded-2xl px-4 py-3 shadow-md border border-slate-100 dark:border-zinc-800 flex items-center gap-2">
+                <Activity className="h-5 w-5 text-brand flex-shrink-0" />
+                <div>
+                  <p className="text-[10px] font-bold text-slate-700 dark:text-zinc-300 leading-none">ECG Normal</p>
+                  <p className="text-[9px] text-slate-400 dark:text-zinc-500">72 bpm</p>
                 </div>
+              </div>
+            </div>
 
-                <h1 className="anim-up text-4xl md:text-5xl lg:text-6xl font-extrabold text-slate-900 dark:text-white leading-[1.1] mb-6" style={{ animationDelay: '100ms' }}>
-                  Le futur du dossier{' '}
-                  <span className="text-brand">médical</span>{' '}
-                  au Togo
-                </h1>
+            {/* Badge "Validé" — bas droite */}
+            <div className="absolute top-[60%] right-[6%] animate-float opacity-70" style={{ animationDelay: '1s', animationDuration: '4.8s' }}>
+              <div className="bg-white dark:bg-zinc-950 rounded-2xl px-4 py-3 shadow-md border border-slate-100 dark:border-zinc-800 flex items-center gap-2">
+                <CheckCircle className="h-5 w-5 text-brand flex-shrink-0" />
+                <div>
+                  <p className="text-[10px] font-bold text-slate-700 dark:text-zinc-300 leading-none">Dossier validé</p>
+                  <p className="text-[9px] text-slate-400 dark:text-zinc-500">ALF-2024-00847</p>
+                </div>
+              </div>
+            </div>
 
-                <p className="anim-up text-lg text-slate-600 dark:text-zinc-400 leading-relaxed mb-10 max-w-lg" style={{ animationDelay: '200ms' }}>
-                  Une plateforme centralisée et sécurisée pour les patients et les professionnels de santé.
-                  Accédez à vos soins, partout et à tout moment.
-                </p>
+            {/* Brain IA — haut centre-gauche */}
+            <div className="absolute top-12 left-[28%] animate-float opacity-40" style={{ animationDelay: '1.8s', animationDuration: '6.5s' }}>
+              <div className="bg-violet-50 dark:bg-violet-950/30 rounded-xl p-2.5 shadow-sm border border-violet-100 dark:border-violet-900/40">
+                <Brain className="h-5 w-5 text-violet-400" />
+              </div>
+            </div>
 
-                <div className="anim-up flex flex-col sm:flex-row gap-4" style={{ animationDelay: '300ms' }}>
-                  <Link href="/login" className="inline-flex items-center justify-center gap-2 bg-brand hover:bg-brand-dark text-white px-7 py-3.5 rounded-xl font-bold text-sm shadow-lg shadow-brand/25 hover:scale-105 transition-all">
-                    Commencer maintenant
-                  </Link>
-                  <button className="inline-flex items-center justify-center gap-2 text-slate-700 dark:text-zinc-300 px-7 py-3.5 rounded-xl font-semibold text-sm hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors">
-                    <span className="h-8 w-8 rounded-full bg-brand/10 flex items-center justify-center flex-shrink-0">
-                      <Play className="h-3.5 w-3.5 text-brand fill-brand" />
-                    </span>
-                    Voir la démo
-                  </button>
+            {/* Lock — haut centre-droite */}
+            <div className="absolute top-14 right-[27%] animate-float opacity-40" style={{ animationDelay: '2.5s', animationDuration: '5.8s' }}>
+              <div className="bg-blue-50 dark:bg-blue-950/30 rounded-xl p-2.5 shadow-sm border border-blue-100 dark:border-blue-900/40">
+                <Lock className="h-5 w-5 text-blue-400" />
+              </div>
+            </div>
+
+          </div>
+
+          <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+
+            {/* Badge */}
+            <div className="anim-fade inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-brand/10 border border-brand/20 text-brand text-xs font-semibold mb-8">
+              <span className="h-1.5 w-1.5 rounded-full bg-brand animate-pulse" />
+              Plateforme nationale de santé numérique — Togo
+            </div>
+
+            {/* Titre */}
+            <h1 className="anim-up text-5xl md:text-6xl lg:text-[72px] font-extrabold text-slate-900 dark:text-white leading-[1.06] tracking-tight mb-6">
+              Votre dossier médical,<br />
+              <span className="text-brand">partout, en un scan.</span>
+            </h1>
+
+            {/* Sous-titre */}
+            <p className="anim-up text-lg md:text-xl text-slate-500 dark:text-zinc-400 leading-relaxed max-w-2xl mx-auto mb-10" {...d(100)}>
+              Alafiya centralise et sécurise les dossiers médicaux. Patients et professionnels de santé connectés sur une seule plateforme, accessible depuis n&apos;importe quel centre.
+            </p>
+
+            {/* CTAs */}
+            <div className="anim-up flex flex-col sm:flex-row items-center justify-center gap-4 mb-10" {...d(180)}>
+              <Link
+                href="/login"
+                className="inline-flex items-center gap-2 bg-brand hover:bg-brand-dark text-white px-8 py-3.5 rounded-xl font-bold text-sm shadow-lg shadow-brand/20 hover:shadow-brand/30 hover:-translate-y-0.5 transition-all"
+              >
+                Commencer gratuitement <ArrowRight className="h-4 w-4" />
+              </Link>
+              <button className="inline-flex items-center gap-2.5 text-slate-600 dark:text-zinc-300 px-6 py-3.5 rounded-xl font-semibold text-sm hover:bg-slate-50 dark:hover:bg-zinc-800/60 transition-colors">
+                <span className="h-8 w-8 rounded-full bg-brand/10 flex items-center justify-center flex-shrink-0">
+                  <Play className="h-3.5 w-3.5 text-brand fill-brand" />
+                </span>
+                Voir la démo
+              </button>
+            </div>
+
+            {/* Preuve sociale */}
+            <div className="anim-fade flex items-center justify-center gap-3 mb-16" {...d(260)}>
+              <div className="flex -space-x-2.5">
+                {['bg-emerald-400','bg-teal-500','bg-green-400','bg-emerald-600','bg-cyan-500'].map((c, i) => (
+                  <div key={i} className={`h-8 w-8 rounded-full ${c} border-2 border-white dark:border-zinc-950 flex items-center justify-center`}>
+                    <span className="text-[10px] font-bold text-white">{String.fromCharCode(65 + i)}</span>
+                  </div>
+                ))}
+              </div>
+              <p className="text-sm text-slate-500 dark:text-zinc-400">
+                <span className="font-semibold text-slate-700 dark:text-zinc-200">+50 000</span> patients font confiance à Alafiya
+              </p>
+            </div>
+          </div>
+
+          {/* Aperçu dashboard */}
+          <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+            {/* Glow sous le dashboard */}
+            <div className="absolute -inset-x-10 top-6 h-32 pointer-events-none"
+              style={{ background: 'radial-gradient(ellipse, rgba(33,196,136,0.18) 0%, transparent 70%)' }} />
+
+            <div className="anim-up relative rounded-t-2xl border border-slate-200/80 dark:border-zinc-800/80 shadow-[0_20px_80px_-10px_rgba(0,0,0,0.12)] dark:shadow-[0_20px_80px_-10px_rgba(0,0,0,0.5)] overflow-hidden" {...d(300)}>
+              {/* Barre navigateur */}
+              <div className="flex items-center gap-2 px-4 py-3 bg-slate-50 dark:bg-zinc-950 border-b border-slate-200/60 dark:border-zinc-800/60">
+                <span className="h-3 w-3 rounded-full bg-red-400/80" />
+                <span className="h-3 w-3 rounded-full bg-yellow-400/80" />
+                <span className="h-3 w-3 rounded-full bg-green-400/80" />
+                <div className="ml-3 flex-1 max-w-xs bg-slate-200 dark:bg-zinc-700 rounded-md h-5 flex items-center px-3">
+                  <span className="text-[10px] text-slate-400 dark:text-zinc-500">app.alafiya.tg/dashboard</span>
                 </div>
               </div>
 
-              {/* Mockup droite */}
-              <div className="anim-right relative flex justify-center" style={{ animationDelay: '200ms' }}>
-                {/* Glow */}
-                <div className="absolute inset-8 bg-brand/10 rounded-3xl blur-2xl pointer-events-none" />
-
-                {/* Card principale — simule l'interface */}
-                <div className="relative w-full max-w-sm">
-                  {/* Badge flottant haut droite */}
-                  <div className="absolute -top-6 -right-4 z-20 flex items-center gap-2 bg-white dark:bg-zinc-800 rounded-full px-3 py-1.5 shadow-lg border border-slate-100 dark:border-zinc-700">
-                    <span className="h-5 w-5 rounded-full bg-brand/10 flex items-center justify-center flex-shrink-0">
-                      <CheckCircle className="h-3 w-3 text-brand" />
-                    </span>
-                    <div className="leading-none">
-                      <p className="text-[10px] font-bold text-slate-900 dark:text-white">Dossier Validé</p>
-                      <p className="text-[9px] text-slate-500 dark:text-zinc-400">Parcours Patient</p>
-                    </div>
-                  </div>
-
-                  {/* Carte principale */}
-                  <div className="bg-white dark:bg-zinc-950 rounded-3xl shadow-2xl border border-slate-100 dark:border-zinc-800 p-5 overflow-hidden">
-                    {/* Photo patient placeholder */}
-                    <div className="relative h-52 bg-gradient-to-br from-amber-100 to-orange-100 dark:from-amber-950/40 dark:to-orange-950/40 rounded-2xl mb-4 overflow-hidden">
-                      <Image
-                        src="/patient-card.png"
-                        alt="Patient"
-                        fill
-                        className="object-cover opacity-80"
-                      />
-                      {/* Status badge sur la photo */}
-                      <div className="absolute top-3 left-3 flex items-center gap-1.5 bg-brand text-white text-xs font-bold px-2.5 py-1 rounded-full">
-                        <span className="h-1.5 w-1.5 rounded-full bg-white animate-pulse" />
-                        Actif
+              {/* Contenu dashboard simulé */}
+              <div className="bg-slate-50 dark:bg-zinc-950 p-5">
+                {/* Ligne stat cards */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+                  {[
+                    { label: 'Patients actifs',   value: '12 847', icon: Users,       color: 'text-brand bg-brand/10' },
+                    { label: 'Consultations',      value: '3 204',  icon: Activity,    color: 'text-blue-500 bg-blue-500/10' },
+                    { label: 'Dossiers validés',   value: '98.4%',  icon: ShieldCheck, color: 'text-emerald-500 bg-emerald-500/10' },
+                    { label: 'Centres connectés',  value: '150+',   icon: Building2,   color: 'text-violet-500 bg-violet-500/10' },
+                  ].map(({ label, value, icon: Icon, color }) => (
+                    <div key={label} className="bg-white dark:bg-zinc-950 rounded-xl p-3.5 border border-slate-100 dark:border-zinc-800">
+                      <div className={`h-7 w-7 rounded-lg ${color} flex items-center justify-center mb-2.5`}>
+                        <Icon className="h-3.5 w-3.5" />
                       </div>
+                      <p className="text-base font-bold text-slate-900 dark:text-white leading-none mb-1">{value}</p>
+                      <p className="text-[11px] text-slate-400 dark:text-zinc-500">{label}</p>
                     </div>
+                  ))}
+                </div>
 
-                    {/* Infos patient */}
+                {/* Ligne inférieure */}
+                <div className="grid md:grid-cols-3 gap-3">
+                  {/* Activité récente */}
+                  <div className="md:col-span-2 bg-white dark:bg-zinc-950 rounded-xl p-4 border border-slate-100 dark:border-zinc-800">
+                    <p className="text-xs font-semibold text-slate-500 dark:text-zinc-400 mb-3">Activité récente</p>
                     <div className="space-y-2.5">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-xs text-slate-400 dark:text-zinc-500">Dossier n°</p>
-                          <p className="text-sm font-bold text-slate-900 dark:text-white">ALF-2024-00847</p>
-                        </div>
-                        <div className="h-8 w-8 bg-brand/10 rounded-lg flex items-center justify-center">
-                          <ShieldCheck className="h-4 w-4 text-brand" />
-                        </div>
-                      </div>
-
-                      {/* Barres de santé */}
-                      <div className="space-y-1.5">
-                        {[
-                          { label: 'Cardiologie', pct: '75' },
-                          { label: 'Général', pct: '90' },
-                        ].map((bar) => (
-                          <div key={bar.label}>
-                            <div className="flex justify-between text-[10px] text-slate-400 dark:text-zinc-500 mb-0.5">
-                              <span>{bar.label}</span><span>{bar.pct}%</span>
-                            </div>
-                            <div className="h-1.5 bg-slate-100 dark:bg-zinc-800 rounded-full overflow-hidden">
-                              <div className="h-full bg-brand rounded-full" style={{ width: `${bar.pct}%` }} />
-                            </div>
+                      {[
+                        { name: 'Kofi A.',  action: 'Dossier consulté',   time: 'Il y a 2 min',  dot: 'bg-brand' },
+                        { name: 'Ama S.',   action: 'QR Code scanné',     time: 'Il y a 8 min',  dot: 'bg-blue-400' },
+                        { name: 'Kwame D.', action: 'Ordonnance ajoutée', time: 'Il y a 15 min', dot: 'bg-violet-400' },
+                      ].map(({ name, action, time, dot }) => (
+                        <div key={name} className="flex items-center justify-between">
+                          <div className="flex items-center gap-2.5">
+                            <span className={`h-1.5 w-1.5 rounded-full ${dot} flex-shrink-0`} />
+                            <span className="text-xs font-medium text-slate-700 dark:text-zinc-300">{name}</span>
+                            <span className="text-xs text-slate-400 dark:text-zinc-500">{action}</span>
                           </div>
-                        ))}
-                      </div>
+                          <span className="text-[10px] text-slate-300 dark:text-zinc-600">{time}</span>
+                        </div>
+                      ))}
                     </div>
                   </div>
 
-                  {/* Badge flottant bas — QR */}
-                  <div className="absolute -bottom-6 left-6 z-20 flex items-center gap-2 bg-white dark:bg-zinc-800 rounded-full px-4 py-2 shadow-lg border border-slate-100 dark:border-zinc-700">
-                    <QrCode className="h-4 w-4 text-brand" />
-                    <span className="text-xs font-bold text-slate-900 dark:text-white">Scan QR Code</span>
+                  {/* QR Code card */}
+                  <div className="bg-white dark:bg-zinc-950 rounded-xl p-4 border border-slate-100 dark:border-zinc-800 flex flex-col items-center justify-center gap-2">
+                    <div className="h-10 w-10 rounded-xl bg-brand/10 flex items-center justify-center">
+                      <QrCode className="h-5 w-5 text-brand" />
+                    </div>
+                    <p className="text-xs font-semibold text-slate-700 dark:text-zinc-300 text-center">Identité QR</p>
+                    <p className="text-[10px] text-slate-400 dark:text-zinc-500 text-center">Scan pour accès instantané</p>
+                    <div className="mt-1 px-3 py-1 rounded-full bg-brand/10 text-brand text-[10px] font-semibold flex items-center gap-1">
+                      <span className="h-1.5 w-1.5 rounded-full bg-brand animate-pulse" /> Actif
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
+
+            {/* Fondu bas pour découpe propre */}
+            <div className="absolute bottom-0 left-0 right-0 h-24 pointer-events-none dark:hidden"
+              style={{ background: 'linear-gradient(to top, #f1f5f9, transparent)' }} />
+            <div className="absolute bottom-0 left-0 right-0 h-24 pointer-events-none hidden dark:block"
+              style={{ background: 'linear-gradient(to top, #09090b, transparent)' }} />
           </div>
         </section>
 
@@ -298,14 +393,17 @@ export default function LandingPage() {
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
               {[
-                { value: '150+',    label: 'Centres de Santé' },
-                { value: '50 000+', label: 'Patients Actifs' },
-                { value: '200+',    label: 'Spécialistes' },
-                { value: '99.9%',   label: 'Disponibilité' },
+                { value: '150+',    label: 'Centres de Santé',  Icon: Building2    },
+                { value: '50 000+', label: 'Patients Actifs',   Icon: Users        },
+                { value: '200+',    label: 'Spécialistes',      Icon: Stethoscope  },
+                { value: '99.9%',   label: 'Disponibilité',     Icon: Server       },
               ].map((s, i) => (
-                <div key={s.label} className="anim-up" {...d(i * 80)}>
-                  <p className="text-4xl font-extrabold text-brand mb-1">{s.value}</p>
-                  <p className="text-sm text-slate-500 dark:text-zinc-400 font-medium">{s.label}</p>
+                <div key={s.label} className="anim-up flex flex-col items-center gap-3" {...d(i * 80)}>
+                  <div className="h-12 w-12 rounded-2xl bg-white/10 flex items-center justify-center">
+                    <s.Icon className="h-6 w-6 text-brand" />
+                  </div>
+                  <p className="text-4xl font-extrabold text-brand">{s.value}</p>
+                  <p className="text-sm text-white/80 font-medium">{s.label}</p>
                 </div>
               ))}
             </div>
@@ -313,7 +411,32 @@ export default function LandingPage() {
         </section>
 
         {/* ══════════════════════════ FONCTIONNALITÉS ══════════════════════════ */}
-        <section id="fonctionnalites" className="py-24 bg-slate-50 dark:bg-zinc-950">
+        <section id="fonctionnalites" className="relative py-24 bg-slate-50 dark:bg-zinc-950 overflow-hidden">
+          {/* Flottants */}
+          <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
+            <div className="absolute top-10 right-[5%] animate-float opacity-50" style={{ animationDelay: '0.3s', animationDuration: '5s' }}>
+              <div className="bg-white dark:bg-zinc-950 rounded-2xl p-3 shadow-md border border-slate-100 dark:border-zinc-800">
+                <Brain className="h-6 w-6 text-violet-400" />
+              </div>
+            </div>
+            <div className="absolute bottom-16 left-[4%] animate-float opacity-45" style={{ animationDelay: '1.2s', animationDuration: '6s' }}>
+              <div className="bg-white dark:bg-zinc-950 rounded-2xl p-3 shadow-md border border-slate-100 dark:border-zinc-800">
+                <Smartphone className="h-6 w-6 text-brand" />
+              </div>
+            </div>
+            <div className="absolute top-1/2 left-[2%] animate-float opacity-35" style={{ animationDelay: '2.2s', animationDuration: '7s' }}>
+              <div className="bg-brand/10 rounded-xl p-2.5 border border-brand/20">
+                <svg className="h-5 w-5 text-brand" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M19 8h-4V4a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v4H5a1 1 0 0 0-1 1v4a1 1 0 0 0 1 1h4v4a1 1 0 0 0 1 1h4a1 1 0 0 0 1-1v-4h4a1 1 0 0 0 1-1V9a1 1 0 0 0-1-1z"/>
+                </svg>
+              </div>
+            </div>
+            <div className="absolute bottom-24 right-[3%] animate-float opacity-40" style={{ animationDelay: '0.7s', animationDuration: '5.5s' }}>
+              <div className="bg-rose-50 dark:bg-rose-950/30 rounded-xl p-2.5 border border-rose-100 dark:border-rose-900/40">
+                <AlertCircle className="h-5 w-5 text-rose-400" />
+              </div>
+            </div>
+          </div>
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-16 anim-up">
               <p className="text-xs font-bold uppercase tracking-widest text-brand mb-3">Innovation Santé</p>
@@ -366,11 +489,15 @@ export default function LandingPage() {
               ].map((feat) => {
                 const Icon = feat.icon
                 return (
-                  <div key={feat.title} className="anim-up bg-white dark:bg-zinc-950 rounded-2xl p-7 border border-slate-100 dark:border-zinc-800 hover:shadow-lg hover:-translate-y-0.5 transition-all" {...d(feat.d)}>
-                    <div className="h-11 w-11 rounded-xl bg-slate-50 dark:bg-zinc-800 flex items-center justify-center mb-5">
-                      <Icon className="h-5 w-5 text-slate-500 dark:text-zinc-400" />
+                  <div
+                    key={feat.title}
+                    className="anim-up group bg-white dark:bg-zinc-950 rounded-2xl p-7 border border-slate-100/50 dark:border-zinc-800/40 hover:border-brand/20 dark:hover:border-brand/20 hover:shadow-xl hover:shadow-brand/5 hover:-translate-y-1 transition-all duration-300"
+                    {...d(feat.d)}
+                  >
+                    <div className="h-12 w-12 rounded-2xl bg-brand/10 flex items-center justify-center mb-5 group-hover:bg-brand/20 group-hover:scale-110 transition-all duration-300">
+                      <Icon className="h-6 w-6 text-brand transition-transform duration-300 group-hover:rotate-6" />
                     </div>
-                    <h3 className="text-base font-bold text-slate-900 dark:text-white mb-2">{feat.title}</h3>
+                    <h3 className="text-base font-bold text-slate-900 dark:text-white mb-2 group-hover:text-brand transition-colors duration-300">{feat.title}</h3>
                     <p className="text-sm text-slate-500 dark:text-zinc-400 leading-relaxed">{feat.desc}</p>
                   </div>
                 )
@@ -380,7 +507,35 @@ export default function LandingPage() {
         </section>
 
         {/* ══════════════════════════ COMMENT ÇA MARCHE ══════════════════════════ */}
-        <section id="comment" className="py-24 bg-white dark:bg-zinc-950">
+        <section id="comment" className="relative py-24 bg-white dark:bg-zinc-950 overflow-hidden">
+          {/* Flottants */}
+          <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
+            <div className="absolute top-12 left-[5%] animate-float opacity-50" style={{ animationDelay: '0.5s', animationDuration: '5.5s' }}>
+              <div className="bg-brand/10 rounded-2xl px-4 py-3 border border-brand/20 flex items-center gap-2">
+                <QrCode className="h-5 w-5 text-brand flex-shrink-0" />
+                <span className="text-xs font-semibold text-brand">Scan QR</span>
+              </div>
+            </div>
+            <div className="absolute top-16 right-[6%] animate-float opacity-45" style={{ animationDelay: '1.5s', animationDuration: '6.5s' }}>
+              <div className="bg-white dark:bg-zinc-950 rounded-2xl p-3 shadow-md border border-slate-100 dark:border-zinc-800">
+                <CheckCircle className="h-6 w-6 text-emerald-500" />
+              </div>
+            </div>
+            <div className="absolute bottom-20 right-[5%] animate-float opacity-40" style={{ animationDelay: '0.9s', animationDuration: '4.8s' }}>
+              <div className="bg-white dark:bg-zinc-950 rounded-2xl px-4 py-3 shadow-md border border-slate-100 dark:border-zinc-800 flex items-center gap-2">
+                <Activity className="h-5 w-5 text-brand flex-shrink-0" />
+                <div>
+                  <p className="text-[10px] font-bold text-slate-700 dark:text-zinc-300 leading-none">Suivi actif</p>
+                  <p className="text-[9px] text-slate-400 dark:text-zinc-500">Mise à jour</p>
+                </div>
+              </div>
+            </div>
+            <div className="absolute bottom-16 left-[6%] animate-float opacity-35" style={{ animationDelay: '2.1s', animationDuration: '7s' }}>
+              <div className="bg-blue-50 dark:bg-blue-950/30 rounded-xl p-2.5 border border-blue-100 dark:border-blue-900/40">
+                <Lock className="h-5 w-5 text-blue-400" />
+              </div>
+            </div>
+          </div>
           <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-16 anim-up">
               <h2 className="text-3xl md:text-4xl font-extrabold text-slate-900 dark:text-white mb-4">Comment ça marche ?</h2>
@@ -412,6 +567,30 @@ export default function LandingPage() {
         {/* ══════════════════════════ SÉCURITÉ ══════════════════════════ */}
         <section id="securite" className="py-24 bg-emerald-950 dark:bg-emerald-950 overflow-hidden relative">
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(33,196,136,0.15),transparent_60%)]" />
+          {/* Flottants */}
+          <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
+            <div className="absolute top-10 left-[5%] animate-float opacity-40" style={{ animationDelay: '0.4s', animationDuration: '5s' }}>
+              <div className="bg-brand/20 rounded-2xl p-3 border border-brand/30">
+                <Lock className="h-6 w-6 text-brand" />
+              </div>
+            </div>
+            <div className="absolute bottom-14 left-[8%] animate-float opacity-35" style={{ animationDelay: '1.6s', animationDuration: '6s' }}>
+              <div className="bg-white/10 rounded-2xl px-4 py-3 border border-white/10 flex items-center gap-2 backdrop-blur-sm">
+                <ShieldCheck className="h-5 w-5 text-brand flex-shrink-0" />
+                <span className="text-xs font-semibold text-white/80">AES-256</span>
+              </div>
+            </div>
+            <div className="absolute top-1/3 right-[2%] animate-float opacity-30" style={{ animationDelay: '2.4s', animationDuration: '7.5s' }}>
+              <div className="bg-white/10 rounded-xl p-2.5 border border-white/10 backdrop-blur-sm">
+                <Key className="h-5 w-5 text-brand" />
+              </div>
+            </div>
+            <div className="absolute bottom-10 right-[10%] animate-float opacity-35" style={{ animationDelay: '0.8s', animationDuration: '5.8s' }}>
+              <div className="bg-brand/20 rounded-xl p-2.5 border border-brand/30">
+                <CheckCircle className="h-5 w-5 text-brand" />
+              </div>
+            </div>
+          </div>
           <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid lg:grid-cols-2 gap-16 items-center">
 
@@ -476,7 +655,35 @@ export default function LandingPage() {
         </section>
 
         {/* ══════════════════════════ IMPACT / CTA ══════════════════════════ */}
-        <section id="impact" className="py-24 bg-white dark:bg-zinc-950">
+        <section id="impact" className="relative py-24 bg-white dark:bg-zinc-950 overflow-hidden">
+          {/* Flottants */}
+          <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
+            <div className="absolute top-14 left-[4%] animate-float opacity-50" style={{ animationDelay: '0.6s', animationDuration: '5.2s' }}>
+              <div className="bg-brand/10 rounded-2xl p-3 border border-brand/20">
+                <Heart className="h-6 w-6 text-rose-400 fill-rose-300" />
+              </div>
+            </div>
+            <div className="absolute top-10 right-[5%] animate-float opacity-45" style={{ animationDelay: '1.3s', animationDuration: '6.2s' }}>
+              <div className="bg-white dark:bg-zinc-950 rounded-2xl px-4 py-3 shadow-md border border-slate-100 dark:border-zinc-800 flex items-center gap-2">
+                <Users className="h-5 w-5 text-brand flex-shrink-0" />
+                <div>
+                  <p className="text-[10px] font-bold text-slate-700 dark:text-zinc-300 leading-none">50 000+</p>
+                  <p className="text-[9px] text-slate-400 dark:text-zinc-500">Patients actifs</p>
+                </div>
+              </div>
+            </div>
+            <div className="absolute bottom-20 left-[7%] animate-float opacity-40" style={{ animationDelay: '2s', animationDuration: '7s' }}>
+              <div className="bg-white dark:bg-zinc-950 rounded-2xl px-4 py-3 shadow-md border border-slate-100 dark:border-zinc-800 flex items-center gap-2">
+                <Activity className="h-5 w-5 text-brand flex-shrink-0" />
+                <span className="text-xs font-semibold text-slate-700 dark:text-zinc-300">97% satisfaction</span>
+              </div>
+            </div>
+            <div className="absolute bottom-16 right-[6%] animate-float opacity-40" style={{ animationDelay: '0.2s', animationDuration: '5.7s' }}>
+              <div className="bg-emerald-50 dark:bg-emerald-950/30 rounded-2xl p-3 border border-emerald-100 dark:border-emerald-900/40">
+                <ShieldCheck className="h-6 w-6 text-emerald-500" />
+              </div>
+            </div>
+          </div>
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <div className="anim-up">
               <p className="text-xs font-bold uppercase tracking-widest text-brand mb-3">Impact</p>
@@ -514,83 +721,90 @@ export default function LandingPage() {
         </section>
 
         {/* ══════════════════════════ FOOTER ══════════════════════════ */}
-        <footer className="bg-slate-50 dark:bg-zinc-950 border-t border-slate-200 dark:border-zinc-800">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
-            <div className="grid md:grid-cols-4 gap-10">
+        <footer className="bg-white dark:bg-zinc-950 border-t border-slate-100 dark:border-zinc-800/50">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+            <div className="grid md:grid-cols-4 gap-12">
 
-              {/* Col 1 — Brand */}
-              <div>
-                <Link href="/" className="flex items-center gap-2.5 mb-4">
-                  <Logo size={24} />
+              {/* Brand */}
+              <div className="space-y-5">
+                <Link href="/" className="flex items-center gap-2.5">
+                  <LogoIcon className="h-7 w-7 text-emerald-500 dark:text-emerald-400" />
                   <span className="font-extrabold text-slate-900 dark:text-white">
-                    Alafia <span className="text-brand">Plus</span>
+                    Alafiya <span className="text-brand">Plus</span>
                   </span>
                 </Link>
-                <p className="text-sm text-slate-500 dark:text-zinc-400 leading-relaxed mb-6">
-                  La solution de santé numérique de référence au Togo pour un système de santé moderne, efficace et accessible à tous.
+                <p className="text-sm text-slate-400 dark:text-zinc-500 leading-relaxed">
+                  La solution de santé numérique de référence au Togo.
                 </p>
-                <div className="flex items-center gap-3">
-                  <a href="#" className="h-8 w-8 rounded-lg bg-slate-200 dark:bg-zinc-800 flex items-center justify-center text-slate-600 dark:text-zinc-400 hover:bg-brand hover:text-white transition-colors">
+                <div className="flex gap-2">
+                  <a href="#" className="h-9 w-9 rounded-xl bg-slate-100 dark:bg-zinc-800 flex items-center justify-center text-slate-500 dark:text-zinc-400 hover:bg-brand hover:text-white transition-all">
                     <Facebook className="h-4 w-4" />
                   </a>
-                  <a href="#" className="h-8 w-8 rounded-lg bg-slate-200 dark:bg-zinc-800 flex items-center justify-center text-slate-600 dark:text-zinc-400 hover:bg-brand hover:text-white transition-colors">
+                  <a href="#" className="h-9 w-9 rounded-xl bg-slate-100 dark:bg-zinc-800 flex items-center justify-center text-slate-500 dark:text-zinc-400 hover:bg-brand hover:text-white transition-all">
                     <Twitter className="h-4 w-4" />
                   </a>
                 </div>
               </div>
 
-              {/* Col 2 — Navigation */}
-              <div>
-                <h4 className="text-xs font-bold uppercase tracking-widest text-slate-400 dark:text-zinc-500 mb-4">Navigation</h4>
-                <ul className="space-y-2.5">
-                  {['Accueil', 'Services', 'Partenaires', 'Blog'].map((l) => (
-                    <li key={l}>
-                      <a href="#" className="text-sm text-slate-600 dark:text-zinc-400 hover:text-brand dark:hover:text-brand transition-colors">{l}</a>
+              {/* Navigation */}
+              <div className="space-y-5">
+                <p className="text-xs font-bold uppercase tracking-widest text-slate-400 dark:text-zinc-600">Navigation</p>
+                <ul className="space-y-3.5">
+                  {[
+                    { href: '#accueil',         label: 'Accueil' },
+                    { href: '#fonctionnalites', label: 'Fonctionnalités' },
+                    { href: '#comment',         label: 'Comment ça marche' },
+                    { href: '#securite',        label: 'Sécurité' },
+                    { href: '#impact',          label: 'Impact' },
+                  ].map(({ href, label }) => (
+                    <li key={href}>
+                      <a href={href} className="text-sm text-slate-500 dark:text-zinc-400 hover:text-brand dark:hover:text-brand transition-colors">{label}</a>
                     </li>
                   ))}
                 </ul>
               </div>
 
-              {/* Col 3 — Support */}
-              <div>
-                <h4 className="text-xs font-bold uppercase tracking-widest text-slate-400 dark:text-zinc-500 mb-4">Support</h4>
-                <ul className="space-y-2.5">
-                  {['Aide en ligne', 'Sécurité & Confidentialité', "Conditions d'utilisation", 'Nous contacter'].map((l) => (
+              {/* Support */}
+              <div className="space-y-5">
+                <p className="text-xs font-bold uppercase tracking-widest text-slate-400 dark:text-zinc-600">Support</p>
+                <ul className="space-y-3.5">
+                  {["Aide en ligne", "Sécurité & Confidentialité", "Conditions d'utilisation", "Nous contacter"].map((l) => (
                     <li key={l}>
-                      <a href="#" className="text-sm text-slate-600 dark:text-zinc-400 hover:text-brand dark:hover:text-brand transition-colors">{l}</a>
+                      <a href="#" className="text-sm text-slate-500 dark:text-zinc-400 hover:text-brand dark:hover:text-brand transition-colors">{l}</a>
                     </li>
                   ))}
                 </ul>
               </div>
 
-              {/* Col 4 — Contact */}
-              <div>
-                <h4 className="text-xs font-bold uppercase tracking-widest text-slate-400 dark:text-zinc-500 mb-4">Contact</h4>
-                <ul className="space-y-3">
-                  <li className="flex items-start gap-2.5 text-sm text-slate-600 dark:text-zinc-400">
+              {/* Contact */}
+              <div className="space-y-5">
+                <p className="text-xs font-bold uppercase tracking-widest text-slate-400 dark:text-zinc-600">Contact</p>
+                <ul className="space-y-3.5">
+                  <li className="flex items-start gap-3 text-sm text-slate-500 dark:text-zinc-400">
                     <MapPin className="h-4 w-4 text-brand flex-shrink-0 mt-0.5" />
-                    Lomé, Togo, Boulevard du 13 Janvier
+                    Lomé, Togo — Boulevard du 13 Janvier
                   </li>
-                  <li className="flex items-center gap-2.5 text-sm text-slate-600 dark:text-zinc-400">
+                  <li className="flex items-center gap-3 text-sm text-slate-500 dark:text-zinc-400">
                     <Phone className="h-4 w-4 text-brand flex-shrink-0" />
                     +228 00 00 00 00
                   </li>
-                  <li className="flex items-center gap-2.5 text-sm text-slate-600 dark:text-zinc-400">
+                  <li className="flex items-center gap-3 text-sm text-slate-500 dark:text-zinc-400">
                     <Mail className="h-4 w-4 text-brand flex-shrink-0" />
                     contact@alafiya.tg
                   </li>
                 </ul>
               </div>
+
             </div>
           </div>
 
           {/* Barre basse */}
-          <div className="border-t border-slate-200 dark:border-zinc-800 py-5">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-3">
-              <p className="text-xs text-slate-400 dark:text-zinc-500">© 2024 Alafia Plus. Tous droits réservés.</p>
+          <div className="border-t border-slate-100 dark:border-zinc-800/50 py-5">
+            <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-3">
+              <p className="text-xs text-slate-400 dark:text-zinc-600">© 2024 Alafiya Plus. Tous droits réservés.</p>
               <div className="flex items-center gap-6">
-                {['Politique de confidentialité', 'Mentions légales', 'Cookies'].map((l) => (
-                  <a key={l} href="#" className="text-xs text-slate-400 dark:text-zinc-500 hover:text-brand transition-colors">{l}</a>
+                {['Confidentialité', 'Mentions légales', 'Cookies'].map((l) => (
+                  <a key={l} href="#" className="text-xs text-slate-400 dark:text-zinc-600 hover:text-brand transition-colors">{l}</a>
                 ))}
               </div>
             </div>

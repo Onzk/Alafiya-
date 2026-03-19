@@ -8,11 +8,12 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { useToast } from '@/hooks/use-toast'
 
 export default function NouveauPatientPage() {
   const router = useRouter()
+  const { toast } = useToast()
   const [loading, setLoading] = useState(false)
-  const [erreur, setErreur] = useState('')
 
   const [form, setForm] = useState({
     nom: '',
@@ -47,7 +48,6 @@ export default function NouveauPatientPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setLoading(true)
-    setErreur('')
 
     const res = await fetch('/api/patients', {
       method: 'POST',
@@ -64,7 +64,7 @@ export default function NouveauPatientPage() {
     setLoading(false)
 
     if (!res.ok) {
-      setErreur(data.error || 'Erreur lors de la création du patient.')
+      toast({ description: data.error || 'Erreur lors de la création du patient.', variant: 'destructive' })
       return
     }
 
@@ -85,12 +85,6 @@ export default function NouveauPatientPage() {
           <p className="text-gray-500 text-sm">Créer un dossier médical patient</p>
         </div>
       </div>
-
-      {erreur && (
-        <div className="p-3 bg-red-50 border border-red-200 rounded-md text-sm text-red-700">
-          {erreur}
-        </div>
-      )}
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Informations principales */}

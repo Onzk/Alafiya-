@@ -1,8 +1,8 @@
 'use client'
 
-import Image from 'next/image'
 import Link from 'next/link'
 import { Bell } from 'lucide-react'
+import { LogoIcon } from '@/components/ui/logo'
 import { SessionUser } from '@/types'
 import { ThemeToggle } from '@/components/ThemeToggle'
 
@@ -20,16 +20,16 @@ export function Header({ user }: HeaderProps) {
       : `${user.nom} ${user.prenoms}`
 
   return (
-    <header className="h-16 bg-white dark:bg-zinc-900 border-b border-slate-100 dark:border-zinc-800 flex items-center justify-between px-4 sm:px-6 flex-shrink-0">
+    <header className="h-16 bg-white dark:bg-zinc-950 border-b border-slate-100 dark:border-zinc-800 flex items-center justify-between px-4 sm:px-6 flex-shrink-0">
 
       {/* Logo mobile */}
       <div className="flex lg:hidden items-center gap-2.5">
         <Link href="/" className="flex items-center gap-2">
-          <div className="h-8 w-8 bg-white rounded-lg border border-slate-100 dark:border-zinc-700 shadow-sm flex items-center justify-center">
-            <Image src="/logo.png" alt="Alafia Plus" width={24} height={24} className="rounded-md" priority />
+          <div className="h-8 w-8 flex items-center justify-center">
+            <LogoIcon className="h-7 w-7 text-emerald-500 dark:text-emerald-400" />
           </div>
           <span className="font-extrabold text-slate-900 dark:text-white text-base">
-            Alafia <span className="text-brand">Plus</span>
+            Alafiya <span className="text-brand">Plus</span>
           </span>
         </Link>
       </div>

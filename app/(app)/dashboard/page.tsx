@@ -23,7 +23,7 @@ function StatCard({
   delay: string
 }) {
   return (
-    <div className={`dash-in ${delay} relative overflow-hidden bg-white dark:bg-zinc-900 rounded-2xl border border-slate-100 dark:border-zinc-700/60 p-5 hover:shadow-xl dark:hover:shadow-zinc-950/80 hover:-translate-y-1 transition-all duration-300 group`}>
+    <div className={`dash-in ${delay} relative overflow-hidden bg-white dark:bg-zinc-950 rounded-2xl border border-slate-100 dark:border-zinc-700/60 p-5 hover:shadow-xl dark:hover:shadow-zinc-950/80 hover:-translate-y-1 transition-all duration-300 group`}>
       {/* Glow décoratif dark */}
       <div className={`absolute -top-4 -right-4 w-20 h-20 rounded-full blur-2xl opacity-0 dark:opacity-100 ${darkGlow} pointer-events-none transition-all duration-500 group-hover:scale-150 group-hover:opacity-100`} />
 
@@ -52,7 +52,7 @@ function ActionCard({
 }) {
   return (
     <Link href={href}>
-      <div className={`dash-in ${delay} group relative overflow-hidden bg-white dark:bg-zinc-900 rounded-2xl border border-slate-100 dark:border-zinc-700/60 dark:hover:border-zinc-600 p-5 flex items-center gap-4 hover:shadow-xl dark:hover:shadow-zinc-950/80 hover:-translate-y-1 transition-all duration-300 cursor-pointer`}>
+      <div className={`dash-in ${delay} group relative overflow-hidden bg-white dark:bg-zinc-950 rounded-2xl border border-slate-100 dark:border-zinc-700/60 dark:hover:border-zinc-600 p-5 flex items-center gap-4 hover:shadow-xl dark:hover:shadow-zinc-950/80 hover:-translate-y-1 transition-all duration-300 cursor-pointer`}>
         {/* Accent border gauche en dark */}
         <div className={`absolute left-0 top-4 bottom-4 w-0.5 rounded-full opacity-0 dark:opacity-60 ${darkBorder} transition-opacity group-hover:opacity-100`} />
 
@@ -150,7 +150,7 @@ export default async function DashboardPage() {
       </div>
 
       {/* ── CONSULTATIONS ── */}
-      <div className="dash-in delay-150 bg-white dark:bg-zinc-900 rounded-2xl border border-slate-100 dark:border-zinc-700/60 overflow-hidden">
+      <div className="dash-in delay-150 bg-white dark:bg-zinc-950 rounded-2xl border border-slate-100 dark:border-zinc-700/60 overflow-hidden">
         <div className="flex items-center justify-between px-5 py-4 border-b border-slate-50 dark:border-zinc-800">
           <div>
             <h2 className="font-bold text-slate-900 dark:text-white">Dernières consultations</h2>
