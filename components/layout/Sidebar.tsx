@@ -6,7 +6,7 @@ import { LogoIcon } from '@/components/ui/logo'
 import { signOut } from 'next-auth/react'
 import {
   LayoutDashboard, Users, QrCode, FileText, Building2,
-  Shield, Activity, LogOut, Stethoscope, AlertCircle,
+  Shield, Activity, LogOut, Stethoscope, AlertCircle, UserRound,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { SessionUser } from '@/types'
@@ -37,7 +37,8 @@ const navigationAdmin: NavGroup[] = [
   ]},
   { section: 'CENTRE', items: [
     { href: '/admin/personnels', label: 'Personnel médical', icon: Users },
-    { href: '/admin/roles',      label: 'Types de personnel',  icon: Shield },
+    { href: '/admin/patients',   label: 'Patients',          icon: UserRound },
+    { href: '/admin/roles',      label: 'Types de personnel', icon: Shield },
   ]},
   { section: 'SUIVI', items: [
     { href: '/logs', label: "Journaux d'activité", icon: Activity },

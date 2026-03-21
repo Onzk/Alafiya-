@@ -4,36 +4,41 @@ import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { Search, X, SlidersHorizontal } from 'lucide-react'
 import { ACTION_LABELS } from './constants'
+import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 
 interface LogsFiltersProps {
   defaultQ: string
   defaultAction: string
 }
 
+const inputCls = 'h-11 border-slate-200 dark:border-zinc-700 rounded-xl text-sm bg-white dark:bg-zinc-950 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-zinc-500 focus-visible:ring-brand/30 focus-visible:border-brand/50'
+
 export function LogsFilters({ defaultQ, defaultAction }: LogsFiltersProps) {
   const router = useRouter()
   const [q, setQ] = useState(defaultQ)
-  const [action, setAction] = useState(defaultAction)
+  const [action, setAction] = useState(defaultAction || 'tous')
 
   const apply = (newQ: string, newAction: string) => {
     const params = new URLSearchParams()
     if (newQ.trim()) params.set('q', newQ.trim())
-    if (newAction) params.set('action', newAction)
+    if (newAction && newAction !== 'tous') params.set('action', newAction)
     router.push(`/logs?${params.toString()}`)
   }
 
   return (
     <div className="flex gap-2 flex-wrap items-center">
       {/* Barre de recherche */}
-      <div className="relative flex-1 min-w-[180px]">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400 dark:text-zinc-500 pointer-events-none" />
-        <input
+      <div className="relative flex-1 min-w-[180px] max-w-sm">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400 dark:text-zinc-500 pointer-events-none z-10" />
+        <Input
           type="text"
           value={q}
           onChange={e => setQ(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && apply(q, action)}
           placeholder="Utilisateur, cible, IP…"
-          className="w-full pl-9 pr-8 py-2 text-sm rounded-xl border border-slate-200 dark:border-zinc-700 bg-white dark:bg-zinc-950 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand/50 transition-colors"
+          className={`${inputCls} pl-9 pr-8`}
         />
         {q && (
           <button
@@ -46,32 +51,26 @@ export function LogsFilters({ defaultQ, defaultAction }: LogsFiltersProps) {
       </div>
 
       {/* Filtre par type d'action */}
-      <div className="relative">
-        <SlidersHorizontal className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400 dark:text-zinc-500 pointer-events-none z-10" />
-        <select
-          value={action}
-          onChange={e => { setAction(e.target.value); apply(q, e.target.value) }}
-          className="pl-9 pr-8 py-2 text-sm rounded-xl border border-slate-200 dark:border-zinc-700 bg-white dark:bg-zinc-950 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand/50 transition-colors appearance-none cursor-pointer"
-        >
-          <option value="">Tous les types</option>
+      <Select value={action} onValueChange={(v) => { setAction(v); apply(q, v) }}>
+        <SelectTrigger className={`${inputCls} w-[220px]`}>
+          <SlidersHorizontal className="h-3.5 w-3.5 text-slate-400 mr-1.5 flex-shrink-0" />
+          <SelectValue placeholder="Tous les types" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="tous">Tous les types</SelectItem>
           {Object.entries(ACTION_LABELS).map(([value, label]) => (
-            <option key={value} value={value}>{label}</option>
+            <SelectItem key={value} value={value}>{label}</SelectItem>
           ))}
-        </select>
-        <div className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2">
-          <svg className="h-3.5 w-3.5 text-slate-400 dark:text-zinc-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-          </svg>
-        </div>
-      </div>
+        </SelectContent>
+      </Select>
 
       {/* Bouton Rechercher */}
-      <button
+      <Button
         onClick={() => apply(q, action)}
-        className="px-4 py-2 rounded-xl bg-brand text-white text-sm font-semibold hover:bg-brand/90 transition-colors shrink-0"
+        className="h-11 bg-brand hover:bg-brand-dark text-white rounded-xl px-4 shadow-sm shadow-brand/20 shrink-0"
       >
         Rechercher
-      </button>
+      </Button>
     </div>
   )
 }

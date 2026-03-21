@@ -2,8 +2,7 @@ import { auth } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import prisma from '@/lib/db'
-import { Users, Activity, UserPlus, Settings, Plus, ArrowRight, CheckCircle2, XCircle } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { Users, Activity, UserPlus, Settings, ArrowRight, ChevronRight, CheckCircle2, XCircle } from 'lucide-react'
 import { SessionUser } from '@/types'
 import DashboardCharts from '@/components/admin/dashboard-charts'
 
@@ -86,7 +85,7 @@ export default async function AdminDashboardPage() {
 
   const dernierPersonnel = await prisma.user.findMany({
     where: { centres: { some: { centreId } }, niveauAcces: 'PERSONNEL' },
-    select: { id: true, nom: true, prenoms: true, email: true, estActif: true },
+    select: { id: true, nom: true, prenoms: true, email: true, estActif: true, photo: true },
     orderBy: { createdAt: 'desc' },
     take: 5,
   })
@@ -104,9 +103,6 @@ export default async function AdminDashboardPage() {
             Tableau de bord administrateur · Vue d'ensemble du centre
           </p>
         </div>
-        <Button asChild size="sm" className="bg-brand hover:bg-brand-dark text-white rounded-xl gap-1.5 shadow-sm shadow-brand/20 flex-shrink-0">
-          <Link href="/admin/personnels"><Plus className="h-4 w-4" /> Ajouter personnel</Link>
-        </Button>
       </div>
 
       {/* ── STATS + ACTIONS (même ligne, 4 colonnes) ── */}
@@ -127,18 +123,22 @@ export default async function AdminDashboardPage() {
           cardBg="bg-blue-500/10 dark:bg-blue-500/15"
           delay="delay-150"
         />
-        <ActionCard
-          href="/admin/personnels" icon={UserPlus}
-          iconBg="bg-brand/10 dark:bg-brand/15" iconColor="text-brand"
-          label="Gérer le personnel" sub="Créer et gérer les comptes"
-          delay="delay-[200ms]"
-        />
-        <ActionCard
-          href="/admin/roles" icon={Settings}
-          iconBg="bg-blue-50 dark:bg-blue-400/15" iconColor="text-blue-600 dark:text-blue-300"
-          label="Rôles du centre" sub="Définir les accès locaux"
-          delay="delay-[250ms]"
-        />
+        <div className="col-span-2 lg:col-span-1">
+          <ActionCard
+            href="/admin/personnels" icon={UserPlus}
+            iconBg="bg-brand/10 dark:bg-brand/15" iconColor="text-brand"
+            label="Gérer le personnel" sub="Créer et gérer les comptes"
+            delay="delay-[200ms]"
+          />
+        </div>
+        <div className="col-span-2 lg:col-span-1">
+          <ActionCard
+            href="/admin/roles" icon={Settings}
+            iconBg="bg-blue-50 dark:bg-blue-400/15" iconColor="text-blue-600 dark:text-blue-300"
+            label="Rôles du centre" sub="Définir les accès locaux"
+            delay="delay-[250ms]"
+          />
+        </div>
       </div>
 
       {/* ── CHARTS ── */}
@@ -155,9 +155,7 @@ export default async function AdminDashboardPage() {
               Membres récents du centre
             </p>
           </div>
-          <Button asChild size="sm" className="bg-brand hover:bg-brand-dark text-white rounded-xl gap-1.5 shadow-sm shadow-brand/20 text-xs h-8 px-3">
-            <Link href="/admin/personnels"><Plus className="h-3.5 w-3.5" /> Ajouter</Link>
-          </Button>
+          <Link href="/admin/personnels" className="flex items-center text-primary text-[12px] font-bold"><ChevronRight className="h-3.5 w-3.5" /> Voir tout</Link>
         </div>
 
         {dernierPersonnel.length === 0 ? (
@@ -178,8 +176,11 @@ export default async function AdminDashboardPage() {
               {dernierPersonnel.map((p, i) => (
                 <li key={p.id} className={`dash-in delay-${[0, 75, 150, 225, 300][i] ?? 300} flex sm:grid sm:grid-cols-[1fr_1fr_auto] items-center gap-4 px-5 py-3.5 border-b border-slate-50 dark:border-zinc-800/60 last:border-0 hover:bg-slate-50/60 dark:hover:bg-zinc-800/40 transition-colors`}>
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className="h-8 w-8 rounded-full bg-brand/10 dark:bg-brand/15 flex items-center justify-center flex-shrink-0">
-                      <span className="text-brand font-bold text-xs">{p.nom[0]}{p.prenoms[0]}</span>
+                    <div className="h-8 w-8 rounded-full bg-brand/10 dark:bg-brand/15 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                      {p.photo
+                        ? <img src={p.photo} alt={`${p.nom} ${p.prenoms}`} className="object-cover w-full h-full" />
+                        : <span className="text-brand font-bold text-xs">{p.nom[0]}{p.prenoms[0]}</span>
+                      }
                     </div>
                     <p className="text-sm font-semibold text-slate-900 dark:text-white truncate">{p.nom} {p.prenoms}</p>
                   </div>

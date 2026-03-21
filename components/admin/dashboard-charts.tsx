@@ -76,7 +76,6 @@ interface ChartPanelProps {
   icon: React.ElementType
   iconBg: string
   iconColor: string
-  accentColor: string
   gradientId: string
   strokeColor: string
   fillColor: string
@@ -89,14 +88,13 @@ interface ChartPanelProps {
 
 function ChartPanel({
   title, subtitle, icon: Icon, iconBg, iconColor,
-  accentColor, gradientId, strokeColor, fillColor,
+  gradientId, strokeColor, fillColor,
   data, loading, year, month, onMonthChange,
 }: ChartPanelProps) {
   const total = data.reduce((s, d) => s + d.count, 0)
 
   return (
     <div className="bg-white dark:bg-zinc-950 rounded-2xl border border-slate-100 dark:border-zinc-800 overflow-hidden">
-      <div className={`absolute top-0 left-0 right-0 h-0.5 ${accentColor}`} />
       <div className="relative flex items-start justify-between gap-3 px-5 pt-5 pb-3">
         <div className="flex items-center gap-3">
           <div className={`h-9 w-9 rounded-xl flex items-center justify-center flex-shrink-0 ${iconBg}`}>
@@ -149,7 +147,7 @@ function ChartPanel({
                   boxShadow: '0 4px 16px rgba(0,0,0,0.08)',
                 }}
                 labelFormatter={(v) => `Jour ${v}`}
-                formatter={(v: number) => [v, 'Créations']}
+                formatter={(v) => [v ?? 0, 'Créations']}
                 cursor={{ stroke: strokeColor, strokeWidth: 1, strokeDasharray: '4 4' }}
               />
               <Area
@@ -204,7 +202,6 @@ export default function DashboardCharts() {
           icon={FileText}
           iconBg="bg-brand/10 dark:bg-brand/15"
           iconColor="text-brand"
-          accentColor="bg-brand"
           gradientId="gradEnreg"
           strokeColor="#21c488"
           fillColor="#21c488"
@@ -222,7 +219,6 @@ export default function DashboardCharts() {
           icon={FolderOpen}
           iconBg="bg-blue-500/10 dark:bg-blue-400/15"
           iconColor="text-blue-600 dark:text-blue-300"
-          accentColor="bg-blue-500"
           gradientId="gradDossier"
           strokeColor="#3b82f6"
           fillColor="#3b82f6"

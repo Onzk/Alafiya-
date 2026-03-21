@@ -40,8 +40,8 @@ export async function POST(req: NextRequest) {
   if (!session?.user) return NextResponse.json({ error: 'Non autorisé' }, { status: 401 })
 
   const user = session.user as unknown as SessionUser
-  if (!['MINISTERE', 'ADMIN_CENTRE'].includes(user.niveauAcces)) {
-    return NextResponse.json({ error: 'Non autorisé' }, { status: 403 })
+  if (user.niveauAcces !== 'MINISTERE') {
+    return NextResponse.json({ error: 'Réservé au ministère' }, { status: 403 })
   }
 
   const body = await req.json()

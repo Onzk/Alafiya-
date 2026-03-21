@@ -14,6 +14,8 @@ import {
   DropdownMenuSeparator, DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { useToast } from '@/hooks/use-toast'
+import { useSession } from 'next-auth/react'
+import { SessionUser } from '@/types'
 
 interface Permission {
   id: string
@@ -37,6 +39,9 @@ type EditForm = { nom: string; description: string; permissions: string[] }
 
 export default function AdminRolesPage() {
   const { toast } = useToast()
+  const { data: session } = useSession()
+  const currentUser = session?.user as unknown as SessionUser | undefined
+  const isMinistere = currentUser?.niveauAcces === 'MINISTERE'
   const [roles, setRoles] = useState<Role[]>([])
   const [permissions, setPermissions] = useState<Permission[]>([])
   const [loading, setLoading] = useState(true)
@@ -104,7 +109,7 @@ export default function AdminRolesPage() {
     setRoles((prev) => [data.role, ...prev])
     setDialogOpen(false)
     setForm({ nom: '', description: '', permissions: [] })
-    toast({ description: 'Rôle créé avec succès' })
+    toast({ description: 'Type de personnel créé avec succès' })
   }
 
   function openEdit(role: Role) {
@@ -133,7 +138,7 @@ export default function AdminRolesPage() {
     if (!res.ok) { toast({ description: data.error || 'Erreur', variant: 'destructive' }); return }
     setRoles((prev) => prev.map((r) => r.id === editTarget.id ? { ...r, ...data.role } : r))
     setEditTarget(null)
-    toast({ description: 'Rôle modifié avec succès' })
+    toast({ description: 'Type de personnel modifié avec succès' })
   }
 
   async function handleDelete() {
@@ -145,7 +150,7 @@ export default function AdminRolesPage() {
     if (!res.ok) { toast({ description: data.error || 'Erreur', variant: 'destructive' }); return }
     setRoles((prev) => prev.filter((r) => r.id !== deleteTarget.id))
     setDeleteTarget(null)
-    toast({ description: 'Rôle supprimé' })
+    toast({ description: 'Type de personnel supprimé' })
   }
 
   const filtered = useMemo(() => {
@@ -164,22 +169,22 @@ export default function AdminRolesPage() {
       {/* En-tête */}
       <div className="dash-in delay-0 flex items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white leading-tight">Rôles et permissions</h1>
-          <p className="text-sm text-slate-500 dark:text-zinc-400 mt-0.5">{roles.length} rôle(s) disponibles</p>
+          <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white leading-tight">Types de personnel</h1>
+          <p className="text-sm text-slate-500 dark:text-zinc-400 mt-0.5">{roles.length} type(s) de personnel</p>
         </div>
 
-        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        {isMinistere && <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
             <Button className="h-11 bg-brand hover:bg-brand-dark text-white rounded-xl gap-1.5 shadow-sm shadow-brand/20 flex-shrink-0">
-              <Plus className="h-4 w-4" />Nouveau rôle
+              <Plus className="h-4 w-4" />Nouveau type
             </Button>
           </DialogTrigger>
           <DialogContent className="max-w-2xl">
-            <DialogHeader title="Créer un rôle" description="Configurez un rôle avec ses permissions pour simplifier la gestion des accès." icon={Plus} />
+            <DialogHeader title="Créer un type de personnel" description="Configurez un type de personnel avec ses permissions pour simplifier la gestion des accès." icon={Plus} />
             <DialogScrollableWrapper>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-1.5">
-                  <Label className={labelCls}>Nom du rôle *</Label>
+                  <Label className={labelCls}>Nom du type de personnel *</Label>
                   <Input value={form.nom} onChange={(e) => setForm((p) => ({ ...p, nom: e.target.value }))} placeholder="Ex: Médecin généraliste" required className={inputCls} />
                 </div>
                 <div className="space-y-1.5">
@@ -211,19 +216,19 @@ export default function AdminRolesPage() {
                   </div>
                 </div>
                 <Button type="submit" disabled={submitting} className="w-full h-11 bg-brand hover:bg-brand-dark text-white rounded-xl shadow-sm shadow-brand/20">
-                  {submitting ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Création...</> : 'Créer le rôle'}
+                  {submitting ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Création...</> : 'Créer le type de personnel'}
                 </Button>
               </form>
             </DialogScrollableWrapper>
           </DialogContent>
-        </Dialog>
+        </Dialog>}
       </div>
 
       {/* Filtre recherche */}
       <div className="dash-in delay-75 flex items-center gap-3">
         <div className="relative flex-1 min-w-[200px] max-w-xs">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400 dark:text-zinc-500" />
-          <Input placeholder="Rechercher un rôle..." value={search} onChange={(e) => setSearch(e.target.value)}
+          <Input placeholder="Rechercher un type de personnel..." value={search} onChange={(e) => setSearch(e.target.value)}
             className={`${inputCls} pl-9`} />
         </div>
         {search && (
@@ -237,14 +242,14 @@ export default function AdminRolesPage() {
         <div className="dash-in delay-75 flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-brand" /></div>
       ) : roles.length === 0 ? (
         <div className="dash-in delay-75 bg-white dark:bg-zinc-950 rounded-2xl border border-slate-100 dark:border-zinc-800 p-10 text-center">
-          <p className="text-sm text-slate-400 dark:text-zinc-500">Aucun rôle disponible. Créez le premier rôle pour votre centre.</p>
+          <p className="text-sm text-slate-400 dark:text-zinc-500">Aucun type de personnel disponible. Créez le premier type pour votre centre.</p>
         </div>
       ) : (
         <>
           {/* ── TABLE desktop ── */}
           <div className="dash-in delay-75 hidden lg:block bg-white dark:bg-zinc-950 rounded-2xl border border-slate-100 dark:border-zinc-800 overflow-hidden">
             <div className="grid grid-cols-[2fr_100px_70px_1fr_44px] gap-4 px-5 py-2.5 bg-slate-50/60 dark:bg-zinc-950/40 border-b border-slate-100 dark:border-zinc-800">
-              {['Rôle', 'Origine', 'Personnel', 'Permissions', ''].map((h, i) => (
+              {['Type de personnel', 'Origine', 'Personnel', 'Permissions', ''].map((h, i) => (
                 <span key={i} className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-zinc-500">{h}</span>
               ))}
             </div>
@@ -282,7 +287,7 @@ export default function AdminRolesPage() {
                     </div>
                     {/* Dropdown */}
                     <div onClick={(e) => e.stopPropagation()}>
-                      {!isGlobal ? (
+                      {isMinistere && !isGlobal ? (
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <button className="h-8 w-8 rounded-lg border border-slate-200 dark:border-zinc-700 flex items-center justify-center text-slate-400 dark:text-zinc-500 hover:text-slate-700 dark:hover:text-zinc-200 hover:bg-slate-50 dark:hover:bg-zinc-800 transition-colors">
@@ -313,7 +318,7 @@ export default function AdminRolesPage() {
               })}
             </ul>
             <div className="px-5 py-3 border-t border-slate-50 dark:border-zinc-800 bg-slate-50/40 dark:bg-zinc-950/20">
-              <p className="text-xs text-slate-400 dark:text-zinc-500">{filtered.length} rôle(s) affiché(s) sur {roles.length} au total</p>
+              <p className="text-xs text-slate-400 dark:text-zinc-500">{filtered.length} type(s) affiché(s) sur {roles.length} au total</p>
             </div>
           </div>
 
@@ -321,9 +326,9 @@ export default function AdminRolesPage() {
           <div className="lg:hidden space-y-5">
             {rolesLocaux.length > 0 && (
               <div className="dash-in delay-75 space-y-3">
-                <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-zinc-500">Rôles de ce centre ({rolesLocaux.length})</p>
+                <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-zinc-500">Types de ce centre ({rolesLocaux.length})</p>
                 {rolesLocaux.map((role, i) => (
-                  <RoleCard key={role.id} role={role} delay={i * 75}
+                  <RoleCard key={role.id} role={role} readonly={!isMinistere} delay={i * 75}
                     onView={() => setViewTarget(role)} onEdit={() => openEdit(role)} onDelete={() => setDeleteTarget(role)} />
                 ))}
               </div>
@@ -331,7 +336,7 @@ export default function AdminRolesPage() {
 
             {rolesGlobaux.length > 0 && (
               <div className="dash-in delay-150 space-y-3">
-                <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-zinc-500">Rôles globaux (Ministère) ({rolesGlobaux.length})</p>
+                <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-zinc-500">Types globaux (Ministère) ({rolesGlobaux.length})</p>
                 {rolesGlobaux.map((role, i) => (
                   <RoleCard key={role.id} role={role} readonly delay={i * 75}
                     onView={() => setViewTarget(role)} onEdit={() => openEdit(role)} onDelete={() => setDeleteTarget(role)} />
@@ -345,7 +350,7 @@ export default function AdminRolesPage() {
       {/* ── Dialog voir ── */}
       <Dialog open={!!viewTarget} onOpenChange={(o) => { if (!o) setViewTarget(null) }}>
         <DialogContent className="max-w-lg">
-          <DialogHeader title="Détails du rôle" description="Informations complètes sur ce rôle et ses permissions." icon={ShieldCheck} />
+          <DialogHeader title="Détails du type de personnel" description="Informations complètes sur ce type de personnel et ses permissions." icon={ShieldCheck} />
           {viewTarget && (
             <DialogScrollableWrapper>
               <div className="space-y-4">
@@ -391,7 +396,7 @@ export default function AdminRolesPage() {
                 </div>
                 <div className="flex gap-2 pt-1">
                   <Button variant="outline" className="flex-1 h-10 rounded-xl" onClick={() => setViewTarget(null)}>Fermer</Button>
-                  {viewTarget.creePar !== 'MINISTERE' && (
+                  {isMinistere && viewTarget.creePar !== 'MINISTERE' && (
                     <Button className="flex-1 h-10 bg-brand hover:bg-brand-dark text-white rounded-xl" onClick={() => { openEdit(viewTarget); setViewTarget(null) }}>
                       <Pencil className="h-3.5 w-3.5 mr-1.5" />Modifier
                     </Button>
@@ -406,11 +411,11 @@ export default function AdminRolesPage() {
       {/* ── Dialog modifier ── */}
       <Dialog open={!!editTarget} onOpenChange={(o) => { if (!o) setEditTarget(null) }}>
         <DialogContent className="max-w-2xl">
-          <DialogHeader title="Modifier le rôle" description="Mettez à jour les informations et permissions du rôle." icon={Pencil} />
+          <DialogHeader title="Modifier le type de personnel" description="Mettez à jour les informations et permissions du type de personnel." icon={Pencil} />
           <form onSubmit={handleEdit} className="px-5 md:px-7 py-5 md:py-6 flex flex-col gap-4 overflow-y-auto">
             <div className="space-y-1.5">
-              <Label className={labelCls}>Nom du rôle *</Label>
-              <Input value={editForm.nom} onChange={(e) => setEditForm((p) => ({ ...p, nom: e.target.value }))} placeholder="Nom du rôle" required className={inputCls} />
+              <Label className={labelCls}>Nom du type de personnel *</Label>
+              <Input value={editForm.nom} onChange={(e) => setEditForm((p) => ({ ...p, nom: e.target.value }))} placeholder="Nom du type de personnel" required className={inputCls} />
             </div>
             <div className="space-y-1.5">
               <Label className={labelCls}>Description</Label>
@@ -450,7 +455,7 @@ export default function AdminRolesPage() {
       {/* ── Dialog supprimer ── */}
       <Dialog open={!!deleteTarget} onOpenChange={(o) => { if (!o) setDeleteTarget(null) }}>
         <DialogContent className="max-w-sm">
-          <DialogHeader title="Supprimer le rôle ?" description={`Vous êtes sur le point de supprimer le rôle "${deleteTarget?.nom}". Cette action est irréversible.`} icon={Trash2} danger />
+          <DialogHeader title="Supprimer le type de personnel ?" description={`Vous êtes sur le point de supprimer le type de personnel "${deleteTarget?.nom}". Cette action est irréversible.`} icon={Trash2} danger />
           <div className="flex gap-3 px-5 md:px-7 pb-5 md:pb-6">
             <Button variant="outline" className="flex-1 h-11 rounded-xl" onClick={() => setDeleteTarget(null)}>Annuler</Button>
             <Button className="flex-1 h-11 rounded-xl bg-red-500 hover:bg-red-600 text-white shadow-sm" onClick={handleDelete} disabled={deleting}>

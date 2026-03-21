@@ -81,7 +81,7 @@ export default async function MinistereDashboardPage() {
       orderBy: { createdAt: 'desc' },
       take: 10,
       select: {
-        id: true, nom: true, prenoms: true, email: true, estActif: true, createdAt: true,
+        id: true, nom: true, prenoms: true, email: true, estActif: true, createdAt: true, photo: true,
         specialites: { include: { specialite: { select: { nom: true } } } },
         centres: { include: { centre: { select: { nom: true } } }, take: 1 },
       },
@@ -239,8 +239,11 @@ export default async function MinistereDashboardPage() {
                   return (
                     <li key={m.id} className={`dash-in delay-${[0, 75, 150, 225, 300][Math.min(i, 4)]} flex sm:grid sm:grid-cols-[1fr_1fr_1fr_auto] items-center gap-4 px-5 py-3.5 border-b border-slate-50 dark:border-zinc-800/60 last:border-0 hover:bg-slate-50/60 dark:hover:bg-zinc-800/40 transition-colors`}>
                       <div className="flex items-center gap-3 min-w-0">
-                        <div className="h-8 w-8 rounded-full bg-brand/10 dark:bg-brand/15 flex items-center justify-center flex-shrink-0">
-                          <span className="text-brand font-bold text-xs">{m.nom[0]}{m.prenoms[0]}</span>
+                        <div className="h-8 w-8 rounded-full bg-brand/10 dark:bg-brand/15 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                          {m.photo
+                            ? <img src={m.photo} alt={`${m.nom} ${m.prenoms}`} className="object-cover w-full h-full" />
+                            : <span className="text-brand font-bold text-xs">{m.nom[0]}{m.prenoms[0]}</span>
+                          }
                         </div>
                         <div className="min-w-0">
                           <p className="text-sm font-semibold text-slate-900 dark:text-white truncate">{m.nom} {m.prenoms}</p>

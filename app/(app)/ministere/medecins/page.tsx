@@ -43,6 +43,7 @@ export default function MedecinsPage() {
   const [medecins, setMedecins] = useState<Medecin[]>([])
   const [specialites, setSpecialites] = useState<Specialite[]>([])
   const [centres, setCentres] = useState<Centre[]>([])
+  const [typesPersonnel, setTypesPersonnel] = useState<TypePersonnel[]>([])
   const [loading, setLoading] = useState(true)
 
   // Delete dialog
@@ -57,6 +58,7 @@ export default function MedecinsPage() {
   const [filterStatut, setFilterStatut] = useState<StatusFilter>('tous')
   const [filterCentre, setFilterCentre] = useState('tous')
   const [filterSpecialite, setFilterSpecialite] = useState('tous')
+  const [filterType, setFilterType] = useState('tous')
   const [toggling, setToggling] = useState<string | null>(null)
 
   useEffect(() => {
@@ -64,10 +66,12 @@ export default function MedecinsPage() {
       fetch('/api/utilisateurs?niveauAcces=PERSONNEL').then((r) => r.json()),
       fetch('/api/specialites').then((r) => r.json()),
       fetch('/api/centres').then((r) => r.json()),
-    ]).then(([users, sps, ctrs]) => {
+      fetch('/api/types-personnel').then((r) => r.json()),
+    ]).then(([users, sps, ctrs, types]) => {
       setMedecins(users.utilisateurs || [])
       setSpecialites(sps.specialites || [])
       setCentres(ctrs.centres || [])
+      setTypesPersonnel(types.types || [])
       setLoading(false)
     })
   }, [])
@@ -107,13 +111,14 @@ export default function MedecinsPage() {
         m.centres.some((c) => c.centre.id === filterCentre)
       const matchSpecialite = filterSpecialite === 'tous' ||
         m.specialites.some((s) => s.specialite.code === filterSpecialite)
-      return matchSearch && matchStatut && matchCentre && matchSpecialite
+      const matchType = filterType === 'tous' || m.typePersonnel?.code === filterType
+      return matchSearch && matchStatut && matchCentre && matchSpecialite && matchType
     })
-  }, [medecins, search, filterStatut, filterCentre, filterSpecialite])
+  }, [medecins, search, filterStatut, filterCentre, filterSpecialite, filterType])
 
   const actifs = medecins.filter((m) => m.estActif).length
   const inactifs = medecins.length - actifs
-  const hasFilters = search !== '' || filterStatut !== 'tous' || filterCentre !== 'tous' || filterSpecialite !== 'tous'
+  const hasFilters = search !== '' || filterStatut !== 'tous' || filterCentre !== 'tous' || filterSpecialite !== 'tous' || filterType !== 'tous'
 
   return (
     <div className="space-y-5 max-w-[1400px]">
@@ -175,8 +180,18 @@ export default function MedecinsPage() {
           </SelectContent>
         </Select>
 
+        <Select value={filterType} onValueChange={setFilterType}>
+          <SelectTrigger className={`${inputCls} w-[180px]`}>
+            <SelectValue placeholder="Tous les types" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="tous">Tous les types</SelectItem>
+            {typesPersonnel.map((t) => <SelectItem key={t.code} value={t.code}>{t.nom}</SelectItem>)}
+          </SelectContent>
+        </Select>
+
         {hasFilters && (
-          <button onClick={() => { setSearch(''); setFilterStatut('tous'); setFilterCentre('tous'); setFilterSpecialite('tous') }}
+          <button onClick={() => { setSearch(''); setFilterStatut('tous'); setFilterCentre('tous'); setFilterSpecialite('tous'); setFilterType('tous') }}
             className="flex items-center gap-1.5 text-xs font-semibold text-slate-400 dark:text-zinc-500 hover:text-slate-700 dark:hover:text-zinc-300 transition-colors">
             <X className="h-3.5 w-3.5" /> Réinitialiser
           </button>

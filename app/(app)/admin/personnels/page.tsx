@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import {
   Plus, Loader2, UserCheck, UserX, Users, Search, X,
-  MoreHorizontal, Pencil, Trash2, Power, Eye, Mail, Phone,
+  MoreHorizontal, Pencil, Trash2, Power, Eye,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -13,9 +13,11 @@ import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem,
   DropdownMenuSeparator, DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useToast } from '@/hooks/use-toast'
 
 interface TypePersonnel { id: string; nom: string; code: string }
+interface Specialite { id: string; nom: string; code: string }
 
 interface Personnel {
   id: string
@@ -36,24 +38,32 @@ export default function PersonnelsPage() {
   const { toast } = useToast()
   const router = useRouter()
   const [personnel, setPersonnel] = useState<Personnel[]>([])
+  const [specialites, setSpecialites] = useState<Specialite[]>([])
+  const [typesPersonnel, setTypesPersonnel] = useState<TypePersonnel[]>([])
   const [loading, setLoading] = useState(true)
 
   // Delete dialog
   const [deleteTarget, setDeleteTarget] = useState<Personnel | null>(null)
   const [deleting, setDeleting] = useState(false)
 
-  // View dialog
-  const [viewTarget, setViewTarget] = useState<Personnel | null>(null)
-
   // Filters
   const [search, setSearch] = useState('')
   const [filterStatut, setFilterStatut] = useState<StatusFilter>('tous')
+  const [filterSpecialite, setFilterSpecialite] = useState('tous')
+  const [filterType, setFilterType] = useState('tous')
   const [toggling, setToggling] = useState<string | null>(null)
 
   useEffect(() => {
-    fetch('/api/utilisateurs')
-      .then((r) => r.json())
-      .then((d) => { setPersonnel(d.utilisateurs || []); setLoading(false) })
+    Promise.all([
+      fetch('/api/utilisateurs?niveauAcces=PERSONNEL').then((r) => r.json()),
+      fetch('/api/specialites').then((r) => r.json()),
+      fetch('/api/types-personnel').then((r) => r.json()),
+    ]).then(([users, sps, types]) => {
+      setPersonnel(users.utilisateurs || [])
+      setSpecialites(sps.specialites || [])
+      setTypesPersonnel(types.types || [])
+      setLoading(false)
+    })
   }, [])
 
   async function handleDelete() {
@@ -86,12 +96,15 @@ export default function PersonnelsPage() {
       const matchSearch = search === '' ||
         `${p.nom} ${p.prenoms} ${p.email}`.toLowerCase().includes(search.toLowerCase())
       const matchStatut = filterStatut === 'tous' || (filterStatut === 'actif' ? p.estActif : !p.estActif)
-      return matchSearch && matchStatut
+      const matchSpecialite = filterSpecialite === 'tous' ||
+        p.specialites?.some((s) => s.specialite.nom === filterSpecialite)
+      const matchType = filterType === 'tous' || p.typePersonnel?.code === filterType
+      return matchSearch && matchStatut && matchSpecialite && matchType
     })
-  }, [personnel, search, filterStatut])
+  }, [personnel, search, filterStatut, filterSpecialite, filterType])
 
   const actifs = personnel.filter((p) => p.estActif).length
-  const hasFilters = search !== '' || filterStatut !== 'tous'
+  const hasFilters = search !== '' || filterStatut !== 'tous' || filterSpecialite !== 'tous' || filterType !== 'tous'
 
   return (
     <div className="space-y-5 max-w-[1400px]">
@@ -132,8 +145,28 @@ export default function PersonnelsPage() {
           ))}
         </div>
 
+        <Select value={filterSpecialite} onValueChange={setFilterSpecialite}>
+          <SelectTrigger className={`${inputCls} w-[180px]`}>
+            <SelectValue placeholder="Toutes spécialités" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="tous">Toutes spécialités</SelectItem>
+            {specialites.map((sp) => <SelectItem key={sp.code} value={sp.nom}>{sp.nom}</SelectItem>)}
+          </SelectContent>
+        </Select>
+
+        <Select value={filterType} onValueChange={setFilterType}>
+          <SelectTrigger className={`${inputCls} w-[180px]`}>
+            <SelectValue placeholder="Tous les types" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="tous">Tous les types</SelectItem>
+            {typesPersonnel.map((t) => <SelectItem key={t.code} value={t.code}>{t.nom}</SelectItem>)}
+          </SelectContent>
+        </Select>
+
         {hasFilters && (
-          <button onClick={() => { setSearch(''); setFilterStatut('tous') }}
+          <button onClick={() => { setSearch(''); setFilterStatut('tous'); setFilterSpecialite('tous'); setFilterType('tous') }}
             className="flex items-center gap-1.5 text-xs font-semibold text-slate-400 dark:text-zinc-500 hover:text-slate-700 dark:hover:text-zinc-300 transition-colors">
             <X className="h-3.5 w-3.5" /> Réinitialiser
           </button>
@@ -164,7 +197,7 @@ export default function PersonnelsPage() {
             </div>
             <ul>
               {filtered.map((p, i) => (
-                <li key={p.id} onClick={() => setViewTarget(p)} className={`dash-in delay-${[0,75,100,150,200,225,300][Math.min(i,6)]} grid grid-cols-[2fr_1fr_1fr_90px_44px] items-center gap-4 px-5 py-3.5 border-b border-slate-50 dark:border-zinc-800/60 last:border-0 hover:bg-slate-50/60 dark:hover:bg-zinc-800/30 transition-colors cursor-pointer`}>
+                <li key={p.id} className={`dash-in delay-${[0,75,100,150,200,225,300][Math.min(i,6)]} grid grid-cols-[2fr_1fr_1fr_90px_44px] items-center gap-4 px-5 py-3.5 border-b border-slate-50 dark:border-zinc-800/60 last:border-0 hover:bg-slate-50/60 dark:hover:bg-zinc-800/30 transition-colors cursor-pointer`} onClick={() => router.push(`/admin/personnels/${p.id}`)}>
                   <div className="flex items-center gap-3 min-w-0">
                     <div className="h-9 w-9 rounded-full bg-brand/10 dark:bg-brand/15 flex items-center justify-center flex-shrink-0">
                       <span className="text-brand font-bold text-xs">{p.nom[0]}{p.prenoms[0]}</span>
@@ -201,7 +234,7 @@ export default function PersonnelsPage() {
                         </button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end" className="w-44">
-                        <DropdownMenuItem onClick={() => setViewTarget(p)}>
+                        <DropdownMenuItem onClick={() => router.push(`/admin/personnels/${p.id}`)}>
                           <Eye className="h-4 w-4 text-slate-400" /><span>Voir les détails</span>
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => router.push(`/admin/personnels/${p.id}/modifier`)}>
@@ -230,7 +263,7 @@ export default function PersonnelsPage() {
           {/* ── CARDS mobile ── */}
           <div className="dash-in delay-75 lg:hidden grid sm:grid-cols-2 gap-4">
             {filtered.map((p, i) => (
-              <div key={p.id} onClick={() => setViewTarget(p)} className={`dash-in delay-${[0,75,100,150,200,225,300][Math.min(i,6)]} bg-white dark:bg-zinc-950 rounded-2xl border border-slate-100 dark:border-zinc-800 overflow-hidden cursor-pointer hover:shadow-md transition-shadow`}>
+              <div key={p.id} onClick={() => router.push(`/admin/personnels/${p.id}`)} className={`dash-in delay-${[0,75,100,150,200,225,300][Math.min(i,6)]} bg-white dark:bg-zinc-950 rounded-2xl border border-slate-100 dark:border-zinc-800 overflow-hidden cursor-pointer hover:shadow-md transition-shadow`}>
                 <div className="h-1 bg-brand" />
                 <div className="p-4 space-y-3">
                   <div className="flex items-start justify-between gap-2">
@@ -251,7 +284,7 @@ export default function PersonnelsPage() {
                           </button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="w-44">
-                          <DropdownMenuItem onClick={() => setViewTarget(p)}>
+                          <DropdownMenuItem onClick={() => router.push(`/admin/personnels/${p.id}`)}>
                             <Eye className="h-4 w-4 text-slate-400" /><span>Voir les détails</span>
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => router.push(`/admin/personnels/${p.id}/modifier`)}>
@@ -291,65 +324,6 @@ export default function PersonnelsPage() {
           </div>
         </>
       )}
-
-      {/* ── Dialog voir ── */}
-      <Dialog open={!!viewTarget} onOpenChange={(o) => { if (!o) setViewTarget(null) }}>
-        <DialogContent className="max-w-md">
-          <DialogHeader title="Détails du personnel" description="Informations complètes sur ce membre du personnel." icon={Users} />
-          {viewTarget && (
-            <div className="space-y-4 px-5 md:px-7 pb-5 md:pb-6">
-              <div className="flex items-center gap-4 p-4 bg-slate-50 dark:bg-zinc-950 rounded-xl">
-                <div className="h-14 w-14 rounded-full bg-brand/10 dark:bg-brand/15 flex items-center justify-center flex-shrink-0">
-                  <span className="text-brand font-extrabold text-lg">{viewTarget.nom[0]}{viewTarget.prenoms[0]}</span>
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="font-bold text-slate-900 dark:text-white text-lg leading-tight truncate">{viewTarget.nom} {viewTarget.prenoms}</p>
-                  {viewTarget.typePersonnel && (
-                    <span className="inline-block mt-1 text-xs bg-purple-50 dark:bg-purple-400/15 text-purple-700 dark:text-purple-300 px-2 py-0.5 rounded-lg font-semibold">{viewTarget.typePersonnel.nom}</span>
-                  )}
-                  <div className={`mt-1 flex items-center gap-1.5 text-xs font-semibold ${viewTarget.estActif ? 'text-brand' : 'text-slate-400 dark:text-zinc-500'}`}>
-                    {viewTarget.estActif ? <UserCheck className="h-3.5 w-3.5" /> : <UserX className="h-3.5 w-3.5" />}
-                    {viewTarget.estActif ? 'Actif' : 'Inactif'}
-                  </div>
-                </div>
-              </div>
-              <div className="space-y-2">
-                <div className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-zinc-950 rounded-xl">
-                  <Mail className="h-4 w-4 text-slate-400 flex-shrink-0" />
-                  <p className="text-sm text-slate-700 dark:text-zinc-300 break-all">{viewTarget.email}</p>
-                </div>
-                {viewTarget.telephone && (
-                  <div className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-zinc-950 rounded-xl">
-                    <Phone className="h-4 w-4 text-slate-400 flex-shrink-0" />
-                    <p className="text-sm text-slate-700 dark:text-zinc-300">{viewTarget.telephone}</p>
-                  </div>
-                )}
-              </div>
-              {viewTarget.specialites && viewTarget.specialites.length > 0 && (
-                <div>
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-zinc-500 mb-2">Spécialités</p>
-                  <div className="flex flex-wrap gap-2">
-                    {viewTarget.specialites.map((s) => (
-                      <span key={s.specialite.nom} className="text-xs bg-blue-50 dark:bg-blue-400/15 text-blue-600 dark:text-blue-300 px-3 py-1 rounded-xl font-semibold">
-                        {s.specialite.nom}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-              <div className="flex gap-2 pt-1">
-                <Button variant="outline" className="flex-1 h-10 rounded-xl" onClick={() => setViewTarget(null)}>Fermer</Button>
-                <Button
-                  className="flex-1 h-10 bg-brand hover:bg-brand-dark text-white rounded-xl"
-                  onClick={() => { router.push(`/admin/personnels/${viewTarget.id}/modifier`); setViewTarget(null) }}
-                >
-                  <Pencil className="h-3.5 w-3.5 mr-1.5" />Modifier
-                </Button>
-              </div>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
 
       {/* ── Dialog supprimer ── */}
       <Dialog open={!!deleteTarget} onOpenChange={(o) => { if (!o) setDeleteTarget(null) }}>

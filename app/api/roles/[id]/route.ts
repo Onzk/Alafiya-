@@ -15,8 +15,8 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   if (!session?.user) return NextResponse.json({ error: 'Non autorisé' }, { status: 401 })
 
   const user = session.user as unknown as SessionUser
-  if (!['MINISTERE', 'ADMIN_CENTRE'].includes(user.niveauAcces)) {
-    return NextResponse.json({ error: 'Non autorisé' }, { status: 403 })
+  if (user.niveauAcces !== 'MINISTERE') {
+    return NextResponse.json({ error: 'Réservé au ministère' }, { status: 403 })
   }
 
   const body = await req.json()
@@ -48,8 +48,8 @@ export async function DELETE(_req: NextRequest, { params }: { params: { id: stri
   if (!session?.user) return NextResponse.json({ error: 'Non autorisé' }, { status: 401 })
 
   const user = session.user as unknown as SessionUser
-  if (!['MINISTERE', 'ADMIN_CENTRE'].includes(user.niveauAcces)) {
-    return NextResponse.json({ error: 'Non autorisé' }, { status: 403 })
+  if (user.niveauAcces !== 'MINISTERE') {
+    return NextResponse.json({ error: 'Réservé au ministère' }, { status: 403 })
   }
 
   await prisma.role.delete({ where: { id: params.id } })

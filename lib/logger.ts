@@ -12,8 +12,36 @@ interface LogParams {
   userAgent?: string
 }
 
+interface IpGeo {
+  country_name?: string
+  country_code2?: string
+  isp?: string
+}
+
+const PRIVATE_IP = /^(127\.|10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.|::1$|fc|fd)/
+
+async function fetchIpGeo(ip: string): Promise<IpGeo> {
+  if (!ip || ip === 'inconnue' || PRIVATE_IP.test(ip)) return {}
+  try {
+    const res = await fetch(`https://api.iplocation.net/?ip=${ip}`, {
+      signal: AbortSignal.timeout(3000),
+    })
+    if (!res.ok) return {}
+    const data = await res.json()
+    if (data.response_code !== '200') return {}
+    return {
+      country_name: data.country_name || undefined,
+      country_code2: data.country_code2 || undefined,
+      isp: data.isp || undefined,
+    }
+  } catch {
+    return {}
+  }
+}
+
 export async function logger(params: LogParams): Promise<void> {
   try {
+    const geo = params.ip ? await fetchIpGeo(params.ip) : {}
     await prisma.log.create({
       data: {
         userId: params.userId ?? null,
@@ -21,7 +49,7 @@ export async function logger(params: LogParams): Promise<void> {
         cible: params.cible,
         cibleId: params.cibleId,
         centreId: params.centreId ?? null,
-        details: (params.details ?? {}) as object,
+        details: { ...(params.details ?? {}), geo } as object,
         ip: params.ip,
         userAgent: params.userAgent,
       },
