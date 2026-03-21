@@ -3,7 +3,11 @@
     "allow": [
       "Bash(find /root/alafiya+/Alafiya-/lib -type f \\\\\\(-name *.ts -o -name *.tsx \\\\\\))",
       "Bash(find /root/alafiya+/Alafiya- -type f -name *centre*)",
-      "Bash(find /root/alafiya+/Alafiya-/components -name Toaster* -o -name toaster*)"
+      "Bash(find /root/alafiya+/Alafiya-/components -name Toaster* -o -name toaster*)",
+      "Bash(npx tsx:*)",
+      "Bash(ls /root/alafiya+/Alafiya-/app/\\\\\\(app\\\\\\)/admin/)",
+      "Bash(ls /root/alafiya+/Alafiya-/app/\\\\\\(app\\\\\\)/)",
+      "Bash(npm list:*)"
     ],
     "additionalDirectories": [
       "/root/alafiya+/Alafiya-/app/(app)/ministere/medecins/[id]"

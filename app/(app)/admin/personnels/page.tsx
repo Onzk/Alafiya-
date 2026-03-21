@@ -1,23 +1,21 @@
 'use client'
 
-import { useState, useEffect, useMemo, Fragment } from 'react'
+import { useState, useEffect, useMemo } from 'react'
+import { useRouter } from 'next/navigation'
 import {
-  Plus, Loader2, UserCheck, UserX, Users, Search, X, Check,
+  Plus, Loader2, UserCheck, UserX, Users, Search, X,
   MoreHorizontal, Pencil, Trash2, Power, Eye, Mail, Phone,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Dialog, DialogContent, DialogHeader, DialogTrigger } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogHeader } from '@/components/ui/dialog'
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem,
   DropdownMenuSeparator, DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { SearchableSelect } from '@/components/ui/searchable-select'
 import { useToast } from '@/hooks/use-toast'
 
 interface TypePersonnel { id: string; nom: string; code: string }
-interface Specialite { id: string; nom: string; code: string }
 
 interface Personnel {
   id: string
@@ -31,72 +29,14 @@ interface Personnel {
 }
 
 const inputCls = 'h-11 border-slate-200 dark:border-zinc-700 rounded-lg text-sm bg-white dark:bg-zinc-950 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-zinc-500 focus-visible:ring-emerald-500 focus-visible:border-emerald-400'
-const labelCls = 'text-slate-700 dark:text-zinc-300 text-sm font-medium'
 
 type StatusFilter = 'tous' | 'actif' | 'inactif'
-type CreateForm = { nom: string; prenoms: string; email: string; motDePasse: string; telephone: string; typePersonnelId: string; specialites: string[] }
-type EditForm = { nom: string; prenoms: string; telephone: string; typePersonnelId: string; specialites: string[] }
-
-const EMPTY_CREATE: CreateForm = { nom: '', prenoms: '', email: '', motDePasse: '', telephone: '', typePersonnelId: '', specialites: [] }
-const EMPTY_EDIT: EditForm = { nom: '', prenoms: '', telephone: '', typePersonnelId: '', specialites: [] }
-
-function StepBar({ steps, current }: { steps: string[]; current: number }) {
-  return (
-    <div className="flex items-start mb-8">
-      {steps.map((label, i) => (
-        <Fragment key={i}>
-          <div className="flex flex-col items-center shrink-0">
-            {/* Cercle étape */}
-            <div className={`h-10 w-10 rounded-full flex items-center justify-center text-xs font-extrabold transition-all duration-300 border-2 ${
-              i < current
-                ? 'bg-brand border-brand text-white shadow-md shadow-brand/30'
-                : i === current
-                ? 'bg-white dark:bg-zinc-800 border-brand text-brand shadow-lg shadow-brand/20 ring-4 ring-brand/15 scale-110'
-                : 'bg-slate-100 dark:bg-zinc-900 border-slate-200 dark:border-zinc-700 text-slate-400 dark:text-zinc-500'
-            }`}>
-              {i < current ? <Check className="h-4 w-4" strokeWidth={3} /> : i + 1}
-            </div>
-            {/* Label */}
-            <span className={`text-xs font-bold whitespace-nowrap mt-2 transition-all duration-300 ${
-              i === current ? 'text-slate-900 dark:text-white scale-105' : 'text-slate-500 dark:text-zinc-400'
-            }`}>
-              {label}
-            </span>
-          </div>
-          {/* Connecteur */}
-          {i < steps.length - 1 && (
-            <div className="flex-1 flex items-center">
-              <div className={`flex-1 h-1 mx-2 mt-0.5 rounded-full transition-all duration-500 ${
-                i < current ? 'bg-brand shadow-sm shadow-brand/30' : 'bg-slate-200 dark:bg-zinc-700'
-              }`} />
-            </div>
-          )}
-        </Fragment>
-      ))}
-    </div>
-  )
-}
 
 export default function PersonnelsPage() {
   const { toast } = useToast()
+  const router = useRouter()
   const [personnel, setPersonnel] = useState<Personnel[]>([])
-  const [specialites, setSpecialites] = useState<Specialite[]>([])
-  const [typesPersonnel, setTypesPersonnel] = useState<TypePersonnel[]>([])
   const [loading, setLoading] = useState(true)
-
-  // Create dialog
-  const [dialogOpen, setDialogOpen] = useState(false)
-  const [createStep, setCreateStep] = useState(0)
-  const [submitting, setSubmitting] = useState(false)
-  const [form, setForm] = useState<CreateForm>(EMPTY_CREATE)
-  const [spCreateSearch, setSpCreateSearch] = useState('')
-
-  // Edit dialog
-  const [editTarget, setEditTarget] = useState<Personnel | null>(null)
-  const [editStep, setEditStep] = useState(0)
-  const [editForm, setEditForm] = useState<EditForm>(EMPTY_EDIT)
-  const [editSubmitting, setEditSubmitting] = useState(false)
-  const [spEditSearch, setSpEditSearch] = useState('')
 
   // Delete dialog
   const [deleteTarget, setDeleteTarget] = useState<Personnel | null>(null)
@@ -111,107 +51,10 @@ export default function PersonnelsPage() {
   const [toggling, setToggling] = useState<string | null>(null)
 
   useEffect(() => {
-    Promise.all([
-      fetch('/api/utilisateurs').then((r) => r.json()),
-      fetch('/api/specialites').then((r) => r.json()),
-      fetch('/api/types-personnel').then((r) => r.json()),
-    ]).then(([users, sps, tps]) => {
-      setPersonnel(users.utilisateurs || [])
-      setSpecialites(sps.specialites || [])
-      setTypesPersonnel(tps.types || [])
-      setLoading(false)
-    })
+    fetch('/api/utilisateurs')
+      .then((r) => r.json())
+      .then((d) => { setPersonnel(d.utilisateurs || []); setLoading(false) })
   }, [])
-
-  function validateCreateStep1() {
-    const { nom, prenoms, email, motDePasse } = form
-    if (!nom.trim() || !prenoms.trim() || !email.trim() || !motDePasse.trim()) {
-      toast({ description: 'Veuillez remplir tous les champs obligatoires', variant: 'destructive' })
-      return false
-    }
-    if (motDePasse.length < 8) {
-      toast({ description: 'Le mot de passe doit contenir au moins 8 caractères', variant: 'destructive' })
-      return false
-    }
-    return true
-  }
-
-  function validateEditStep1() {
-    if (!editForm.nom.trim() || !editForm.prenoms.trim()) {
-      toast({ description: 'Veuillez remplir nom et prénoms', variant: 'destructive' })
-      return false
-    }
-    return true
-  }
-
-  function validateCreateStep2() {
-    if (!form.typePersonnelId) {
-      toast({ description: 'Veuillez sélectionner un type de personnel', variant: 'destructive' })
-      return false
-    }
-    return true
-  }
-
-  function validateEditStep2() {
-    if (!editForm.typePersonnelId) {
-      toast({ description: 'Veuillez sélectionner un type de personnel', variant: 'destructive' })
-      return false
-    }
-    return true
-  }
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    if (!validateCreateStep2()) return
-    setSubmitting(true)
-    const res = await fetch('/api/utilisateurs', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...form, niveauAcces: 'PERSONNEL' }),
-    })
-    const data = await res.json()
-    setSubmitting(false)
-    if (!res.ok) { toast({ description: data.error || 'Erreur', variant: 'destructive' }); return }
-    setPersonnel((prev) => [data.utilisateur, ...prev])
-    setDialogOpen(false)
-    setForm(EMPTY_CREATE)
-    setCreateStep(0)
-    toast({ description: 'Personnel créé avec succès' })
-  }
-
-  function openEdit(p: Personnel) {
-    setEditTarget(p)
-    setEditStep(0)
-    setSpEditSearch('')
-    setEditForm({
-      nom: p.nom,
-      prenoms: p.prenoms,
-      telephone: p.telephone || '',
-      typePersonnelId: p.typePersonnel?.id || '',
-      specialites: p.specialites?.map((s) => {
-        const found = specialites.find((sp) => sp.nom === s.specialite.nom)
-        return found?.id || ''
-      }).filter(Boolean) || [],
-    })
-  }
-
-  async function handleEdit(e: React.FormEvent) {
-    e.preventDefault()
-    if (!validateEditStep2()) return
-    if (!editTarget) return
-    setEditSubmitting(true)
-    const res = await fetch(`/api/utilisateurs/${editTarget.id}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(editForm),
-    })
-    const data = await res.json()
-    setEditSubmitting(false)
-    if (!res.ok) { toast({ description: data.error || 'Erreur', variant: 'destructive' }); return }
-    setPersonnel((prev) => prev.map((p) => p.id === editTarget.id ? { ...p, ...data.utilisateur } : p))
-    setEditTarget(null)
-    toast({ description: 'Personnel modifié avec succès' })
-  }
 
   async function handleDelete() {
     if (!deleteTarget) return
@@ -250,10 +93,6 @@ export default function PersonnelsPage() {
   const actifs = personnel.filter((p) => p.estActif).length
   const hasFilters = search !== '' || filterStatut !== 'tous'
 
-  const typeOptions = typesPersonnel.map((t) => ({ id: t.id, label: t.nom }))
-  const filteredSpCreate = specialites.filter((sp) => sp.nom.toLowerCase().includes(spCreateSearch.toLowerCase()))
-  const filteredSpEdit = specialites.filter((sp) => sp.nom.toLowerCase().includes(spEditSearch.toLowerCase()))
-
   return (
     <div className="space-y-5 max-w-[1400px]">
 
@@ -266,109 +105,12 @@ export default function PersonnelsPage() {
           </p>
         </div>
 
-        <Dialog open={dialogOpen} onOpenChange={(o) => { setDialogOpen(o); if (!o) { setForm(EMPTY_CREATE); setCreateStep(0); setSpCreateSearch('') } }}>
-          <DialogTrigger asChild>
-            <Button className="h-11 bg-brand hover:bg-brand-dark text-white rounded-xl gap-1.5 shadow-sm shadow-brand/20 flex-shrink-0">
-              <Plus className="h-4 w-4" />Ajouter
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-2xl">
-            <DialogHeader title="Nouveau personnel" description="Créez un compte de personnel médical pour votre centre." icon={Plus} />
-            <form onSubmit={handleSubmit} className="px-5 md:px-7 py-5 md:py-6 flex flex-col gap-4">
-              <StepBar steps={['Identité', 'Profil']} current={createStep} />
-
-              {createStep === 0 && (
-                <div className="space-y-3">
-                  <div className="grid sm:grid-cols-2 gap-3">
-                    {[
-                      { key: 'nom',        label: 'Nom',          placeholder: 'Nom' },
-                      { key: 'prenoms',    label: 'Prénoms',      placeholder: 'Prénoms' },
-                      { key: 'email',      label: 'Email',        placeholder: 'personnel@centre.tg', type: 'email' },
-                      { key: 'motDePasse', label: 'Mot de passe', placeholder: 'Min. 8 caractères', type: 'password' },
-                    ].map(({ key, label, type, placeholder }) => (
-                      <div key={key} className="space-y-1.5">
-                        <Label className={labelCls}>{label} *</Label>
-                        <Input type={type || 'text'} placeholder={placeholder}
-                          value={(form as Record<string, unknown>)[key] as string}
-                          onChange={(e) => setForm((p) => ({ ...p, [key]: e.target.value }))}
-                          className={inputCls} />
-                      </div>
-                    ))}
-                    <div className="space-y-1.5">
-                      <Label className={labelCls}>Téléphone</Label>
-                      <Input placeholder="+228 XX XX XX XX" value={form.telephone}
-                        onChange={(e) => setForm((p) => ({ ...p, telephone: e.target.value }))}
-                        className={inputCls} />
-                    </div>
-                  </div>
-                  <Button type="button" onClick={() => validateCreateStep1() && setCreateStep(1)}
-                    className="w-full h-11 bg-brand hover:bg-brand-dark text-white rounded-xl shadow-sm shadow-brand/20">
-                    Suivant — Profil
-                  </Button>
-                </div>
-              )}
-
-              {createStep === 1 && (
-                <div className="space-y-4">
-                  <div className="space-y-1.5">
-                    <Label className={labelCls}>Type de personnel *</Label>
-                    <SearchableSelect
-                      options={typeOptions}
-                      value={form.typePersonnelId}
-                      onChange={(v) => setForm((p) => ({ ...p, typePersonnelId: v }))}
-                      placeholder="Sélectionner un type..."
-                      emptyText="Aucun type disponible"
-                    />
-                  </div>
-
-                  {specialites.length > 0 && (
-                    <div className="space-y-2">
-                      <Label className={labelCls}>Spécialités</Label>
-                      <div className="relative">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400 pointer-events-none" />
-                        <input
-                          type="text" value={spCreateSearch}
-                          onChange={(e) => setSpCreateSearch(e.target.value)}
-                          placeholder="Filtrer les spécialités..."
-                          className="w-full pl-9 pr-3 py-2 text-sm border border-slate-200 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-950 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-brand/30"
-                        />
-                      </div>
-                      <div className="flex flex-wrap gap-2 max-h-36 overflow-y-auto py-1">
-                        {filteredSpCreate.map((sp) => (
-                          <button key={sp.id} type="button" onClick={() => setForm((p) => ({
-                            ...p,
-                            specialites: p.specialites.includes(sp.id)
-                              ? p.specialites.filter((s) => s !== sp.id)
-                              : [...p.specialites, sp.id],
-                          }))}
-                            className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition-colors ${
-                              form.specialites.includes(sp.id)
-                                ? 'bg-brand text-white border-brand shadow-sm shadow-brand/20'
-                                : 'border-slate-200 dark:border-zinc-700 text-slate-600 dark:text-zinc-300 hover:border-brand/40'
-                            }`}>
-                            {sp.nom}
-                          </button>
-                        ))}
-                        {filteredSpCreate.length === 0 && (
-                          <p className="text-xs text-slate-400 dark:text-zinc-500">Aucune spécialité trouvée</p>
-                        )}
-                      </div>
-                    </div>
-                  )}
-
-                  <div className="flex gap-2 pt-1">
-                    <Button type="button" variant="outline" onClick={() => setCreateStep(0)} className="h-11 rounded-xl flex-1">
-                      Retour
-                    </Button>
-                    <Button type="submit" disabled={submitting} className="flex-1 h-11 bg-brand hover:bg-brand-dark text-white rounded-xl shadow-sm shadow-brand/20">
-                      {submitting ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Création...</> : 'Créer le compte'}
-                    </Button>
-                  </div>
-                </div>
-              )}
-            </form>
-          </DialogContent>
-        </Dialog>
+        <Button
+          onClick={() => router.push('/admin/personnels/nouveau')}
+          className="h-11 bg-brand hover:bg-brand-dark text-white rounded-xl gap-1.5 shadow-sm shadow-brand/20 flex-shrink-0"
+        >
+          <Plus className="h-4 w-4" />Ajouter
+        </Button>
       </div>
 
       {/* Filtres */}
@@ -462,7 +204,7 @@ export default function PersonnelsPage() {
                         <DropdownMenuItem onClick={() => setViewTarget(p)}>
                           <Eye className="h-4 w-4 text-slate-400" /><span>Voir les détails</span>
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => openEdit(p)}>
+                        <DropdownMenuItem onClick={() => router.push(`/admin/personnels/${p.id}/modifier`)}>
                           <Pencil className="h-4 w-4 text-slate-400" /><span>Modifier</span>
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
@@ -512,7 +254,7 @@ export default function PersonnelsPage() {
                           <DropdownMenuItem onClick={() => setViewTarget(p)}>
                             <Eye className="h-4 w-4 text-slate-400" /><span>Voir les détails</span>
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => openEdit(p)}>
+                          <DropdownMenuItem onClick={() => router.push(`/admin/personnels/${p.id}/modifier`)}>
                             <Pencil className="h-4 w-4 text-slate-400" /><span>Modifier</span>
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
@@ -597,110 +339,15 @@ export default function PersonnelsPage() {
               )}
               <div className="flex gap-2 pt-1">
                 <Button variant="outline" className="flex-1 h-10 rounded-xl" onClick={() => setViewTarget(null)}>Fermer</Button>
-                <Button className="flex-1 h-10 bg-brand hover:bg-brand-dark text-white rounded-xl" onClick={() => { openEdit(viewTarget); setViewTarget(null) }}>
+                <Button
+                  className="flex-1 h-10 bg-brand hover:bg-brand-dark text-white rounded-xl"
+                  onClick={() => { router.push(`/admin/personnels/${viewTarget.id}/modifier`); setViewTarget(null) }}
+                >
                   <Pencil className="h-3.5 w-3.5 mr-1.5" />Modifier
                 </Button>
               </div>
             </div>
           )}
-        </DialogContent>
-      </Dialog>
-
-      {/* ── Dialog modifier ── */}
-      <Dialog open={!!editTarget} onOpenChange={(o) => { if (!o) { setEditTarget(null); setEditStep(0); setSpEditSearch('') } }}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader title="Modifier le personnel" description="Mettez à jour les informations de ce membre du personnel." icon={Pencil} />
-          <form onSubmit={handleEdit} className="px-5 md:px-7 py-5 md:py-6 flex flex-col gap-4">
-            <StepBar steps={['Identité', 'Profil']} current={editStep} />
-
-            {editStep === 0 && (
-              <div className="space-y-3">
-                <div className="grid sm:grid-cols-2 gap-3">
-                  {[
-                    { key: 'nom',       label: 'Nom',       placeholder: 'Nom' },
-                    { key: 'prenoms',   label: 'Prénoms',   placeholder: 'Prénoms' },
-                  ].map(({ key, label, placeholder }) => (
-                    <div key={key} className="space-y-1.5">
-                      <Label className={labelCls}>{label} *</Label>
-                      <Input placeholder={placeholder}
-                        value={(editForm as Record<string, unknown>)[key] as string}
-                        onChange={(e) => setEditForm((p) => ({ ...p, [key]: e.target.value }))}
-                        className={inputCls} />
-                    </div>
-                  ))}
-                  <div className="space-y-1.5">
-                    <Label className={labelCls}>Téléphone</Label>
-                    <Input placeholder="+228 XX XX XX XX" value={editForm.telephone}
-                      onChange={(e) => setEditForm((p) => ({ ...p, telephone: e.target.value }))}
-                      className={inputCls} />
-                  </div>
-                </div>
-                <Button type="button" onClick={() => validateEditStep1() && setEditStep(1)}
-                  className="w-full h-11 bg-brand hover:bg-brand-dark text-white rounded-xl shadow-sm shadow-brand/20">
-                  Suivant — Profil
-                </Button>
-              </div>
-            )}
-
-            {editStep === 1 && (
-              <div className="space-y-4">
-                <div className="space-y-1.5">
-                  <Label className={labelCls}>Type de personnel *</Label>
-                  <SearchableSelect
-                    options={typeOptions}
-                    value={editForm.typePersonnelId}
-                    onChange={(v) => setEditForm((p) => ({ ...p, typePersonnelId: v }))}
-                    placeholder="Sélectionner un type..."
-                    emptyText="Aucun type disponible"
-                  />
-                </div>
-
-                {specialites.length > 0 && (
-                  <div className="space-y-2">
-                    <Label className={labelCls}>Spécialités</Label>
-                    <div className="relative">
-                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400 pointer-events-none" />
-                      <input
-                        type="text" value={spEditSearch}
-                        onChange={(e) => setSpEditSearch(e.target.value)}
-                        placeholder="Filtrer les spécialités..."
-                        className="w-full pl-9 pr-3 py-2 text-sm border border-slate-200 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-950 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-brand/30"
-                      />
-                    </div>
-                    <div className="flex flex-wrap gap-2 max-h-36 overflow-y-auto py-1">
-                      {filteredSpEdit.map((sp) => (
-                        <button key={sp.id} type="button" onClick={() => setEditForm((p) => ({
-                          ...p,
-                          specialites: p.specialites.includes(sp.id)
-                            ? p.specialites.filter((s) => s !== sp.id)
-                            : [...p.specialites, sp.id],
-                        }))}
-                          className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition-colors ${
-                            editForm.specialites.includes(sp.id)
-                              ? 'bg-brand text-white border-brand shadow-sm shadow-brand/20'
-                              : 'border-slate-200 dark:border-zinc-700 text-slate-600 dark:text-zinc-300 hover:border-brand/40'
-                          }`}>
-                          {sp.nom}
-                        </button>
-                      ))}
-                      {filteredSpEdit.length === 0 && (
-                        <p className="text-xs text-slate-400 dark:text-zinc-500">Aucune spécialité trouvée</p>
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                <div className="flex gap-2 pt-1">
-                  <Button type="button" variant="outline" onClick={() => setEditStep(0)} className="h-11 rounded-xl flex-1">
-                    Retour
-                  </Button>
-                  <Button type="submit" disabled={editSubmitting} className="flex-1 h-11 bg-brand hover:bg-brand-dark text-white rounded-xl shadow-sm shadow-brand/20">
-                    {editSubmitting ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Enregistrement...</> : 'Enregistrer'}
-                  </Button>
-                </div>
-              </div>
-            )}
-          </form>
         </DialogContent>
       </Dialog>
 

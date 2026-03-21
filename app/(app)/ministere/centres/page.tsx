@@ -1,22 +1,20 @@
 'use client'
 
-import { useState, useEffect, useMemo, Fragment } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import {
   Plus, Building2, Loader2, CheckCircle2, XCircle, Search,
-  Pencil, Trash2, X, MapPin, MoreHorizontal, Eye, Power, Users, Check,
+  Pencil, Trash2, X, MapPin, MoreHorizontal, Eye, Power, Users,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger,
+  Dialog, DialogContent, DialogHeader,
 } from '@/components/ui/dialog'
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem,
   DropdownMenuSeparator, DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useToast } from '@/hooks/use-toast'
 
 interface Centre {
@@ -38,53 +36,6 @@ const TYPE_LABELS: Record<string, string> = {
 }
 
 const inputCls = 'h-11 border-slate-200 dark:border-zinc-700 rounded-lg text-sm bg-white dark:bg-zinc-950 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-zinc-500 focus-visible:ring-emerald-500 focus-visible:border-emerald-400'
-const labelCls = 'text-slate-700 dark:text-zinc-300 text-sm font-medium'
-
-const EMPTY_FORM = {
-  nom: '', adresse: '', telephone: '', email: '', region: '', prefecture: '',
-  type: 'HOPITAL' as const,
-  adminNom: '', adminPrenoms: '', adminEmail: '', adminMotDePasse: '', adminTelephone: '',
-}
-
-type EditForm = { nom: string; adresse: string; telephone: string; email: string; region: string; prefecture: string; type: string }
-
-// ── Stepper indicator ──────────────────────────────────────────────────────────
-function StepBar({ steps, current }: { steps: string[]; current: number }) {
-  return (
-    <div className="flex items-start mb-8">
-      {steps.map((label, i) => (
-        <Fragment key={i}>
-          <div className="flex flex-col items-center shrink-0">
-            {/* Cercle étape */}
-            <div className={`h-10 w-10 rounded-full flex items-center justify-center text-xs font-extrabold transition-all duration-300 border-2 ${
-              i < current
-                ? 'bg-brand border-brand text-white shadow-md shadow-brand/30'
-                : i === current
-                ? 'bg-white dark:bg-zinc-800 border-brand text-brand shadow-lg shadow-brand/20 ring-4 ring-brand/15 scale-110'
-                : 'bg-slate-100 dark:bg-zinc-900 border-slate-200 dark:border-zinc-700 text-slate-400 dark:text-zinc-500'
-            }`}>
-              {i < current ? <Check className="h-4 w-4" strokeWidth={3} /> : i + 1}
-            </div>
-            {/* Label */}
-            <span className={`text-xs font-bold whitespace-nowrap mt-2 transition-all duration-300 ${
-              i === current ? 'text-slate-900 dark:text-white scale-105' : 'text-slate-500 dark:text-zinc-400'
-            }`}>
-              {label}
-            </span>
-          </div>
-          {/* Connecteur */}
-          {i < steps.length - 1 && (
-            <div className="flex-1 flex items-center">
-              <div className={`flex-1 h-1 mx-2 mt-0.5 rounded-full transition-all duration-500 ${
-                i < current ? 'bg-brand shadow-sm shadow-brand/30' : 'bg-slate-200 dark:bg-zinc-700'
-              }`} />
-            </div>
-          )}
-        </Fragment>
-      ))}
-    </div>
-  )
-}
 
 export default function CentresPage() {
   const { toast } = useToast()
@@ -93,18 +44,6 @@ export default function CentresPage() {
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [filterStatut, setFilterStatut] = useState<'tous' | 'actif' | 'inactif'>('tous')
-
-  // Create dialog
-  const [createOpen, setCreateOpen] = useState(false)
-  const [createStep, setCreateStep] = useState(0)
-  const [submitting, setSubmitting] = useState(false)
-  const [form, setForm] = useState(EMPTY_FORM)
-
-  // Edit dialog
-  const [editTarget, setEditTarget] = useState<Centre | null>(null)
-  const [editStep, setEditStep] = useState(0)
-  const [editForm, setEditForm] = useState<EditForm>({ nom: '', adresse: '', telephone: '', email: '', region: '', prefecture: '', type: 'HOPITAL' })
-  const [editSubmitting, setEditSubmitting] = useState(false)
 
   // Delete dialog
   const [deleteTarget, setDeleteTarget] = useState<Centre | null>(null)
@@ -127,67 +66,6 @@ export default function CentresPage() {
       return matchSearch && matchStatut
     })
   }, [centres, search, filterStatut])
-
-  // Validate step 1 of creation form
-  function validateCreateStep1() {
-    const missing = (['nom', 'adresse', 'telephone', 'email', 'region', 'prefecture'] as const)
-      .filter((k) => !form[k].trim())
-    if (missing.length > 0) {
-      toast({ description: 'Veuillez remplir tous les champs obligatoires', variant: 'destructive' })
-      return false
-    }
-    return true
-  }
-
-  // Validate step 1 of edit form
-  function validateEditStep1() {
-    if (!editForm.nom.trim() || !editForm.type) {
-      toast({ description: 'Veuillez remplir tous les champs obligatoires', variant: 'destructive' })
-      return false
-    }
-    return true
-  }
-
-  async function handleCreate(e: React.FormEvent) {
-    e.preventDefault()
-    setSubmitting(true)
-    const res = await fetch('/api/centres', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(form),
-    })
-    const data = await res.json()
-    setSubmitting(false)
-    if (!res.ok) { toast({ description: data.error || 'Erreur', variant: 'destructive' }); return }
-    setCentres((prev) => [data.centre, ...prev])
-    setCreateOpen(false)
-    setCreateStep(0)
-    setForm(EMPTY_FORM)
-    toast({ description: 'Centre créé avec succès' })
-  }
-
-  function openEdit(centre: Centre) {
-    setEditTarget(centre)
-    setEditStep(0)
-    setEditForm({ nom: centre.nom, adresse: centre.adresse, telephone: centre.telephone, email: centre.email, region: centre.region, prefecture: centre.prefecture, type: centre.type })
-  }
-
-  async function handleEdit(e: React.FormEvent) {
-    e.preventDefault()
-    if (!editTarget) return
-    setEditSubmitting(true)
-    const res = await fetch(`/api/centres/${editTarget.id}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(editForm),
-    })
-    const data = await res.json()
-    setEditSubmitting(false)
-    if (!res.ok) { toast({ description: data.error || 'Erreur', variant: 'destructive' }); return }
-    setCentres((prev) => prev.map((c) => c.id === editTarget.id ? { ...c, ...data.centre } : c))
-    setEditTarget(null)
-    toast({ description: 'Centre modifié avec succès' })
-  }
 
   async function handleDelete() {
     if (!deleteTarget) return
@@ -226,108 +104,12 @@ export default function CentresPage() {
           </p>
         </div>
 
-        <Dialog open={createOpen} onOpenChange={(o) => { setCreateOpen(o); if (!o) { setCreateStep(0); setForm(EMPTY_FORM) } }}>
-          <DialogTrigger asChild>
-            <Button className="h-11 bg-brand hover:bg-brand-dark text-white rounded-xl gap-1.5 shadow-sm shadow-brand/20 flex-shrink-0">
-              <Plus className="h-4 w-4" />Nouveau centre
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-2xl">
-            <DialogHeader title="Créer un centre de santé" description="Enregistrez les informations de votre centre en 2 étapes." icon={Plus} />
-
-            <form onSubmit={handleCreate} className="px-5 md:px-7 py-5 md:py-6 flex flex-col gap-4">
-              <StepBar steps={['Centre de santé', 'Administrateur']} current={createStep} />
-                {/* ── Étape 1 : Informations du centre ── */}
-                {createStep === 0 && (
-                  <div className="space-y-4">
-                    <div className="grid sm:grid-cols-2 gap-3">
-                      {[
-                        { key: 'nom',        label: 'Nom du centre', placeholder: 'Ex: CHU de Lomé' },
-                        { key: 'adresse',    label: 'Adresse',       placeholder: 'Ex: Rue des Fleurs, Lomé' },
-                        { key: 'telephone',  label: 'Téléphone',     placeholder: '+228 XX XX XX XX' },
-                        { key: 'email',      label: 'Email',         placeholder: 'centre@sante.tg', type: 'email' },
-                        { key: 'region',     label: 'Région',        placeholder: 'Ex: Maritime' },
-                        { key: 'prefecture', label: 'Préfecture',    placeholder: 'Ex: Golfe' },
-                      ].map(({ key, label, type, placeholder }) => (
-                        <div key={key} className="space-y-1.5">
-                          <Label className={labelCls}>{label} *</Label>
-                          <Input
-                            type={type || 'text'}
-                            placeholder={placeholder}
-                            value={(form as Record<string, string>)[key]}
-                            onChange={(e) => setForm((p) => ({ ...p, [key]: e.target.value }))}
-                            className={inputCls}
-                          />
-                        </div>
-                      ))}
-                      <div className="space-y-1.5">
-                        <Label className={labelCls}>Type *</Label>
-                        <Select value={form.type} onValueChange={(v) => setForm((p) => ({ ...p, type: v as typeof form.type }))}>
-                          <SelectTrigger className={inputCls}><SelectValue /></SelectTrigger>
-                          <SelectContent>
-                            {Object.entries(TYPE_LABELS).map(([v, l]) => <SelectItem key={v} value={v}>{l}</SelectItem>)}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-
-                    <Button
-                      type="button"
-                      onClick={() => { if (validateCreateStep1()) setCreateStep(1) }}
-                      className="w-full h-11 bg-brand hover:bg-brand-dark text-white rounded-xl shadow-sm shadow-brand/20"
-                    >
-                      Suivant — Compte administrateur
-                    </Button>
-                  </div>
-                )}
-
-                {/* ── Étape 2 : Compte administrateur ── */}
-                {createStep === 1 && (
-                  <div className="space-y-4">
-                    <div className="grid sm:grid-cols-2 gap-3">
-                      {[
-                        { key: 'adminNom',        label: 'Nom',          placeholder: 'Nom' },
-                        { key: 'adminPrenoms',    label: 'Prénoms',      placeholder: 'Prénoms' },
-                        { key: 'adminEmail',      label: 'Email',        placeholder: 'admin@centre.tg', type: 'email' },
-                        { key: 'adminMotDePasse', label: 'Mot de passe', placeholder: 'Min. 8 caractères', type: 'password' },
-                        { key: 'adminTelephone',  label: 'Téléphone',    placeholder: '+228 XX XX XX XX', required: false },
-                      ].map(({ key, label, type, placeholder, required }) => (
-                        <div key={key} className="space-y-1.5">
-                          <Label className={labelCls}>{label}{required !== false && ' *'}</Label>
-                          <Input
-                            type={type || 'text'}
-                            placeholder={placeholder}
-                            value={(form as Record<string, string>)[key]}
-                            onChange={(e) => setForm((p) => ({ ...p, [key]: e.target.value }))}
-                            required={required !== false}
-                            className={inputCls}
-                          />
-                        </div>
-                      ))}
-                    </div>
-
-                    <div className="flex gap-3">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => setCreateStep(0)}
-                        className="flex-1 h-11 rounded-xl border-slate-200 dark:border-zinc-700"
-                      >
-                        Retour
-                      </Button>
-                      <Button
-                        type="submit"
-                        disabled={submitting}
-                        className="flex-1 h-11 bg-brand hover:bg-brand-dark text-white rounded-xl shadow-sm shadow-brand/20"
-                      >
-                        {submitting ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Création...</> : 'Créer le centre'}
-                      </Button>
-                    </div>
-                  </div>
-                )}
-              </form>
-          </DialogContent>
-        </Dialog>
+        <Button
+          onClick={() => router.push('/ministere/centres/nouveau')}
+          className="h-11 bg-brand hover:bg-brand-dark text-white rounded-xl gap-1.5 shadow-sm shadow-brand/20 flex-shrink-0"
+        >
+          <Plus className="h-4 w-4" />Nouveau centre
+        </Button>
       </div>
 
       {/* Filtres */}
@@ -427,7 +209,7 @@ export default function CentresPage() {
                           <Eye className="h-4 w-4 text-slate-400" />
                           <span>Voir les détails</span>
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => openEdit(c)}>
+                        <DropdownMenuItem onClick={() => router.push(`/ministere/centres/${c.id}/modifier`)}>
                           <Pencil className="h-4 w-4 text-slate-400" />
                           <span>Modifier</span>
                         </DropdownMenuItem>
@@ -481,7 +263,7 @@ export default function CentresPage() {
                           <DropdownMenuItem onClick={() => router.push(`/ministere/centres/${c.id}`)}>
                             <Eye className="h-4 w-4 text-slate-400" /><span>Voir les détails</span>
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => openEdit(c)}>
+                          <DropdownMenuItem onClick={() => router.push(`/ministere/centres/${c.id}/modifier`)}>
                             <Pencil className="h-4 w-4 text-slate-400" /><span>Modifier</span>
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
@@ -514,96 +296,6 @@ export default function CentresPage() {
           </div>
         </>
       )}
-
-      {/* ── Dialog modifier ── */}
-      <Dialog open={!!editTarget} onOpenChange={(o) => { if (!o) { setEditTarget(null); setEditStep(0) } }}>
-        <DialogContent className="max-w-xl">
-          <DialogHeader title="Modifier le centre" description="Mettez à jour les informations du centre en 2 étapes." icon={Pencil} />
-
-          <form onSubmit={handleEdit} className="px-5 md:px-7 py-5 md:py-6 flex flex-col gap-4">
-            <StepBar steps={['Identité', 'Coordonnées']} current={editStep} />
-              {/* ── Étape 1 : Identité ── */}
-              {editStep === 0 && (
-                <div className="space-y-4">
-                  <div className="grid sm:grid-cols-2 gap-3">
-                    <div className="space-y-1.5 sm:col-span-2">
-                      <Label className={labelCls}>Nom du centre *</Label>
-                      <Input
-                        placeholder="Nom du centre"
-                        value={editForm.nom}
-                        onChange={(e) => setEditForm((p) => ({ ...p, nom: e.target.value }))}
-                        className={inputCls}
-                      />
-                    </div>
-                    <div className="space-y-1.5 sm:col-span-2">
-                      <Label className={labelCls}>Type *</Label>
-                      <Select value={editForm.type} onValueChange={(v) => setEditForm((p) => ({ ...p, type: v }))}>
-                        <SelectTrigger className={inputCls}><SelectValue /></SelectTrigger>
-                        <SelectContent>
-                          {Object.entries(TYPE_LABELS).map(([v, l]) => <SelectItem key={v} value={v}>{l}</SelectItem>)}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-
-                  <Button
-                    type="button"
-                    onClick={() => { if (validateEditStep1()) setEditStep(1) }}
-                    className="w-full h-11 bg-brand hover:bg-brand-dark text-white rounded-xl shadow-sm shadow-brand/20"
-                  >
-                    Suivant — Coordonnées
-                  </Button>
-                </div>
-              )}
-
-              {/* ── Étape 2 : Coordonnées ── */}
-              {editStep === 1 && (
-                <div className="space-y-4">
-                  <div className="grid sm:grid-cols-2 gap-3">
-                    {[
-                      { key: 'adresse',    label: 'Adresse',    placeholder: 'Adresse' },
-                      { key: 'telephone',  label: 'Téléphone',  placeholder: '+228 XX XX XX XX' },
-                      { key: 'email',      label: 'Email',      placeholder: 'email@centre.tg', type: 'email' },
-                      { key: 'region',     label: 'Région',     placeholder: 'Région' },
-                      { key: 'prefecture', label: 'Préfecture', placeholder: 'Préfecture' },
-                    ].map(({ key, label, type, placeholder }) => (
-                      <div key={key} className="space-y-1.5">
-                        <Label className={labelCls}>{label} *</Label>
-                        <Input
-                          type={type || 'text'}
-                          placeholder={placeholder}
-                          value={(editForm as Record<string, string>)[key]}
-                          onChange={(e) => setEditForm((p) => ({ ...p, [key]: e.target.value }))}
-                          required
-                          className={inputCls}
-                        />
-                      </div>
-                    ))}
-                  </div>
-
-                  <div className="flex gap-3">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => setEditStep(0)}
-                      className="flex-1 h-11 rounded-xl border-slate-200 dark:border-zinc-700"
-                    >
-                      Retour
-                    </Button>
-                    <Button
-                      type="submit"
-                      disabled={editSubmitting}
-                      className="flex-1 h-11 bg-brand hover:bg-brand-dark text-white rounded-xl shadow-sm shadow-brand/20"
-                    >
-                      {editSubmitting ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Enregistrement...</> : 'Enregistrer'}
-                    </Button>
-                  </div>
-                </div>
-              )}
-            </form>
-
-        </DialogContent>
-      </Dialog>
 
       {/* ── Dialog supprimer ── */}
       <Dialog open={!!deleteTarget} onOpenChange={(o) => { if (!o) setDeleteTarget(null) }}>

@@ -165,22 +165,22 @@ export default function MinistereRolesPage() {
       {/* En-tête */}
       <div className="dash-in delay-0 flex items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white leading-tight">Rôles globaux</h1>
-          <p className="text-sm text-slate-500 dark:text-zinc-400 mt-0.5">{roles.length} rôle(s) dans le système</p>
+          <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white leading-tight">Types de personnel</h1>
+          <p className="text-sm text-slate-500 dark:text-zinc-400 mt-0.5">{roles.length} type(s) de personnel médical dans le système</p>
         </div>
 
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
             <Button className="h-11 bg-brand hover:bg-brand-dark text-white rounded-xl gap-1.5 shadow-sm shadow-brand/20 flex-shrink-0">
-              <Plus className="h-4 w-4" />Nouveau rôle global
+              <Plus className="h-4 w-4" />Nouveau type de personnel médical
             </Button>
           </DialogTrigger>
           <DialogContent className="max-w-2xl">
-            <DialogHeader title="Créer un rôle global" description="Définissez les permissions et responsabilités pour améliorer la gestion des accès." icon={Plus} />
+            <DialogHeader title="Créer un type de personnel médical" description="Définissez les permissions et responsabilités pour améliorer la gestion des accès." icon={Plus} />
             <DialogScrollableWrapper>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-1.5">
-                  <Label className={labelCls}>Nom du rôle *</Label>
+                  <Label className={labelCls}>Nom du type de personnel médical *</Label>
                   <Input value={form.nom} onChange={(e) => setForm((p) => ({ ...p, nom: e.target.value }))} placeholder="Ex: Médecin spécialiste" required className={inputCls} />
                 </div>
                 <div className="space-y-1.5">
@@ -212,7 +212,7 @@ export default function MinistereRolesPage() {
                   </div>
                 </div>
                 <Button type="submit" disabled={submitting} className="w-full h-11 bg-brand hover:bg-brand-dark text-white rounded-xl shadow-sm shadow-brand/20">
-                  {submitting ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Création...</> : 'Créer le rôle global'}
+                  {submitting ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Création...</> : 'Créer le type de personnel médical'}
                 </Button>
               </form>
             </DialogScrollableWrapper>
@@ -224,7 +224,7 @@ export default function MinistereRolesPage() {
       <div className="dash-in delay-75 flex items-center gap-3">
         <div className="relative flex-1 min-w-[200px] max-w-xs">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400 dark:text-zinc-500" />
-          <Input placeholder="Rechercher un rôle..." value={search} onChange={(e) => setSearch(e.target.value)}
+          <Input placeholder="Rechercher un type de personnel médical..." value={search} onChange={(e) => setSearch(e.target.value)}
             className={`${inputCls} pl-9`} />
         </div>
         {search && (
@@ -301,7 +301,7 @@ export default function MinistereRolesPage() {
               ))}
             </ul>
             <div className="px-5 py-3 border-t border-slate-50 dark:border-zinc-800 bg-slate-50/40 dark:bg-zinc-950/20">
-              <p className="text-xs text-slate-400 dark:text-zinc-500">{filtered.length} rôle(s) affiché(s) sur {roles.length} au total</p>
+              <p className="text-xs text-slate-400 dark:text-zinc-500">{filtered.length} type de personnel médical(s) affiché(s) sur {roles.length} au total</p>
             </div>
           </div>
 
@@ -313,7 +313,7 @@ export default function MinistereRolesPage() {
               </p>
               {rolesGlobaux.length === 0 ? (
                 <div className="bg-white dark:bg-zinc-950 rounded-2xl border border-slate-100 dark:border-zinc-800 p-8 text-center">
-                  <p className="text-sm text-slate-400 dark:text-zinc-500">Aucun rôle global défini.</p>
+                  <p className="text-sm text-slate-400 dark:text-zinc-500">Aucun type de personnel médical défini.</p>
                 </div>
               ) : (
                 rolesGlobaux.map((role, i) => (
@@ -341,7 +341,7 @@ export default function MinistereRolesPage() {
       {/* ── Dialog voir ── */}
       <Dialog open={!!viewTarget} onOpenChange={(o) => { if (!o) setViewTarget(null) }}>
         <DialogContent className="max-w-lg">
-          <DialogHeader title="Détails du rôle" description="Informations complètes sur ce rôle et ses permissions." icon={ShieldCheck} />
+          <DialogHeader title="Détails du type de personnel médical" description="Informations complètes sur ce type de personnel médical et ses permissions." icon={ShieldCheck} />
           {viewTarget && (
             <DialogScrollableWrapper>
               <div className="space-y-4">
@@ -400,12 +400,12 @@ export default function MinistereRolesPage() {
       {/* ── Dialog modifier ── */}
       <Dialog open={!!editTarget} onOpenChange={(o) => { if (!o) setEditTarget(null) }}>
         <DialogContent className="max-w-2xl">
-          <DialogHeader title="Modifier le rôle" description="Mettez à jour les informations et permissions du rôle." icon={Pencil} />
+          <DialogHeader title="Modifier le type de personnel médical" description="Mettez à jour les informations et permissions du type de personnel médical." icon={Pencil} />
           <DialogScrollableWrapper>
             <form onSubmit={handleEdit} className="space-y-4">
               <div className="space-y-1.5">
-                <Label className={labelCls}>Nom du rôle *</Label>
-                <Input value={editForm.nom} onChange={(e) => setEditForm((p) => ({ ...p, nom: e.target.value }))} placeholder="Nom du rôle" required className={inputCls} />
+                <Label className={labelCls}>Nom du type de personnel médical *</Label>
+                <Input value={editForm.nom} onChange={(e) => setEditForm((p) => ({ ...p, nom: e.target.value }))} placeholder="Nom du type de personnel médical" required className={inputCls} />
               </div>
               <div className="space-y-1.5">
                 <Label className={labelCls}>Description</Label>
@@ -446,7 +446,7 @@ export default function MinistereRolesPage() {
       {/* ── Dialog supprimer ── */}
       <Dialog open={!!deleteTarget} onOpenChange={(o) => { if (!o) setDeleteTarget(null) }}>
         <DialogContent className="max-w-sm">
-          <DialogHeader title="Supprimer le rôle ?" description={`Vous êtes sur le point de supprimer le rôle "${deleteTarget?.nom}". Cette action est irréversible.`} icon={Trash2} danger />
+          <DialogHeader title="Supprimer le type de personnel médical ?" description={`Vous êtes sur le point de supprimer le type de personnel médical "${deleteTarget?.nom}". Cette action est irréversible.`} icon={Trash2} danger />
           <div className="flex gap-3 px-5 md:px-7 pb-5 md:pb-6">
             <Button variant="outline" className="flex-1 h-11 rounded-xl" onClick={() => setDeleteTarget(null)}>Annuler</Button>
             <Button className="flex-1 h-11 rounded-xl bg-red-500 hover:bg-red-600 text-white shadow-sm" onClick={handleDelete} disabled={deleting}>

@@ -11,6 +11,7 @@ const patchSchema = z.object({
   telephone: z.string().optional(),
   specialites: z.array(z.string()).optional(),
   typePersonnelId: z.string().nullable().optional(),
+  roleId: z.string().nullable().optional(),
 })
 
 export async function GET(_req: NextRequest, { params }: { params: { id: string } }) {
@@ -27,7 +28,8 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
     select: {
       id: true, nom: true, prenoms: true, email: true, telephone: true,
       niveauAcces: true, estActif: true, createdAt: true, photo: true,
-      role: { select: { nom: true } },
+      role: { select: { id: true, nom: true } },
+      typePersonnel: { select: { id: true, nom: true, code: true } },
       specialites: { include: { specialite: { select: { id: true, nom: true, code: true } } } },
       centres: { include: { centre: { select: { id: true, nom: true, type: true } } } },
       _count: { select: { enregistrements: true, accesUrgences: true, patientsCrees: true } },
@@ -57,7 +59,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   const validation = patchSchema.safeParse(body)
   if (!validation.success) return NextResponse.json({ error: 'Données invalides' }, { status: 400 })
 
-  const { estActif, nom, prenoms, telephone, specialites, typePersonnelId } = validation.data
+  const { estActif, nom, prenoms, telephone, specialites, typePersonnelId, roleId } = validation.data
 
   const updated = await prisma.user.update({
     where: { id: params.id },
@@ -67,6 +69,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
       ...(prenoms !== undefined && { prenoms }),
       ...(telephone !== undefined && { telephone }),
       ...(typePersonnelId !== undefined && { typePersonnelId }),
+      ...(roleId !== undefined && { roleId }),
       ...(specialites !== undefined && {
         specialites: {
           deleteMany: {},
