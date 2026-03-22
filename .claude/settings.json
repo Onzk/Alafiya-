@@ -11,7 +11,9 @@
       "Bash(ls /root/alafiya+/Alafiya-/app/\\\\\\(app\\\\\\)/admin/personnels/)",
       "Bash(ls /root/alafiya+/Alafiya-/app/\\\\\\(app\\\\\\)/admin/personnels/nouveau/)",
       "Bash(head -5 /root/alafiya+/Alafiya-/app/\\\\\\(app\\\\\\)/admin/personnels/nouveau/page.tsx)",
-      "WebFetch(domain:api.iplocation.net)"
+      "WebFetch(domain:api.iplocation.net)",
+      "Read(//root/alafiya+/**)",
+      "Bash(ls -la \"/root/alafiya+/Alafiya-/app/\\(vitrine\\)/\")"
     ],
     "additionalDirectories": [
       "/root/alafiya+/Alafiya-/app/(app)/ministere/medecins/[id]",

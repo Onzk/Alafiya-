@@ -127,6 +127,17 @@
 .delay-450 { animation-delay: 450ms; }
 .delay-500 { animation-delay: 500ms; }
 
+/* ── Vitrine cards — gradient dark mode, modifiable ici ── */
+/* zinc-950 → zinc-950 → zinc-950/50 */
+:root { --vitrine-card-dark: rgb(17, 17, 19); }
+
+@layer utilities {
+  .vitrine-card       { @apply bg-white; }
+  .vitrine-card-muted { @apply bg-slate-50; }
+  .dark .vitrine-card,
+  .dark .vitrine-card-muted { background: var(--vitrine-card-dark); }
+}
+
 /* Scroll reveal */
 @layer utilities {
   .animate-on-scroll {
