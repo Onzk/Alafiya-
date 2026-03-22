@@ -340,7 +340,7 @@ export default function LoginPage() {
               <div>
                 <p className="text-xs font-semibold text-slate-500 dark:text-zinc-400 mb-0.5 uppercase tracking-wide">Administrateur de centre</p>
                 <p className="text-sm text-slate-600 dark:text-zinc-300 leading-relaxed">
-                  Contactez le <span className="font-semibold">Ministère de la Santé</span> pour la création de votre compte administrateur.
+                  Contactez le <span className="font-semibold">support</span> pour la création de votre compte administrateur.
                 </p>
               </div>
             </div>

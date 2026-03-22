@@ -33,7 +33,7 @@ export async function GET(req: NextRequest) {
         niveauAcces: 'PERSONNEL',
         ...nameFilter,
       },
-      select: { id: true, nom: true, prenoms: true, typePersonnel: { select: { nom: true } } },
+      select: { id: true, nom: true, prenoms: true },
       take: 5,
     }),
     prisma.patient.findMany({
@@ -62,7 +62,7 @@ export async function GET(req: NextRequest) {
       type: 'personnel' as const,
       id: p.id,
       label: `${p.nom.toUpperCase()} ${p.prenoms}`,
-      sublabel: p.typePersonnel?.nom ?? 'Personnel médical',
+      sublabel: 'Personnel médical',
       href: `/admin/personnels/${p.id}`,
     })),
     ...patients.map((p) => ({

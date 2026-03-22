@@ -181,7 +181,6 @@ export default function AdminRolesPage() {
           </DialogTrigger>
           <DialogContent className="max-w-2xl">
             <DialogHeader title="Créer un type de personnel" description="Configurez un type de personnel avec ses permissions pour simplifier la gestion des accès." icon={Plus} />
-            <DialogScrollableWrapper>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-1.5">
                   <Label className={labelCls}>Nom du type de personnel *</Label>
@@ -219,7 +218,6 @@ export default function AdminRolesPage() {
                   {submitting ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Création...</> : 'Créer le type de personnel'}
                 </Button>
               </form>
-            </DialogScrollableWrapper>
           </DialogContent>
         </Dialog>}
       </div>

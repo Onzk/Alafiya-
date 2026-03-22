@@ -17,7 +17,7 @@ const DialogOverlay = React.forwardRef<
   <DialogPrimitive.Overlay
     ref={ref}
     className={cn(
-      'fixed inset-0 z-50 bg-black/40 backdrop-blur-md',
+      'fixed inset-0 z-50 bg-primary/10 backdrop-blur-sm',
       'data-[state=open]:animate-in data-[state=closed]:animate-out',
       'data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0',
       'duration-300',
@@ -79,18 +79,16 @@ interface DialogHeaderProps extends React.HTMLAttributes<HTMLDivElement> {
 const DialogHeader = ({ className, title, description, icon: Icon, danger, children, ...props }: DialogHeaderProps) => (
   <div
     className={cn(
-      'top-0 z-10 flex-shrink-0',
+      'flex-shrink-0',
       'flex items-start gap-3 md:gap-4',
-      'px-5 md:px-7 py-5 md:py-6',
-      'border-b border-slate-100 dark:border-zinc-800/50',
-      'bg-gradient-to-br from-white dark:from-zinc-950 to-slate-50 dark:to-zinc-900/50',
+      'px-5 py-2 md:py-6',
       className
     )}
     {...props}
   >
     {Icon && (
       <div className={cn(
-        'h-10 w-10 md:h-12 md:w-12 rounded-xl md:rounded-2xl flex items-center justify-center flex-shrink-0',
+        'h-10 w-10 md:h-12 md:w-12 rounded-xl md:rounded-2xl hidden sm:flex items-center justify-center flex-shrink-0',
         danger
           ? 'bg-red-50 dark:bg-red-500/15'
           : 'bg-emerald-50 dark:bg-emerald-500/15'
@@ -139,7 +137,7 @@ DialogFooter.displayName = 'DialogFooter'
  * À utiliser directement dans DialogContent pour les formulaires/listes longues
  */
 const DialogScrollableWrapper = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
-  <div className={cn('flex-1 overflow-y-auto px-5 md:px-7 py-5 md:py-6', className)} {...props} />
+  <div className={cn('flex-1 overflow-y-auto px-5 md:px-7 pt-2 pb-6', className)} {...props} />
 )
 DialogScrollableWrapper.displayName = 'DialogScrollableWrapper'
 

@@ -16,7 +16,6 @@ import {
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useToast } from '@/hooks/use-toast'
 
-interface TypePersonnel { id: string; nom: string; code: string }
 interface Specialite { id: string; nom: string; code: string }
 
 interface Personnel {
@@ -26,7 +25,6 @@ interface Personnel {
   email: string
   telephone?: string
   estActif: boolean
-  typePersonnel?: TypePersonnel
   specialites?: { specialite: { nom: string } }[]
 }
 
@@ -39,7 +37,6 @@ export default function PersonnelsPage() {
   const router = useRouter()
   const [personnel, setPersonnel] = useState<Personnel[]>([])
   const [specialites, setSpecialites] = useState<Specialite[]>([])
-  const [typesPersonnel, setTypesPersonnel] = useState<TypePersonnel[]>([])
   const [loading, setLoading] = useState(true)
 
   // Delete dialog
@@ -50,18 +47,15 @@ export default function PersonnelsPage() {
   const [search, setSearch] = useState('')
   const [filterStatut, setFilterStatut] = useState<StatusFilter>('tous')
   const [filterSpecialite, setFilterSpecialite] = useState('tous')
-  const [filterType, setFilterType] = useState('tous')
   const [toggling, setToggling] = useState<string | null>(null)
 
   useEffect(() => {
     Promise.all([
       fetch('/api/utilisateurs?niveauAcces=PERSONNEL').then((r) => r.json()),
       fetch('/api/specialites').then((r) => r.json()),
-      fetch('/api/types-personnel').then((r) => r.json()),
-    ]).then(([users, sps, types]) => {
+    ]).then(([users, sps]) => {
       setPersonnel(users.utilisateurs || [])
       setSpecialites(sps.specialites || [])
-      setTypesPersonnel(types.types || [])
       setLoading(false)
     })
   }, [])
@@ -98,13 +92,12 @@ export default function PersonnelsPage() {
       const matchStatut = filterStatut === 'tous' || (filterStatut === 'actif' ? p.estActif : !p.estActif)
       const matchSpecialite = filterSpecialite === 'tous' ||
         p.specialites?.some((s) => s.specialite.nom === filterSpecialite)
-      const matchType = filterType === 'tous' || p.typePersonnel?.code === filterType
-      return matchSearch && matchStatut && matchSpecialite && matchType
+      return matchSearch && matchStatut && matchSpecialite
     })
-  }, [personnel, search, filterStatut, filterSpecialite, filterType])
+  }, [personnel, search, filterStatut, filterSpecialite])
 
   const actifs = personnel.filter((p) => p.estActif).length
-  const hasFilters = search !== '' || filterStatut !== 'tous' || filterSpecialite !== 'tous' || filterType !== 'tous'
+  const hasFilters = search !== '' || filterStatut !== 'tous' || filterSpecialite !== 'tous'
 
   return (
     <div className="space-y-5 max-w-[1400px]">
@@ -155,18 +148,8 @@ export default function PersonnelsPage() {
           </SelectContent>
         </Select>
 
-        <Select value={filterType} onValueChange={setFilterType}>
-          <SelectTrigger className={`${inputCls} w-[180px]`}>
-            <SelectValue placeholder="Tous les types" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="tous">Tous les types</SelectItem>
-            {typesPersonnel.map((t) => <SelectItem key={t.code} value={t.code}>{t.nom}</SelectItem>)}
-          </SelectContent>
-        </Select>
-
         {hasFilters && (
-          <button onClick={() => { setSearch(''); setFilterStatut('tous'); setFilterSpecialite('tous'); setFilterType('tous') }}
+          <button onClick={() => { setSearch(''); setFilterStatut('tous'); setFilterSpecialite('tous') }}
             className="flex items-center gap-1.5 text-xs font-semibold text-slate-400 dark:text-zinc-500 hover:text-slate-700 dark:hover:text-zinc-300 transition-colors">
             <X className="h-3.5 w-3.5" /> Réinitialiser
           </button>
@@ -190,14 +173,14 @@ export default function PersonnelsPage() {
         <>
           {/* ── TABLE desktop ── */}
           <div className="dash-in delay-75 hidden lg:block bg-white dark:bg-zinc-950 rounded-2xl border border-slate-100 dark:border-zinc-800 overflow-hidden">
-            <div className="grid grid-cols-[2fr_1fr_1fr_90px_44px] gap-4 px-5 py-2.5 bg-slate-50/60 dark:bg-zinc-950/40 border-b border-slate-100 dark:border-zinc-800">
-              {['Personnel', 'Type', 'Email', 'Statut', ''].map((h, i) => (
+            <div className="grid grid-cols-[2fr_1.5fr_90px_44px] gap-4 px-5 py-2.5 bg-slate-50/60 dark:bg-zinc-950/40 border-b border-slate-100 dark:border-zinc-800">
+              {['Personnel', 'Email', 'Statut', ''].map((h, i) => (
                 <span key={i} className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-zinc-500">{h}</span>
               ))}
             </div>
             <ul>
               {filtered.map((p, i) => (
-                <li key={p.id} className={`dash-in delay-${[0,75,100,150,200,225,300][Math.min(i,6)]} grid grid-cols-[2fr_1fr_1fr_90px_44px] items-center gap-4 px-5 py-3.5 border-b border-slate-50 dark:border-zinc-800/60 last:border-0 hover:bg-slate-50/60 dark:hover:bg-zinc-800/30 transition-colors cursor-pointer`} onClick={() => router.push(`/admin/personnels/${p.id}`)}>
+                <li key={p.id} className={`dash-in delay-${[0,75,100,150,200,225,300][Math.min(i,6)]} grid grid-cols-[2fr_1.5fr_90px_44px] items-center gap-4 px-5 py-3.5 border-b border-slate-50 dark:border-zinc-800/60 last:border-0 hover:bg-slate-50/60 dark:hover:bg-zinc-800/30 transition-colors cursor-pointer`} onClick={() => router.push(`/admin/personnels/${p.id}`)}>
                   <div className="flex items-center gap-3 min-w-0">
                     <div className="h-9 w-9 rounded-full bg-brand/10 dark:bg-brand/15 flex items-center justify-center flex-shrink-0">
                       <span className="text-brand font-bold text-xs">{p.nom[0]}{p.prenoms[0]}</span>
@@ -214,13 +197,6 @@ export default function PersonnelsPage() {
                         </div>
                       )}
                     </div>
-                  </div>
-                  <div>
-                    {p.typePersonnel ? (
-                      <span className="text-xs bg-purple-50 dark:bg-purple-400/15 text-purple-700 dark:text-purple-300 px-2 py-0.5 rounded-lg font-semibold">{p.typePersonnel.nom}</span>
-                    ) : (
-                      <span className="text-xs text-slate-300 dark:text-zinc-600">—</span>
-                    )}
                   </div>
                   <p className="text-xs text-slate-400 dark:text-zinc-500 truncate">{p.email}</p>
                   <div className={`flex items-center gap-1 px-2 py-1 rounded-full border text-[10px] font-bold w-fit ${p.estActif ? 'bg-brand/8 dark:bg-brand/12 border-brand/20 text-brand' : 'bg-slate-50 dark:bg-zinc-950 border-slate-200 dark:border-zinc-700 text-slate-400 dark:text-zinc-500'}`}>
@@ -303,9 +279,6 @@ export default function PersonnelsPage() {
                       </DropdownMenu>
                     </div>
                   </div>
-                  {p.typePersonnel && (
-                    <span className="inline-block text-xs bg-purple-50 dark:bg-purple-400/15 text-purple-700 dark:text-purple-300 px-2 py-0.5 rounded-lg font-semibold">{p.typePersonnel.nom}</span>
-                  )}
                   {p.specialites && p.specialites.length > 0 && (
                     <div className="flex flex-wrap gap-1">
                       {p.specialites.map((sp) => (

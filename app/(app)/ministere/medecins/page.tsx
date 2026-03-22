@@ -16,7 +16,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useToast } from '@/hooks/use-toast'
 import { useRouter } from 'next/navigation'
 
-interface TypePersonnel { id: string; nom: string; code: string }
 interface Specialite { id: string; nom: string; code: string }
 interface Centre { id: string; nom: string; type: string; region: string }
 
@@ -28,7 +27,6 @@ interface Medecin {
   telephone?: string
   estActif: boolean
   createdAt: string
-  typePersonnel?: TypePersonnel
   specialites: { specialite: { nom: string; code: string } }[]
   centres: { centre: { id: string; nom: string; type: string } }[]
 }
@@ -43,7 +41,6 @@ export default function MedecinsPage() {
   const [medecins, setMedecins] = useState<Medecin[]>([])
   const [specialites, setSpecialites] = useState<Specialite[]>([])
   const [centres, setCentres] = useState<Centre[]>([])
-  const [typesPersonnel, setTypesPersonnel] = useState<TypePersonnel[]>([])
   const [loading, setLoading] = useState(true)
 
   // Delete dialog
@@ -58,7 +55,6 @@ export default function MedecinsPage() {
   const [filterStatut, setFilterStatut] = useState<StatusFilter>('tous')
   const [filterCentre, setFilterCentre] = useState('tous')
   const [filterSpecialite, setFilterSpecialite] = useState('tous')
-  const [filterType, setFilterType] = useState('tous')
   const [toggling, setToggling] = useState<string | null>(null)
 
   useEffect(() => {
@@ -66,12 +62,10 @@ export default function MedecinsPage() {
       fetch('/api/utilisateurs?niveauAcces=PERSONNEL').then((r) => r.json()),
       fetch('/api/specialites').then((r) => r.json()),
       fetch('/api/centres').then((r) => r.json()),
-      fetch('/api/types-personnel').then((r) => r.json()),
-    ]).then(([users, sps, ctrs, types]) => {
+    ]).then(([users, sps, ctrs]) => {
       setMedecins(users.utilisateurs || [])
       setSpecialites(sps.specialites || [])
       setCentres(ctrs.centres || [])
-      setTypesPersonnel(types.types || [])
       setLoading(false)
     })
   }, [])
@@ -111,14 +105,13 @@ export default function MedecinsPage() {
         m.centres.some((c) => c.centre.id === filterCentre)
       const matchSpecialite = filterSpecialite === 'tous' ||
         m.specialites.some((s) => s.specialite.code === filterSpecialite)
-      const matchType = filterType === 'tous' || m.typePersonnel?.code === filterType
-      return matchSearch && matchStatut && matchCentre && matchSpecialite && matchType
+      return matchSearch && matchStatut && matchCentre && matchSpecialite
     })
-  }, [medecins, search, filterStatut, filterCentre, filterSpecialite, filterType])
+  }, [medecins, search, filterStatut, filterCentre, filterSpecialite])
 
   const actifs = medecins.filter((m) => m.estActif).length
   const inactifs = medecins.length - actifs
-  const hasFilters = search !== '' || filterStatut !== 'tous' || filterCentre !== 'tous' || filterSpecialite !== 'tous' || filterType !== 'tous'
+  const hasFilters = search !== '' || filterStatut !== 'tous' || filterCentre !== 'tous' || filterSpecialite !== 'tous'
 
   return (
     <div className="space-y-5 max-w-[1400px]">
@@ -180,18 +173,8 @@ export default function MedecinsPage() {
           </SelectContent>
         </Select>
 
-        <Select value={filterType} onValueChange={setFilterType}>
-          <SelectTrigger className={`${inputCls} w-[180px]`}>
-            <SelectValue placeholder="Tous les types" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="tous">Tous les types</SelectItem>
-            {typesPersonnel.map((t) => <SelectItem key={t.code} value={t.code}>{t.nom}</SelectItem>)}
-          </SelectContent>
-        </Select>
-
         {hasFilters && (
-          <button onClick={() => { setSearch(''); setFilterStatut('tous'); setFilterCentre('tous'); setFilterSpecialite('tous'); setFilterType('tous') }}
+          <button onClick={() => { setSearch(''); setFilterStatut('tous'); setFilterCentre('tous'); setFilterSpecialite('tous') }}
             className="flex items-center gap-1.5 text-xs font-semibold text-slate-400 dark:text-zinc-500 hover:text-slate-700 dark:hover:text-zinc-300 transition-colors">
             <X className="h-3.5 w-3.5" /> Réinitialiser
           </button>
@@ -219,8 +202,8 @@ export default function MedecinsPage() {
         <>
           {/* ── TABLE desktop ── */}
           <div className="dash-in delay-150 hidden lg:block bg-white dark:bg-zinc-950 rounded-2xl border border-slate-100 dark:border-zinc-800 overflow-hidden">
-            <div className="grid grid-cols-[2fr_1fr_1fr_1fr_90px_44px] gap-4 px-5 py-2.5 bg-slate-50/60 dark:bg-zinc-950/40 border-b border-slate-100 dark:border-zinc-800">
-              {['Personnel', 'Type', 'Centre', 'Spécialités', 'Statut', ''].map((h, i) => (
+            <div className="grid grid-cols-[2fr_1fr_1fr_90px_44px] gap-4 px-5 py-2.5 bg-slate-50/60 dark:bg-zinc-950/40 border-b border-slate-100 dark:border-zinc-800">
+              {['Personnel', 'Centre', 'Spécialités', 'Statut', ''].map((h, i) => (
                 <span key={i} className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-zinc-500">{h}</span>
               ))}
             </div>
@@ -228,7 +211,7 @@ export default function MedecinsPage() {
               {filtered.map((m, i) => {
                 const centre = m.centres[0]?.centre
                 return (
-                  <li key={m.id} onClick={() => router.push(`/ministere/medecins/${m.id}`)} className={`dash-in delay-${[0,75,100,150,200,225,300][Math.min(i,6)]} grid grid-cols-[2fr_1fr_1fr_1fr_90px_44px] items-center gap-4 px-5 py-3.5 border-b border-slate-50 dark:border-zinc-800/60 last:border-0 hover:bg-slate-50/60 dark:hover:bg-zinc-800/30 transition-colors cursor-pointer`}>
+                  <li key={m.id} onClick={() => router.push(`/ministere/medecins/${m.id}`)} className={`dash-in delay-${[0,75,100,150,200,225,300][Math.min(i,6)]} grid grid-cols-[2fr_1fr_1fr_90px_44px] items-center gap-4 px-5 py-3.5 border-b border-slate-50 dark:border-zinc-800/60 last:border-0 hover:bg-slate-50/60 dark:hover:bg-zinc-800/30 transition-colors cursor-pointer`}>
                     <div className="flex items-center gap-3 min-w-0">
                       <div className="h-9 w-9 rounded-full bg-brand/10 dark:bg-brand/15 flex items-center justify-center flex-shrink-0">
                         <span className="text-brand font-bold text-xs">{m.nom[0]}{m.prenoms[0]}</span>
@@ -237,13 +220,6 @@ export default function MedecinsPage() {
                         <p className="text-sm font-semibold text-slate-900 dark:text-white truncate">{m.nom} {m.prenoms}</p>
                         <p className="text-xs text-slate-400 dark:text-zinc-500 truncate">{m.email}</p>
                       </div>
-                    </div>
-                    <div>
-                      {m.typePersonnel ? (
-                        <span className="text-xs bg-purple-50 dark:bg-purple-400/15 text-purple-700 dark:text-purple-300 px-2 py-0.5 rounded-lg font-semibold">{m.typePersonnel.nom}</span>
-                      ) : (
-                        <span className="text-xs text-slate-300 dark:text-zinc-600">—</span>
-                      )}
                     </div>
                     <div>
                       {centre ? (
@@ -349,9 +325,6 @@ export default function MedecinsPage() {
                         </DropdownMenu>
                       </div>
                     </div>
-                    {m.typePersonnel && (
-                      <span className="inline-block text-xs bg-purple-50 dark:bg-purple-400/15 text-purple-700 dark:text-purple-300 px-2 py-0.5 rounded-lg font-semibold">{m.typePersonnel.nom}</span>
-                    )}
                     <div className="space-y-1.5 text-xs text-slate-500 dark:text-zinc-400">
                       {centre && (
                         <p className="flex items-center gap-1.5">

@@ -29,7 +29,6 @@ export default async function PersonnelDetailPage({ params }: { params: { id: st
       id: true, nom: true, prenoms: true, email: true,
       telephone: true, estActif: true, createdAt: true, photo: true,
       role:          { select: { nom: true } },
-      typePersonnel: { select: { nom: true, code: true } },
       specialites:   { include: { specialite: { select: { nom: true, code: true } } } },
       _count:        { select: { enregistrements: true, patientsCrees: true } },
       patientsCrees: {
@@ -58,7 +57,7 @@ export default async function PersonnelDetailPage({ params }: { params: { id: st
             {personnel.nom.toUpperCase()} {personnel.prenoms}
           </h1>
           <p className="text-sm text-slate-500 dark:text-zinc-400 mt-0.5">
-            Fiche personnel · {personnel.typePersonnel?.nom ?? 'Personnel médical'}
+            Fiche personnel
           </p>
         </div>
         {/* Actions */}
@@ -133,19 +132,6 @@ export default async function PersonnelDetailPage({ params }: { params: { id: st
           </div>
 
           <div className="space-y-3">
-            {personnel.typePersonnel ? (
-              <div>
-                <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-zinc-500 mb-1.5">
-                  Type de personnel
-                </p>
-                <span className="text-xs bg-purple-50 dark:bg-purple-400/15 text-purple-700 dark:text-purple-300 px-3 py-1 rounded-xl font-semibold">
-                  {personnel.typePersonnel.nom}
-                </span>
-              </div>
-            ) : (
-              <p className="text-xs text-slate-400 dark:text-zinc-500">Aucun type assigné</p>
-            )}
-
             {personnel.specialites.length > 0 && (
               <div>
                 <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-zinc-500 mb-1.5">

@@ -1,255 +1,431 @@
-# Cahier des charges — Alafiya Plus
-
-## 1. Présentation du projet
-
-Alafiya Plus est une application web PWA (Progressive Web App) responsive,
-développée pour le Togo, permettant de centraliser et sécuriser les dossiers
-médicaux des patients à l'échelle nationale. L'interface est entièrement en
-français. La plateforme utilise l'intelligence artificielle pour faciliter la
-saisie des informations médicales par les professionnels de santé, et un QR
-code sécurisé attribué à chaque patient pour un accès rapide et contrôlé à
-son dossier médical.
-
-L'objectif est de simplifier l'accès aux dossiers médicaux, d'améliorer la
-continuité des soins entre les établissements de santé, et de réduire les
-erreurs médicales liées à un manque d'information.
-
-La stack technique est la suivante : Next.js 14 (App Router), MongoDB avec
-Mongoose, Tailwind CSS, shadcn/ui pour les composants, et NextAuth.js v5 avec
-JWT pour l'authentification.
+# Alafiya Plus — Contenu complet du site vitrine
 
 ---
 
-## 2. Gouvernance et hiérarchie du système
+## SECTION 1 — HERO (Accroche principale)
 
-La plateforme est gouvernée au niveau national par le Ministère de la Santé
-du Togo, qui constitue l'autorité centrale du système. Le Ministère administre
-la plateforme, assure la sécurité des données, gère l'infrastructure, crée les
-comptes des centres de santé, et définit les rôles globaux ainsi que les
-permissions associées. Les permissions sont des actions précises telles que
-créer un patient, lire un dossier médical, activer le mode urgence, etc.
+**Titre principal**
+Le dossier médical de chaque Togolais, partout, tout le temps.
 
-Sous le Ministère se trouvent les centres de santé (hôpitaux, cliniques,
-centres de santé urbains, centres médicaux sociaux). À la création d'un centre
-par le Ministère, un compte administrateur est automatiquement généré pour ce
-centre. Cet administrateur peut ensuite créer les comptes des professionnels
-de santé de son établissement en leur assignant des rôles et des spécialités
-médicales. Un professionnel de santé peut être affecté à plusieurs centres de
-santé. À chaque connexion, il doit choisir le centre sur lequel il travaille
-pour la session en cours.
+**Sous-titre**
+Alafiya Plus centralise et sécurise les dossiers médicaux numériques
+à l'échelle nationale. Un QR code. Un carnet médical. Une vie entière
+de données médicales accessibles en quelques secondes, dans n'importe
+quel centre de santé du Togo.
 
-Il existe donc trois niveaux d'accès distincts dans le système : le niveau
-Ministère (super administrateur national), le niveau Administrateur de centre
-(gestionnaire d'un établissement), et le niveau Personnel médical (médecin,
-infirmier, paramédical, etc.).
+**Bouton principal**
+→ Mon centre rejoint Alafiya Plus
+
+**Bouton secondaire**
+→ Devenir agent de terrain
 
 ---
 
-## 3. Site vitrine
+## SECTION 2 — CHIFFRES CLÉS
 
-La route racine `/` du projet héberge le site vitrine public d'Alafiya Plus.
-Ce site présente la plateforme aux établissements de santé et aux décideurs.
-Il comprend une landing page avec un hero percutant, une section de
-présentation des fonctionnalités clés, une section expliquant le fonctionnement
-pas à pas, une section sur la sécurité des données, une section "Pour qui",
-et une page de contact. Le design est médical et professionnel, avec une
-palette dominante vert, blanc et bleu. Le site est entièrement responsive et
-mobile-first. Un bouton "Connexion" dans le header redirige vers `/login`.
+2,2 millions d'habitants dans le Grand Lomé
+30 centres de santé partenaires au lancement
+1 QR code par patient, valable dans tout le Togo
+0 FCFA pour le professionnel de santé
 
 ---
 
-## 4. Authentification
+## SECTION 3 — PRÉSENTATION DE LA PLATEFORME
 
-L'authentification est gérée par NextAuth.js v5 avec une stratégie JWT.
-La page de connexion se trouve à la route `/login` et demande un email et un
-mot de passe. Les mots de passe sont stockés hashés avec bcryptjs. Toutes les
-routes de l'application protégée sont sécurisées par un middleware Next.js qui
-vérifie le token JWT et le niveau d'accès de l'utilisateur.
+**Titre de section**
+Une solution conçue pour le système de santé togolais
 
-Après connexion, si le professionnel est affecté à plusieurs centres de santé,
-une modale de sélection du centre actif s'affiche avant toute redirection. La
-redirection post-connexion dépend du niveau d'accès : le Ministère est redirigé
-vers son tableau de bord national, l'administrateur de centre vers son tableau
-de bord d'établissement, et le personnel médical vers son tableau de bord
-personnel.
+**Texte**
+Alafiya Plus est une application web développée par N'di Solutions,
+une startup togolaise, avec une mission simple : mettre fin aux
+dossiers médicaux perdus, aux ordonnances oubliées, aux antécédents
+inconnus.
 
----
+Aujourd'hui, lorsqu'un patient change de centre de santé, son
+historique médical reste derrière lui. Le médecin repart de zéro.
+Les erreurs de diagnostic, les prescriptions incompatibles, les
+examens répétés inutilement — tout cela coûte du temps, de l'argent
+et parfois des vies.
 
-## 5. Gestion des patients et dossiers médicaux
-
-### 5.1 Création d'un patient
-
-Toute personne disposant de la permission appropriée peut créer un dossier
-patient. Les données obligatoires à collecter sont le nom, les prénoms, le
-genre (M ou F), la date de naissance (avec indication si elle est présumée ou
-non), l'adresse du patient, et les informations complètes d'une personne à
-prévenir en cas d'urgence (nom, prénoms, téléphone, adresse, relation avec le
-patient). Cette personne à prévenir est obligatoire pour tous les patients sans
-exception.
-
-Les données optionnelles sont le numéro de téléphone du patient, son adresse
-email, et son numéro de carte nationale d'identité.
-
-À la création du dossier, un QR code sécurisé est automatiquement généré. Ce
-QR code est basé sur un token unique (UUID v4 hashé) associé au patient dans
-la base de données. Il peut être imprimé ou affiché sur mobile.
-
-### 5.2 Structure d'un enregistrement médical
-
-Chaque consultation donne lieu à un enregistrement médical structuré selon le
-modèle suivant, qui est la structure de référence du système :
-
-- Antécédents médicaux du patient
-- Signes et symptômes constatés lors de la consultation
-- Examens effectués
-- Bilan et analyses
-- Traitements prescrits, subdivisés en trois parties : conseils donnés au
-  patient, injections administrées, et ordonnance médicale
-- Suivi préconisé (contrôle à prévoir, examens complémentaires à réaliser
-  avant la prochaine consultation, etc.)
-
-### 5.3 Accès au dossier via QR code
-
-Lorsqu'un patient arrive dans un établissement de santé, le professionnel
-scanne son QR code depuis l'application. Le système identifie le patient et
-déclenche un processus de validation d'accès.
-
-Si le patient possède un numéro de téléphone enregistré dans son dossier, un
-code OTP à usage unique est envoyé par SMS via l'API AfrikSMS. Le patient
-communique oralement ce code au professionnel, qui le saisit dans l'interface.
-Une fois le code validé, l'accès au dossier est ouvert pour une durée maximale
-d'une heure.
-
-Si le patient n'a pas de numéro de téléphone enregistré, un écran de signature
-numérique sur fond blanc lui est présenté. Sa signature manuscrite sur l'écran
-du terminal vaut consentement. L'accès est alors accordé dans les mêmes
-conditions temporelles.
-
-### 5.4 Accès par modules médicaux et spécialités
-
-Le dossier médical est organisé en modules correspondant aux spécialités
-médicales définies par le Ministère. Après validation de l'accès, le
-professionnel de santé choisit une spécialité parmi celles qui lui ont été
-assignées par l'administrateur de son centre. Il accède uniquement au module
-correspondant à cette spécialité, ce qui protège la confidentialité des données
-du patient dans les autres domaines médicaux.
-
-Par exemple, un médecin généraliste accède au module de médecine générale, un
-gynécologue au module gynécologique, un cardiologue au module cardiologique.
-Chaque module affiche les enregistrements précédents dans cette spécialité et
-permet d'en créer un nouveau.
+Alafiya Plus résout ce problème en donnant à chaque patient un
+carnet médical numérique unique, sécurisé, et accessible dans tous
+les centres de santé partenaires du Togo.
 
 ---
 
-## 6. Dictée vocale et structuration par IA
+## SECTION 4 — FONCTIONNALITÉS CLÉS
 
-Pour réduire le temps de saisie des professionnels de santé, l'application
-intègre une fonction de dictée vocale intelligente directement dans le
-formulaire d'enregistrement médical.
+### Pour les centres de santé
 
-Le médecin active l'enregistrement audio depuis l'interface. Il dicte librement
-ses observations de consultation à voix haute. L'enregistrement est ensuite
-envoyé à une API route interne qui le transmet à une instance Whisper tiny
-hébergée localement via Ollama (à l'adresse `http://localhost:11434`). Whisper
-transcrit l'audio en texte brut.
+**Un dossier médical complet et structuré**
+Chaque consultation est enregistrée selon une structure médicale
+rigoureuse : antécédents, signes et symptômes, examens effectués,
+bilan et analyses, traitements prescrits (conseils, injections,
+ordonnance), et suivi préconisé. Toutes les données sont organisées
+par spécialité médicale.
 
-Ce texte brut est ensuite transmis au modèle Phi-3 Mini, également hébergé
-localement via Ollama, avec un prompt système lui demandant d'analyser le texte
-et de le structurer en JSON selon les six champs de la structure médicale de
-référence (antécédents, signes, examens, bilan, traitements avec
-sous-champs, suivi). Le modèle doit répondre uniquement en JSON valide sans
-aucun texte autour.
+**Accès instantané par QR code**
+Le patient présente son QR code à l'accueil. Le professionnel le
+scanne. Le dossier s'ouvre. En quelques secondes, le médecin a
+accès à l'intégralité de l'historique médical du patient dans sa
+spécialité.
 
-Le formulaire est ensuite pré-rempli automatiquement avec les données
-structurées. Le médecin relit, corrige si nécessaire, et valide le contenu.
-L'enregistrement n'est sauvegardé dans le dossier médical qu'après validation
-explicite du médecin. Le texte brut de la transcription est également conservé
-dans la base de données à des fins de traçabilité.
+**Dictée vocale assistée par IA**
+Le médecin dicte ses observations à voix haute. L'intelligence
+artificielle intégrée transcrit et structure automatiquement les
+données dans les bons champs du dossier médical. Plus besoin de
+saisir manuellement chaque information.
 
----
+**Gestion des spécialités médicales**
+Chaque professionnel de santé accède uniquement aux modules
+correspondant à ses spécialités assignées. La confidentialité
+des données du patient est garantie entre les différentes
+spécialités médicales.
 
-## 7. Mode urgence
+**Mode urgence**
+En cas de situation critique, le professionnel peut accéder au
+dossier complet du patient toutes spécialités confondues, sans
+attendre. La personne à prévenir est automatiquement notifiée
+par SMS.
 
-Le mode urgence permet à un professionnel de santé d'accéder au dossier complet
-d'un patient, toutes spécialités confondues, sans nécessiter l'autorisation
-préalable du patient par OTP ou signature. Il est réservé aux situations où
-le patient est dans un état critique et ne peut pas donner son consentement.
-
-L'activation du mode urgence est accessible depuis l'interface de scan QR code.
-Elle nécessite obligatoirement une justification écrite saisie par le
-professionnel dans l'interface. Un SMS de notification est automatiquement
-envoyé via AfrikSMS à la personne à prévenir enregistrée dans le dossier du
-patient.
-
-Chaque activation du mode urgence doit faire l'objet d'une justification
-a posteriori, soit par le patient lui-même lorsqu'il sera en état de le faire,
-soit par sa personne à prévenir. Cette justification peut prendre la forme
-d'une signature numérique dans l'application ou d'une confirmation par SMS.
-Toutes les activations du mode urgence sont enregistrées dans une collection
-dédiée de la base de données avec l'identité du professionnel, l'heure d'accès,
-la justification, et les informations du validateur.
+**Tableau de bord administrateur**
+L'administrateur du centre gère les comptes de son équipe
+soignante, assigne les rôles et les spécialités, consulte les
+statistiques de son établissement et suit les logs d'activité.
 
 ---
 
-## 8. Système de logs
+### Pour les patients
 
-Absolument toutes les actions sensibles du système doivent être loggées sans
-exception dans une collection de logs dédiée. Chaque entrée de log contient
-l'identifiant de l'utilisateur ayant effectué l'action, le type d'action, la
-cible de l'action (collection et identifiant de l'objet concerné), le centre
-de santé actif, des détails contextuels en format JSON libre, l'adresse IP,
-et le user-agent du navigateur.
+**Un seul carnet médical pour toute la vie**
+Un QR code vous est attribué à la création de votre dossier.
+Ce code est valable dans tous les centres de santé partenaires
+Alafiya Plus du Togo. Vous n'avez plus à vous souvenir de vos
+antécédents ou à transporter vos anciens documents médicaux.
 
-Les actions à logger obligatoirement sont les suivantes : connexion, 
-déconnexion, scan d'un QR code, envoi d'un OTP, validation d'un OTP, accès à
-un dossier médical, modification d'un dossier médical, activation du mode
-urgence, création d'un patient, création d'un compte utilisateur, création
-d'un centre de santé, création d'un rôle, et toute modification de permissions.
+**Vos données vous appartiennent**
+Votre QR code est votre clé. Personne ne peut accéder à votre
+dossier sans votre présence physique et votre QR code. En cas
+d'urgence médicale, la personne de confiance que vous avez
+désignée est automatiquement prévenue.
 
----
-
-## 9. Tableaux de bord
-
-### Tableau de bord Ministère
-Le tableau de bord du Ministère offre une vue nationale de la plateforme. Il
-affiche des statistiques globales (nombre de centres actifs, nombre de patients
-enregistrés, nombre de consultations). Il permet de gérer la liste des centres
-de santé (création, activation, désactivation), de gérer les spécialités
-médicales disponibles dans le système, de gérer les rôles globaux et les
-permissions associées.
-
-### Tableau de bord Administrateur de centre
-Le tableau de bord de l'administrateur d'un centre affiche les statistiques
-de son établissement. Il lui permet de gérer la liste des professionnels de
-santé de son centre (création de comptes, assignation de rôles, assignation
-de spécialités, activation/désactivation). Il peut également consulter les
-logs d'activité de son centre.
-
-### Tableau de bord Personnel médical
-Le tableau de bord du personnel médical affiche la liste de ses patients
-récents et les dernières consultations effectuées. Un accès rapide au scanner
-QR code est mis en avant. Le professionnel peut également rechercher un patient
-par nom ou numéro de dossier.
+**Un suivi médical continu**
+Où que vous alliez dans les centres partenaires du Togo, le
+médecin qui vous reçoit voit votre historique complet dans sa
+spécialité : vos consultations précédentes, vos traitements,
+vos examens. Vous n'expliquez plus tout depuis le début.
 
 ---
 
-## 10. Variables d'environnement
+## SECTION 5 — COMMENT ÇA FONCTIONNE (Pas à pas)
 
-Le fichier `.env.example` doit contenir les variables suivantes :
-`MONGODB_URI` pour la connexion à la base de données MongoDB, `NEXTAUTH_SECRET`
-et `NEXTAUTH_URL` pour NextAuth.js, `AFRIKSMS_API_KEY` et `AFRIKSMS_SENDER`
-(valeur : AlafiyaPlus) pour l'envoi de SMS, `OLLAMA_BASE_URL` (valeur par
-défaut : `http://localhost:11434`) pour le serveur IA local, et
-`NEXT_PUBLIC_APP_NAME` (valeur : Alafiya Plus) pour le nom affiché dans
-l'interface.
+### Pour créer un carnet médical patient
+
+Étape 1 — Inscription au centre partenaire
+Le patient se présente à l'accueil d'un centre de santé
+partenaire Alafiya Plus. Le personnel saisit les informations
+de base : nom, prénom, date de naissance, adresse, et les
+coordonnées d'une personne à prévenir en cas d'urgence.
+
+Étape 2 — Génération du QR code
+Un QR code unique et sécurisé est automatiquement généré et
+attribué au patient. Il peut être imprimé sur place ou enregistré
+sur smartphone.
+
+Étape 3 — Première consultation numérique
+Le médecin complète le premier enregistrement médical dans le
+dossier numérique du patient. L'historique commence.
 
 ---
 
-## 11. Documentation technique
+### Pour consulter un dossier existant
 
-Un fichier `README.md` doit être généré à la racine du projet. Il doit
-expliquer les prérequis d'installation, les étapes pour lancer le projet en
-développement, et les instructions pour configurer le serveur Ollama local
-avec les modèles Whisper tiny et Phi-3 Mini, notamment les commandes
-`ollama pull` correspondantes et la configuration des endpoints utilisés par
-l'application.
+Étape 1 — Présentation du QR code
+Le patient présente son QR code à l'accueil du centre partenaire.
+
+Étape 2 — Scan et accès immédiat
+Le professionnel scanne le QR code. Le dossier s'ouvre
+immédiatement. L'accès est valable une heure.
+
+Étape 3 — Consultation et mise à jour
+Le médecin consulte l'historique dans sa spécialité et ajoute
+le nouvel enregistrement médical après la consultation.
+
+---
+
+## SECTION 6 — SÉCURITÉ DES DONNÉES
+
+**Titre**
+Vos données médicales méritent la protection la plus haute.
+
+**Hébergement local**
+Les données médicales de vos patients sont hébergées sur des
+serveurs physiques situés au Togo. Elles ne quittent jamais
+le territoire national.
+
+**Chiffrement de bout en bout**
+Toutes les communications entre l'application et les serveurs
+sont chiffrées via protocole SSL/TLS. Les mots de passe sont
+stockés sous forme hashée et ne sont jamais lisibles, même
+par nos équipes.
+
+**Accès contrôlé et tracé**
+Chaque action sur la plateforme est enregistrée : qui a accédé
+à quel dossier, à quelle heure, depuis quel établissement.
+Aucune action ne passe sans laisser de trace.
+
+**Accès par spécialité uniquement**
+Un cardiologue ne voit que les données cardiologiques de son
+patient. Un gynécologue ne voit que les données gynécologiques.
+La confidentialité médicale est respectée à chaque niveau.
+
+**Gouvernance nationale**
+La plateforme est administrée par N'di Solutions sous autorisation
+du Ministère de la Santé du Togo. Les règles d'accès et les
+permissions sont définies au niveau national et s'appliquent
+uniformément à tous les centres partenaires.
+
+---
+
+## SECTION 7 — POUR QUI
+
+### Les centres de santé publics
+Hôpitaux régionaux, centres hospitaliers universitaires, centres
+de santé urbains, centres médicaux sociaux. Alafiya Plus est
+conçu pour s'intégrer dans les flux de travail existants de vos
+équipes soignantes, sans bouleverser vos pratiques actuelles.
+
+### Les cliniques et hôpitaux privés
+Offrez à vos patients un suivi médical numérique de qualité.
+Différenciez votre établissement en proposant un carnet médical
+interopérable, reconnu dans tous les centres partenaires du Togo.
+
+### Les professionnels de santé
+Médecins généralistes, spécialistes, infirmiers, paramédicaux.
+Accédez à l'historique complet de vos patients en quelques
+secondes. Passez plus de temps à soigner, moins de temps à
+chercher des informations.
+
+### Les patients
+Togolais de tous horizons, en ville ou en périphérie. Votre
+carnet médical numérique vous appartient et vous suit partout
+où vous allez, dans tous les centres partenaires.
+
+---
+
+## SECTION 8 — INSCRIPTION D'UN CENTRE DE SANTÉ
+
+**Titre**
+Rejoindre Alafiya Plus — Pour les centres de santé
+
+**Texte introductif**
+Votre centre de santé souhaite offrir à ses patients et à ses
+équipes soignantes les bénéfices du dossier médical numérique ?
+Remplissez le formulaire ci-dessous. Notre équipe vous contacte
+dans les 48 heures pour vous présenter la solution et organiser
+le déploiement.
+
+**Formulaire d'inscription centre**
+
+Nom du centre de santé *
+Type d'établissement *
+  ○ Hôpital public
+  ○ Clinique privée
+  ○ Centre de santé urbain
+  ○ Centre médical social
+  ○ Autre
+
+Ville / Localité *
+Quartier / Arrondissement
+Région *
+  ○ Maritime
+  ○ Plateaux
+  ○ Centrale
+  ○ Kara
+  ○ Savanes
+
+Nom du responsable / directeur *
+Poste / Fonction *
+Numéro de téléphone *
+Adresse email *
+
+Nombre approximatif de patients par mois *
+  ○ Moins de 100
+  ○ 100 à 500
+  ○ 500 à 1 000
+  ○ Plus de 1 000
+
+Nombre de professionnels de santé dans votre équipe *
+  ○ Moins de 5
+  ○ 5 à 15
+  ○ 15 à 30
+  ○ Plus de 30
+
+Spécialités médicales pratiquées dans votre centre
+(champ texte libre — ex : médecine générale, gynécologie,
+pédiatrie, cardiologie...)
+
+Message / Questions éventuelles
+(champ texte libre)
+
+→ Bouton : Envoyer ma demande d'inscription
+
+**Mention sous le formulaire**
+En soumettant ce formulaire, vous acceptez d'être contacté par
+l'équipe N'di Solutions dans le cadre de votre demande de
+partenariat Alafiya Plus. Vos informations ne seront pas
+transmises à des tiers.
+
+---
+
+## SECTION 9 — INSCRIPTION AGENT DE TERRAIN
+
+**Titre**
+Devenir agent de terrain Alafiya Plus
+
+**Texte introductif**
+Alafiya Plus déploie son réseau d'agents de terrain pour
+accompagner les centres de santé partenaires dans leur
+transition vers le dossier médical numérique. En tant qu'agent,
+vous intervenez en mission de deux semaines dans un centre de
+santé pour former le personnel, accompagner les premiers
+enrôlements de patients, et assurer le bon démarrage de la
+plateforme.
+
+**Ce que fait un agent de terrain**
+
+En tant qu'agent Alafiya Plus, votre mission se déroule en
+trois phases sur deux semaines :
+
+Phase 1 — Jours 1 à 3 : Partenariat et formation
+Vous rencontrez le responsable du centre, signez la convention
+de partenariat, et formez le personnel d'accueil (secrétaires,
+infirmiers) à l'utilisation de la plateforme.
+
+Phase 2 — Jours 4 à 13 : Enrôlement des patients
+Vous assistez physiquement les patients à la création de leur
+carnet médical numérique. Chaque carnet créé via votre code
+de parrainage vous rapporte une commission de 200 FCFA.
+
+Phase 3 — Jour 14 : Bilan et validation
+Vous faites le point avec le responsable du centre sur les
+résultats obtenus et validez l'autonomie de l'équipe soignante
+pour la suite.
+
+**Rémunération**
+
+Indemnité fixe de mission    26 250 FCFA (2 semaines)
+Forfait déplacement           5 000 FCFA par mission
+Commission d'enrôlement       200 FCFA par carnet créé
+──────────────────────────────────────────────────────
+Exemple : 200 carnets enrôlés → 71 250 FCFA pour 2 semaines
+
+**Profil recherché**
+
+Vous êtes organisé, à l'aise avec les outils numériques,
+et vous avez le sens du contact humain. Vous êtes capable
+de vous déplacer dans votre zone géographique et d'intervenir
+dans des structures de santé. Une expérience commerciale ou
+dans le secteur de la santé est un plus, mais pas obligatoire.
+La maîtrise du français est requise. La connaissance d'une
+langue locale (éwé, kabiyè, etc.) est un avantage.
+
+**Formulaire de candidature agent**
+
+Nom *
+Prénom(s) *
+Numéro de téléphone *
+Adresse email *
+Ville de résidence *
+
+Zone(s) géographique(s) d'intervention souhaitée(s) *
+(Précisez les villes, quartiers, préfectures ou régions
+dans lesquels vous êtes disponible et capable d'intervenir
+auprès des centres de santé)
+[Champ texte libre — ex : Lomé centre, Agoè, Adidogomé,
+Tsévié et environs / Préfecture de l'Agou / Région des Plateaux]
+
+Disponibilité *
+  ○ Immédiate
+  ○ Dans 1 mois
+  ○ Dans 2 à 3 mois
+  ○ À définir
+
+Avez-vous un moyen de déplacement personnel ? *
+  ○ Oui — moto
+  ○ Oui — voiture
+  ○ Non — déplacement en transport commun
+
+Expérience pertinente (commerciale, santé, terrain)
+(champ texte libre — facultatif)
+
+Langues parlées *
+  ☐ Français
+  ☐ Éwé
+  ☐ Kabiyè
+  ☐ Mina
+  ☐ Autre : ___________
+
+Message / Motivation
+(champ texte libre — facultatif)
+
+→ Bouton : Envoyer ma candidature
+
+**Mention sous le formulaire**
+En soumettant ce formulaire, vous exprimez votre intérêt à
+rejoindre le réseau d'agents de terrain Alafiya Plus. Votre
+candidature sera examinée par notre équipe. Nous vous
+contacterons si votre profil correspond aux besoins de
+déploiement dans votre zone. L'envoi de ce formulaire ne
+constitue pas un engagement contractuel de part et d'autre.
+
+---
+
+## SECTION 10 — CONTACT GÉNÉRAL
+
+**Titre**
+Une question ? Parlons-en.
+
+Vous êtes professionnel de santé, décideur institutionnel,
+partenaire potentiel ou simplement curieux d'en savoir plus ?
+Contactez l'équipe N'di Solutions.
+
+Email          : contact@alafiyaplus.tg
+Téléphone      : À compléter
+Adresse        : Lomé, Togo
+
+Ou utilisez le formulaire ci-dessous :
+
+Nom *
+Email *
+Objet *
+  ○ Information générale
+  ○ Partenariat institutionnel
+  ○ Support technique
+  ○ Autre
+
+Message *
+
+→ Bouton : Envoyer
+
+---
+
+## NOTES POUR LE DÉVELOPPEUR
+
+- Les formulaires sections 8 et 9 envoient les données à une
+  route API interne Next.js qui les stocke en base de données
+  MongoDB dans des collections dédiées :
+  `centre_inscriptions` et `agent_candidatures`.
+
+- Un email de confirmation automatique est envoyé à l'adresse
+  fournie après soumission de chaque formulaire.
+
+- Un email de notification est envoyé à l'équipe N'di Solutions
+  à chaque nouvelle soumission.
+
+- Les champs marqués * sont obligatoires avec validation
+  côté client et côté serveur.
+
+- Le formulaire agent doit impérativement inclure le champ
+  "zone géographique d'intervention" comme champ obligatoire
+  — c'est l'information clé pour l'équipe de déploiement.

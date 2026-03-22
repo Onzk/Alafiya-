@@ -16,7 +16,6 @@ const creerUtilisateurSchema = z.object({
   specialites: z.array(z.string()).default([]),
   niveauAcces: z.enum(['ADMIN_CENTRE', 'PERSONNEL']),
   centreId: z.string().optional(),
-  typePersonnelId: z.string().optional(),
 })
 
 export async function GET(req: NextRequest) {
@@ -48,7 +47,6 @@ export async function GET(req: NextRequest) {
       role: { select: { nom: true } },
       specialites: { include: { specialite: { select: { nom: true, code: true } } } },
       centres: { include: { centre: { select: { id: true, nom: true, type: true } } } },
-      typePersonnel: { select: { id: true, nom: true, code: true } },
     },
     orderBy: { createdAt: 'desc' },
   })
@@ -71,7 +69,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Données invalides', details: validation.error.flatten() }, { status: 400 })
   }
 
-  const { specialites, motDePasse, roleId, telephone, centreId, typePersonnelId, ...rest } = validation.data
+  const { specialites, motDePasse, roleId, telephone, centreId, ...rest } = validation.data
   const hashedPwd = await bcrypt.hash(motDePasse, 12)
 
   const effectiveCentreId = (user.niveauAcces === 'MINISTERE' && centreId)
@@ -84,7 +82,6 @@ export async function POST(req: NextRequest) {
       motDePasse: hashedPwd,
       telephone: telephone || null,
       roleId: roleId || null,
-      typePersonnelId: typePersonnelId || null,
       creeParId: user.id,
       centreActifId: effectiveCentreId,
       estActif: true,

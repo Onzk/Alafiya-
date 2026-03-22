@@ -98,7 +98,7 @@ export default async function MinistereDashboardPage() {
             Tableau de bord national
           </h1>
           <p className="text-sm text-slate-500 dark:text-zinc-400 mt-0.5">
-            Ministère de la Santé · Vue d'ensemble du réseau de santé
+            Vue d'ensemble du réseau de santé
           </p>
         </div>
         {/* <Button asChild size="sm" className="bg-brand hover:bg-brand-dark text-white rounded-xl gap-1.5 shadow-sm shadow-brand/20 flex-shrink-0">
