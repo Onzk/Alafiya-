@@ -10,6 +10,7 @@ import { SessionUser } from '@/types'
 import { ThemeToggle } from '@/components/ThemeToggle'
 import { cn } from '@/lib/utils'
 import { signOut } from 'next-auth/react'
+import { Input } from '../ui/input'
 
 interface HeaderProps { user: SessionUser }
 
@@ -296,12 +297,12 @@ export function Header({ user }: HeaderProps) {
       </div>
 
       {/* Centre : barre de recherche — desktop */}
-      <div className="hidden lg:flex flex-1 max-w-xs mx-8">
+      <div className="hidden lg:flex ml-auto flex-1 max-w-xs mx-8">
         {isSuperAdmin ? (
           /* ── Réseau search ── */
           <div ref={searchRef} className="relative w-full">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-primary pointer-events-none z-10" />
-            <input
+            <Input
               type="text"
               value={query}
               onChange={e => { setQuery(e.target.value); setShowDropdown(true); setSelectedIndex(-1) }}
@@ -323,7 +324,7 @@ export function Header({ user }: HeaderProps) {
                 }
               }}
               placeholder="Rechercher centres, médecins, spécialités, rôles…"
-              className="w-full h-10 rounded-xl bg-white dark:bg-zinc-950 border border-slate-200 dark:border-zinc-900 pl-9 pr-8 py-2 text-xs text-slate-700 dark:text-zinc-200 placeholder:text-slate-400 dark:placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-emerald-400/50 focus:border-emerald-400 dark:focus:border-emerald-500 transition-all"
+              className="w-full rounded-xl bg-white pl-9 pr-8 py-2 text-xs text-slate-700 dark:text-zinc-200 placeholder:text-slate-400 dark:placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-emerald-400/50 focus:border-emerald-400 dark:focus:border-emerald-500 transition-all"
             />
             {query && (
               <button
@@ -387,7 +388,7 @@ export function Header({ user }: HeaderProps) {
           /* ── Centre search (ADMIN_CENTRE) ── */
           <div ref={searchRef} className="relative w-full">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-primary pointer-events-none z-10" />
-            <input
+            <Input
               type="text"
               value={query}
               onChange={e => { setQuery(e.target.value); setSelectedIndex(-1) }}
@@ -400,7 +401,7 @@ export function Header({ user }: HeaderProps) {
                 else if (e.key === 'Enter' && selectedIndex >= 0) { e.preventDefault(); handleResultClick(list[selectedIndex].href) }
               }}
               placeholder="Rechercher personnel, patients, types de personnel…"
-              className="w-full h-10 rounded-xl bg-white dark:bg-zinc-950 border border-slate-200 dark:border-zinc-900 pl-9 pr-8 py-2 text-xs text-slate-700 dark:text-zinc-200 placeholder:text-slate-400 dark:placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-emerald-400/50 focus:border-emerald-400 dark:focus:border-emerald-500 transition-all"
+              className="w-full rounded-xl bg-white pl-9 pr-8 py-2 text-xs text-slate-700 dark:text-zinc-200 placeholder:text-slate-400 dark:placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-emerald-400/50 focus:border-emerald-400 dark:focus:border-emerald-500 transition-all"
             />
             {query && (
               <button
@@ -467,10 +468,10 @@ export function Header({ user }: HeaderProps) {
           /* ── Search générique (PERSONNEL) ── */
           <div className="relative w-full">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-primary pointer-events-none" />
-            <input
+            <Input
               type="text"
               placeholder="Rechercher patients, dossiers…"
-              className="w-full h-10 rounded-xl bg-white dark:bg-zinc-950 border border-slate-200 dark:border-zinc-900 pl-9 pr-4 py-2 text-xs text-slate-700 dark:text-zinc-200 placeholder:text-slate-400 dark:placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-emerald-400/50 focus:border-emerald-400 dark:focus:border-emerald-500 transition-all"
+              className="w-full rounded-xl bg-white pl-9 pr-8 py-2 text-xs text-slate-700 dark:text-zinc-200 placeholder:text-slate-400 dark:placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-emerald-400/50 focus:border-emerald-400 dark:focus:border-emerald-500 transition-all"
             />
           </div>
         )}

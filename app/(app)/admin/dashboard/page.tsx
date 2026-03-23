@@ -2,9 +2,10 @@ import { auth } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import prisma from '@/lib/db'
-import { Users, Activity, UserPlus, Settings, ArrowRight, ChevronRight, CheckCircle2, XCircle } from 'lucide-react'
+import { Users, Activity, UserPlus, Settings, ArrowRight } from 'lucide-react'
 import { SessionUser } from '@/types'
 import DashboardCharts from '@/components/admin/dashboard-charts'
+import RevenueChart from '@/components/admin/revenue-chart'
 
 /* ── Stat card ── */
 function StatCard({
@@ -83,13 +84,6 @@ export default async function AdminDashboardPage() {
     prisma.patient.count({ where: { centreCreationId: centreId } }),
   ])
 
-  const dernierPersonnel = await prisma.user.findMany({
-    where: { centres: { some: { centreId } }, niveauAcces: 'PERSONNEL' },
-    select: { id: true, nom: true, prenoms: true, email: true, estActif: true, photo: true },
-    orderBy: { createdAt: 'desc' },
-    take: 5,
-  })
-
   return (
     <div className="space-y-5 max-w-[1400px]">
 
@@ -108,7 +102,7 @@ export default async function AdminDashboardPage() {
       {/* ── STATS + ACTIONS (même ligne, 4 colonnes) ── */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
-          label="Personnel actif" value={personnelActif} sub={`${totalPersonnel} au total`}
+          label="Personnel actif" value={personnelActif}
           icon={Users}
           iconBg="bg-brand/20 dark:bg-brand/25" iconColor="text-brand"
           accentColor="bg-brand"
@@ -146,60 +140,9 @@ export default async function AdminDashboardPage() {
         <DashboardCharts />
       </div>
 
-      {/* ── PERSONNEL RÉCENT ── */}
-      <div className="dash-in delay-[350ms] bg-white dark:bg-zinc-950 rounded-2xl border border-slate-100 dark:border-zinc-800 overflow-hidden">
-        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-50 dark:border-zinc-800">
-          <div>
-            <h2 className="font-bold text-slate-900 dark:text-white text-sm">Personnel médical</h2>
-            <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-zinc-500 mt-0.5">
-              Membres récents du centre
-            </p>
-          </div>
-          <Link href="/admin/personnels" className="flex items-center text-primary text-[12px] font-bold"><ChevronRight className="h-3.5 w-3.5" /> Voir tout</Link>
-        </div>
-
-        {dernierPersonnel.length === 0 ? (
-          <div className="py-12 text-center">
-            <div className="h-12 w-12 rounded-2xl bg-slate-50 dark:bg-zinc-950 flex items-center justify-center mx-auto mb-3">
-              <Users className="h-6 w-6 text-slate-300 dark:text-zinc-600" />
-            </div>
-            <p className="text-sm text-slate-400 dark:text-zinc-500">Aucun personnel enregistré</p>
-          </div>
-        ) : (
-          <>
-            <div className="hidden sm:grid grid-cols-[1fr_1fr_auto] gap-4 px-5 py-2.5 bg-slate-50/60 dark:bg-zinc-950/40 border-b border-slate-100 dark:border-zinc-800">
-              <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-zinc-500">Nom</span>
-              <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-zinc-500">Email</span>
-              <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-zinc-500">Statut</span>
-            </div>
-            <ul>
-              {dernierPersonnel.map((p, i) => (
-                <li key={p.id} className={`dash-in delay-${[0, 75, 150, 225, 300][i] ?? 300} flex sm:grid sm:grid-cols-[1fr_1fr_auto] items-center gap-4 px-5 py-3.5 border-b border-slate-50 dark:border-zinc-800/60 last:border-0 hover:bg-slate-50/60 dark:hover:bg-zinc-800/40 transition-colors`}>
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div className="h-8 w-8 rounded-full bg-brand/10 dark:bg-brand/15 flex items-center justify-center flex-shrink-0 overflow-hidden">
-                      {p.photo
-                        ? <img src={p.photo} alt={`${p.nom} ${p.prenoms}`} className="object-cover w-full h-full" />
-                        : <span className="text-brand font-bold text-xs">{p.nom[0]}{p.prenoms[0]}</span>
-                      }
-                    </div>
-                    <p className="text-sm font-semibold text-slate-900 dark:text-white truncate">{p.nom} {p.prenoms}</p>
-                  </div>
-                  <p className="text-xs text-slate-400 dark:text-zinc-500 hidden sm:block truncate">{p.email}</p>
-                  <div className={`flex-shrink-0 flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[10px] font-bold ${
-                    p.estActif
-                      ? 'bg-brand/8 dark:bg-brand/12 border-brand/20 text-brand'
-                      : 'bg-slate-50 dark:bg-zinc-950 border-slate-200 dark:border-zinc-700 text-slate-400 dark:text-zinc-500'
-                  }`}>
-                    {p.estActif
-                      ? <><CheckCircle2 className="h-3 w-3" /> Actif</>
-                      : <><XCircle className="h-3 w-3" /> Inactif</>
-                    }
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </>
-        )}
+      {/* ── REVENUS ── */}
+      <div className="dash-in delay-[350ms]">
+        <RevenueChart />
       </div>
     </div>
   )

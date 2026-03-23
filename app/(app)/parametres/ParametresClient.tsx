@@ -10,6 +10,7 @@ import { useSession } from 'next-auth/react'
 import { SessionUser } from '@/types'
 import { useToast } from '@/hooks/use-toast'
 import { cn } from '@/lib/utils'
+import { Input } from '@/components/ui/input'
 
 type Section = 'profil' | 'mot-de-passe' | 'securite'
 
@@ -204,12 +205,12 @@ export function ParametresClient({ user, photo: initialPhoto }: { user: SessionU
                       Mot de passe actuel
                     </label>
                     <div className="relative">
-                      <input
+                      <Input
                         type={showAncien ? 'text' : 'password'}
                         value={pwd.ancien}
                         onChange={e => setPwd(p => ({ ...p, ancien: e.target.value }))}
                         required
-                        className="w-full h-10 rounded-xl border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-900 px-3 pr-10 text-sm text-slate-900 dark:text-white placeholder:text-slate-300 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-brand/40 focus:border-brand transition-all"
+                        // className="w-full h-10 rounded-xl border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-900 px-3 pr-10 text-sm text-slate-900 dark:text-white placeholder:text-slate-300 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-brand/40 focus:border-brand transition-all"
                         placeholder="••••••••"
                       />
                       <button type="button" onClick={() => setShowAncien(s => !s)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-zinc-500 hover:text-slate-600 dark:hover:text-zinc-300">
@@ -224,13 +225,13 @@ export function ParametresClient({ user, photo: initialPhoto }: { user: SessionU
                         Nouveau mot de passe
                       </label>
                       <div className="relative">
-                        <input
+                        <Input
                           type={showNouveau ? 'text' : 'password'}
                           value={pwd.nouveau}
                           onChange={e => setPwd(p => ({ ...p, nouveau: e.target.value }))}
                           required
                           minLength={8}
-                          className="w-full h-10 rounded-xl border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-900 px-3 pr-10 text-sm text-slate-900 dark:text-white placeholder:text-slate-300 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-brand/40 focus:border-brand transition-all"
+                          // className="w-full h-10 rounded-xl border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-900 px-3 pr-10 text-sm text-slate-900 dark:text-white placeholder:text-slate-300 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-brand/40 focus:border-brand transition-all"
                           placeholder="••••••••"
                         />
                         <button type="button" onClick={() => setShowNouveau(s => !s)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-zinc-500 hover:text-slate-600 dark:hover:text-zinc-300">
@@ -243,18 +244,18 @@ export function ParametresClient({ user, photo: initialPhoto }: { user: SessionU
                       <label className="text-[11px] font-bold uppercase tracking-widest text-slate-400 dark:text-zinc-500">
                         Confirmer le nouveau
                       </label>
-                      <input
+                      <Input
                         type="password"
                         value={pwd.confirmer}
                         onChange={e => setPwd(p => ({ ...p, confirmer: e.target.value }))}
                         required
-                        className="w-full h-10 rounded-xl border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-900 px-3 text-sm text-slate-900 dark:text-white placeholder:text-slate-300 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-brand/40 focus:border-brand transition-all"
+                        // className="w-full rounded-xl border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-900 px-3 text-sm text-slate-900 dark:text-white placeholder:text-slate-300 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-brand/40 focus:border-brand transition-all"
                         placeholder="••••••••"
                       />
                     </div>
                   </div>
 
-                  <div className="pt-1 flex items-center justify-between border-t border-slate-100 dark:border-zinc-800 mt-2">
+                  <div className="pt-1 flex items-center justify-between mt-2">
                     <p className="text-[11px] text-slate-400 dark:text-zinc-500">
                       Utilisez un mot de passe fort et unique
                     </p>
@@ -297,7 +298,7 @@ export function ParametresClient({ user, photo: initialPhoto }: { user: SessionU
                       généré par une application d'authentification (Google Authenticator, Authy, etc.).
                     </p>
                   </div>
-                  <div className="flex items-center justify-between pt-1 border-t border-slate-100 dark:border-zinc-800 mt-2">
+                  <div className="flex items-center justify-between pt-1 mt-2">
                     <p className="text-[11px] text-slate-400 dark:text-zinc-500">Disponible prochainement</p>
                     <button
                       disabled
@@ -334,7 +335,7 @@ function Field({ icon: Icon, label, value }: { icon: React.ElementType; label: s
     <div className="space-y-1">
       <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-zinc-500">{label}</p>
       <div className="flex items-center gap-2">
-        <Icon className="h-3.5 w-3.5 text-slate-300 dark:text-zinc-600 flex-shrink-0" />
+        <Icon className="h-3.5 w-3.5 text-primary flex-shrink-0" />
         <p className="text-sm font-semibold text-slate-900 dark:text-white">{value}</p>
       </div>
     </div>

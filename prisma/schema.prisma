@@ -72,11 +72,28 @@ model Centre {
   admin             User?                   @relation("CentreAdmin", fields: [adminId], references: [id])
   creePar           User?                   @relation("CentreCreePar", fields: [creeParId], references: [id])
   enregistrements   EnregistrementMedical[]
+  factures          Facture[]
   logs              Log[]
   patients          Patient[]
   roles             Role[]
   utilisateursActif User[]                  @relation("CentreActif")
   utilisateurs      UserCentre[]
+}
+
+model Facture {
+  id              String        @id @default(cuid())
+  numero          String        @unique
+  centreId        String
+  centre          Centre        @relation(fields: [centreId], references: [id])
+  periodeDebut    DateTime
+  periodeFin      DateTime
+  nbCarnetsCrees  Int           @default(0)
+  nbCarnetsRenouv Int           @default(0)
+  montantDu       Int           @default(0)
+  statut          StatutFacture @default(EN_ATTENTE)
+  dateReglement   DateTime?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
 }
 
 model User {
@@ -305,4 +322,10 @@ enum CreateurRole {
 enum TypeJustificateurUrgence {
   PATIENT
   PERSONNE_URGENCE
+}
+
+enum StatutFacture {
+  EN_ATTENTE
+  PAYE
+  EN_RETARD
 }

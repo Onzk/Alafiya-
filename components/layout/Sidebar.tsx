@@ -6,7 +6,7 @@ import { LogoIcon } from '@/components/ui/logo'
 import { signOut } from 'next-auth/react'
 import {
   LayoutDashboard, Users, QrCode, FileText, Building2,
-  Shield, Activity, LogOut, Stethoscope, AlertCircle, UserRound, Settings,
+  Shield, Activity, LogOut, Stethoscope, AlertCircle, UserRound, Settings, Receipt,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { SessionUser } from '@/types'
@@ -26,6 +26,9 @@ const navigationSuperAdmin: NavGroup[] = [
     { href: '/superadmin/specialites',label: 'Spécialités',         icon: Stethoscope },
     { href: '/superadmin/roles',      label: 'Types de personnel',  icon: Shield },
   ]},
+  { section: 'FACTURATION', items: [
+    { href: '/superadmin/factures', label: 'Factures', icon: Receipt },
+  ]},
   { section: 'SUIVI', items: [
     { href: '/logs', label: "Journaux d'activité", icon: Activity },
   ]},
@@ -42,6 +45,9 @@ const navigationAdmin: NavGroup[] = [
     { href: '/admin/personnels', label: 'Personnel médical', icon: Users },
     { href: '/admin/patients',   label: 'Patients',          icon: UserRound },
     { href: '/admin/roles',      label: 'Types de personnel', icon: Shield },
+  ]},
+  { section: 'FACTURATION', items: [
+    { href: '/admin/factures', label: 'Factures', icon: Receipt },
   ]},
   { section: 'SUIVI', items: [
     { href: '/logs', label: "Journaux d'activité", icon: Activity },

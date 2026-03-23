@@ -207,7 +207,7 @@ export default async function DashboardPage() {
     <div className="space-y-6 max-w-[1400px]">
 
       {/* ── EN-TÊTE ── */}
-      <div className="flex items-center justify-between gap-4">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white leading-tight">
             Tableau de bord
@@ -216,7 +216,7 @@ export default async function DashboardPage() {
             Bonjour {user.prenoms} — voici votre activité médicale du jour.
           </p>
         </div>
-        <div className="flex items-center gap-2 flex-shrink-0">
+        <div className="flex items-center gap-2">
           <Button asChild size="sm" variant="outline" className="rounded-xl hidden sm:flex gap-1.5 border-slate-200 dark:border-zinc-700 text-slate-600 dark:text-zinc-300">
             <Link href="/scanner"><QrCode className="h-4 w-4" /> Scanner QR</Link>
           </Button>

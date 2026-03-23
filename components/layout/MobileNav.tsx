@@ -12,6 +12,7 @@ import {
   FileText,
   Stethoscope,
   Shield,
+  Receipt,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { SessionUser } from '@/types'
@@ -26,16 +27,17 @@ export function MobileNav({ user }: MobileNavProps) {
   const items =
     user.niveauAcces === 'SUPERADMIN'
       ? [
-          { href: '/superadmin/dashboard',   label: 'Accueil',     icon: LayoutDashboard },
-          { href: '/superadmin/centres',     label: 'Centres',     icon: Building2 },
-          { href: '/superadmin/medecins',    label: 'Personnel',   icon: Users },
-          { href: '/superadmin/specialites', label: 'Spécialités', icon: Stethoscope },
-          { href: '/superadmin/roles',       label: 'Rôles',       icon: Shield },
+          { href: '/superadmin/dashboard', label: 'Accueil',   icon: LayoutDashboard },
+          { href: '/superadmin/centres',   label: 'Centres',   icon: Building2 },
+          { href: '/superadmin/medecins',  label: 'Personnel', icon: Users },
+          { href: '/superadmin/factures',  label: 'Factures',  icon: Receipt },
+          { href: '/superadmin/roles',     label: 'Rôles',     icon: Shield },
         ]
       : user.niveauAcces === 'ADMIN_CENTRE'
       ? [
           { href: '/admin/dashboard',  label: 'Accueil',   icon: LayoutDashboard },
           { href: '/admin/personnels', label: 'Personnel', icon: Users },
+          { href: '/admin/factures',   label: 'Factures',  icon: Receipt },
           { href: '/admin/roles',      label: 'Rôles',     icon: Shield },
           { href: '/logs',             label: 'Journaux',  icon: Activity },
         ]

@@ -132,7 +132,7 @@ export default function MedecinsPage() {
     <div className="space-y-5 max-w-[1400px]">
 
       {/* En-tête */}
-      <div className="dash-in delay-0 flex items-center justify-between gap-4">
+      <div className="dash-in delay-0 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white leading-tight">Personnel médical</h1>
           <p className="text-sm text-slate-500 dark:text-zinc-400 mt-0.5">
@@ -142,7 +142,7 @@ export default function MedecinsPage() {
 
         <Button
           onClick={() => router.push('/superadmin/medecins/nouveau')}
-          className="h-11 bg-brand hover:bg-brand-dark text-white rounded-xl gap-1.5 shadow-sm shadow-brand/20 flex-shrink-0"
+          className="h-11 bg-brand hover:bg-brand-dark text-white rounded-xl gap-1.5 shadow-sm shadow-brand/20"
         >
           <Plus className="h-4 w-4" />Ajouter un personnel
         </Button>
