@@ -1,10 +1,10 @@
 'use client'
 
-import { useState, useRef, useTransition } from 'react'
+import { useState, useRef, useTransition, useEffect } from 'react'
 import Image from 'next/image'
 import {
   Camera, Lock, Eye, EyeOff,
-  Loader2, Shield, Smartphone, User, Mail, BadgeCheck,
+  Loader2, Shield, Smartphone, User, Mail, BadgeCheck, CreditCard, Phone,
 } from 'lucide-react'
 import { useSession } from 'next-auth/react'
 import { SessionUser } from '@/types'
@@ -12,19 +12,76 @@ import { useToast } from '@/hooks/use-toast'
 import { cn } from '@/lib/utils'
 import { Input } from '@/components/ui/input'
 
-type Section = 'profil' | 'mot-de-passe' | 'securite'
+type Section = 'profil' | 'mot-de-passe' | 'securite' | 'paiement'
 
-const navItems: { id: Section; label: string; icon: React.ElementType }[] = [
+const navItemsBase: { id: Section; label: string; icon: React.ElementType }[] = [
   { id: 'profil',        label: 'Profil',         icon: User },
   { id: 'mot-de-passe',  label: 'Mot de passe',   icon: Lock },
   { id: 'securite',      label: 'Sécurité',        icon: Shield },
 ]
 
+const navItemSuperAdmin: { id: Section; label: string; icon: React.ElementType } = {
+  id: 'paiement', label: 'Paiement', icon: CreditCard,
+}
+
+interface ConfigPaiement {
+  mobileMoney:  string
+  mobileNumero: string
+  mobileNom:    string
+  virementInfo: string
+  contactEmail: string
+  contactTel:   string
+  noteFacture:  string
+}
+
 export function ParametresClient({ user, photo: initialPhoto }: { user: SessionUser; photo: string | null }) {
   const { update: updateSession } = useSession()
   const { toast } = useToast()
 
+  const isSuperAdmin = user.niveauAcces === 'SUPERADMIN'
+  const navItems = isSuperAdmin ? [...navItemsBase, navItemSuperAdmin] : navItemsBase
+
   const [activeSection, setActiveSection] = useState<Section>('profil')
+
+  /* ── Config paiement (superadmin) ── */
+  const [config, setConfig] = useState<ConfigPaiement>({
+    mobileMoney:  '', mobileNumero: '', mobileNom: '',
+    virementInfo: '', contactEmail: '', contactTel: '', noteFacture: '',
+  })
+  const [configPending, startConfig] = useTransition()
+
+  useEffect(() => {
+    if (!isSuperAdmin) return
+    fetch('/api/superadmin/configuration')
+      .then(r => r.json())
+      .then(d => setConfig({
+        mobileMoney:  d.mobileMoney  ?? '',
+        mobileNumero: d.mobileNumero ?? '',
+        mobileNom:    d.mobileNom    ?? '',
+        virementInfo: d.virementInfo ?? '',
+        contactEmail: d.contactEmail ?? '',
+        contactTel:   d.contactTel   ?? '',
+        noteFacture:  d.noteFacture  ?? '',
+      }))
+      .catch(() => {})
+  }, [isSuperAdmin])
+
+  function handleConfigSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    startConfig(async () => {
+      const res = await fetch('/api/superadmin/configuration', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(config),
+      })
+      if (!res.ok) {
+        const d = await res.json()
+        toast({ description: d.error ?? 'Erreur', variant: 'destructive' })
+        return
+      }
+      toast({ description: 'Informations de paiement mises à jour', variant: 'success' })
+    })
+  }
 
   /* ── Photo ── */
   const [photo, setPhoto] = useState(initialPhoto)
@@ -265,6 +322,156 @@ export function ParametresClient({ user, photo: initialPhoto }: { user: SessionU
                       className="h-9 px-5 rounded-xl bg-brand hover:bg-brand/90 text-white text-sm font-bold transition-colors disabled:opacity-60 flex items-center gap-2"
                     >
                       {pwdPending && <Loader2 className="h-4 w-4 animate-spin" />}
+                      Enregistrer
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {/* ════ Paiement (superadmin) ════ */}
+          {activeSection === 'paiement' && isSuperAdmin && (
+            <div className="space-y-6">
+              <div className="bg-white dark:bg-zinc-950 rounded-2xl border border-slate-100 dark:border-zinc-800 overflow-hidden">
+                <div className="px-6 py-4 border-b border-slate-100 dark:border-zinc-800">
+                  <p className="text-xs font-bold uppercase tracking-widest text-slate-400 dark:text-zinc-500">
+                    Coordonnées de paiement
+                  </p>
+                  <p className="text-[11px] text-slate-400 dark:text-zinc-500 mt-0.5">
+                    Informations affichées aux admins de centre dans la page de facturation
+                  </p>
+                </div>
+                <form onSubmit={handleConfigSubmit} className="px-6 py-5 space-y-5">
+
+                  {/* Mobile Money */}
+                  <div>
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-emerald-600 dark:text-emerald-400 mb-3">
+                      Mobile Money
+                    </p>
+                    <div className="space-y-3">
+                      <div className="space-y-1.5">
+                        <label className="text-[11px] font-bold uppercase tracking-widest text-slate-400 dark:text-zinc-500">
+                          Libellé
+                        </label>
+                        <Input
+                          value={config.mobileMoney}
+                          onChange={e => setConfig(c => ({ ...c, mobileMoney: e.target.value }))}
+                          placeholder="Orange Money / MTN MoMo"
+                          required
+                        />
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div className="space-y-1.5">
+                          <label className="text-[11px] font-bold uppercase tracking-widest text-slate-400 dark:text-zinc-500">
+                            Numéro
+                          </label>
+                          <Input
+                            value={config.mobileNumero}
+                            onChange={e => setConfig(c => ({ ...c, mobileNumero: e.target.value }))}
+                            placeholder="+224 6XX XX XX XX"
+                            required
+                          />
+                        </div>
+                        <div className="space-y-1.5">
+                          <label className="text-[11px] font-bold uppercase tracking-widest text-slate-400 dark:text-zinc-500">
+                            Nom du compte
+                          </label>
+                          <Input
+                            value={config.mobileNom}
+                            onChange={e => setConfig(c => ({ ...c, mobileNom: e.target.value }))}
+                            placeholder="Au nom de N'di Solutions"
+                            required
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="border-t border-slate-100 dark:border-zinc-800" />
+
+                  {/* Virement bancaire */}
+                  <div>
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500 dark:text-zinc-400 mb-3">
+                      Virement bancaire
+                    </p>
+                    <div className="space-y-1.5">
+                      <label className="text-[11px] font-bold uppercase tracking-widest text-slate-400 dark:text-zinc-500">
+                        Description
+                      </label>
+                      <Input
+                        value={config.virementInfo}
+                        onChange={e => setConfig(c => ({ ...c, virementInfo: e.target.value }))}
+                        placeholder="IBAN / RIB fourni sur demande"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div className="border-t border-slate-100 dark:border-zinc-800" />
+
+                  {/* Contact facturation */}
+                  <div>
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500 dark:text-zinc-400 mb-3">
+                      Contact facturation
+                    </p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div className="space-y-1.5">
+                        <label className="text-[11px] font-bold uppercase tracking-widest text-slate-400 dark:text-zinc-500">
+                          E-mail
+                        </label>
+                        <div className="relative">
+                          <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                          <Input
+                            type="email"
+                            value={config.contactEmail}
+                            onChange={e => setConfig(c => ({ ...c, contactEmail: e.target.value }))}
+                            placeholder="facturation@example.com"
+                            className="pl-9"
+                            required
+                          />
+                        </div>
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="text-[11px] font-bold uppercase tracking-widest text-slate-400 dark:text-zinc-500">
+                          Téléphone
+                        </label>
+                        <div className="relative">
+                          <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                          <Input
+                            value={config.contactTel}
+                            onChange={e => setConfig(c => ({ ...c, contactTel: e.target.value }))}
+                            placeholder="+224 6XX XX XX XX"
+                            className="pl-9"
+                            required
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="border-t border-slate-100 dark:border-zinc-800" />
+
+                  {/* Note de bas de modal */}
+                  <div className="space-y-1.5">
+                    <label className="text-[11px] font-bold uppercase tracking-widest text-slate-400 dark:text-zinc-500">
+                      Note de bas de modal
+                    </label>
+                    <Input
+                      value={config.noteFacture}
+                      onChange={e => setConfig(c => ({ ...c, noteFacture: e.target.value }))}
+                      placeholder="Merci d'indiquer le numéro de facture..."
+                      required
+                    />
+                  </div>
+
+                  <div className="pt-1 flex justify-end">
+                    <button
+                      type="submit"
+                      disabled={configPending}
+                      className="h-12 px-5 rounded-xl bg-brand hover:bg-brand/90 text-white text-sm font-bold transition-colors disabled:opacity-60 flex items-center gap-2"
+                    >
+                      {configPending && <Loader2 className="h-4 w-4 animate-spin" />}
                       Enregistrer
                     </button>
                   </div>

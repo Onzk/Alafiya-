@@ -77,9 +77,8 @@ export default async function AdminDashboardPage() {
     )
   }
 
-  const [centre, totalPersonnel, personnelActif, totalPatients] = await Promise.all([
+  const [centre, personnelActif, totalPatients] = await Promise.all([
     prisma.centre.findUnique({ where: { id: centreId }, select: { nom: true, type: true, region: true } }),
-    prisma.user.count({ where: { centres: { some: { centreId } }, niveauAcces: 'PERSONNEL' } }),
     prisma.user.count({ where: { centres: { some: { centreId } }, niveauAcces: 'PERSONNEL', estActif: true } }),
     prisma.patient.count({ where: { centreCreationId: centreId } }),
   ])

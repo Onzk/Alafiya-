@@ -329,3 +329,15 @@ enum StatutFacture {
   PAYE
   EN_RETARD
 }
+
+model Configuration {
+  id             String   @id @default("singleton")
+  mobileMoney    String   @default("Orange Money / MTN MoMo")
+  mobileNumero   String   @default("+224 6XX XX XX XX")
+  mobileNom      String   @default("Au nom de N'di Solutions")
+  virementInfo   String   @default("IBAN / RIB fourni sur demande")
+  contactEmail   String   @default("facturation@ndisolutions.com")
+  contactTel     String   @default("+224 6XX XX XX XX")
+  noteFacture    String   @default("Merci d'indiquer le numéro de facture dans votre virement.")
+  updatedAt      DateTime @updatedAt
+}

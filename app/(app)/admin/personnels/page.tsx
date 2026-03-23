@@ -25,6 +25,7 @@ interface Personnel {
   email: string
   telephone?: string
   estActif: boolean
+  role?: { nom: string } | null
   specialites?: { specialite: { nom: string } }[]
 }
 
@@ -47,6 +48,7 @@ export default function PersonnelsPage() {
   const [search, setSearch] = useState('')
   const [filterStatut, setFilterStatut] = useState<StatusFilter>('tous')
   const [filterSpecialite, setFilterSpecialite] = useState('tous')
+  const [filterRole, setFilterRole] = useState('tous')
   const [toggling, setToggling] = useState<string | null>(null)
 
   useEffect(() => {
@@ -85,6 +87,11 @@ export default function PersonnelsPage() {
     }
   }
 
+  const rolesDisponibles = useMemo(() => {
+    const noms = personnel.map((p) => p.role?.nom).filter(Boolean) as string[]
+    return [...new Set(noms)].sort()
+  }, [personnel])
+
   const filtered = useMemo(() => {
     return personnel.filter((p) => {
       const matchSearch = search === '' ||
@@ -92,12 +99,13 @@ export default function PersonnelsPage() {
       const matchStatut = filterStatut === 'tous' || (filterStatut === 'actif' ? p.estActif : !p.estActif)
       const matchSpecialite = filterSpecialite === 'tous' ||
         p.specialites?.some((s) => s.specialite.nom === filterSpecialite)
-      return matchSearch && matchStatut && matchSpecialite
+      const matchRole = filterRole === 'tous' || p.role?.nom === filterRole
+      return matchSearch && matchStatut && matchSpecialite && matchRole
     })
-  }, [personnel, search, filterStatut, filterSpecialite])
+  }, [personnel, search, filterStatut, filterSpecialite, filterRole])
 
   const actifs = personnel.filter((p) => p.estActif).length
-  const hasFilters = search !== '' || filterStatut !== 'tous' || filterSpecialite !== 'tous'
+  const hasFilters = search !== '' || filterStatut !== 'tous' || filterSpecialite !== 'tous' || filterRole !== 'tous'
 
   return (
     <div className="space-y-5 max-w-[1400px]">
@@ -138,6 +146,16 @@ export default function PersonnelsPage() {
           ))}
         </div>
 
+        <Select value={filterRole} onValueChange={setFilterRole}>
+          <SelectTrigger className={`${inputCls} w-[180px]`}>
+            <SelectValue placeholder="Tous les types" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="tous">Tous les types</SelectItem>
+            {rolesDisponibles.map((nom) => <SelectItem key={nom} value={nom}>{nom}</SelectItem>)}
+          </SelectContent>
+        </Select>
+
         <Select value={filterSpecialite} onValueChange={setFilterSpecialite}>
           <SelectTrigger className={`${inputCls} w-[180px]`}>
             <SelectValue placeholder="Toutes spécialités" />
@@ -149,7 +167,7 @@ export default function PersonnelsPage() {
         </Select>
 
         {hasFilters && (
-          <button onClick={() => { setSearch(''); setFilterStatut('tous'); setFilterSpecialite('tous') }}
+          <button onClick={() => { setSearch(''); setFilterStatut('tous'); setFilterSpecialite('tous'); setFilterRole('tous') }}
             className="flex items-center gap-1.5 text-xs font-semibold text-slate-400 dark:text-zinc-500 hover:text-slate-700 dark:hover:text-zinc-300 transition-colors">
             <X className="h-3.5 w-3.5" /> Réinitialiser
           </button>

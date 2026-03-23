@@ -347,61 +347,78 @@ export default function AdminRolesPage() {
 
       {/* ── Dialog voir ── */}
       <Dialog open={!!viewTarget} onOpenChange={(o) => { if (!o) setViewTarget(null) }}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader title="Détails du type de personnel" description="Informations complètes sur ce type de personnel et ses permissions." icon={ShieldCheck} />
+        <DialogContent className="max-w-lg p-0 overflow-hidden">
           {viewTarget && (
-            <DialogScrollableWrapper>
-              <div className="space-y-4">
-                <div className="flex items-start gap-4 p-4 bg-slate-50 dark:bg-zinc-950 rounded-xl">
-                  <div className="h-12 w-12 rounded-xl bg-indigo-50 dark:bg-indigo-400/15 flex items-center justify-center flex-shrink-0">
-                    <ShieldCheck className="h-6 w-6 text-indigo-600 dark:text-indigo-300" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <p className="font-bold text-slate-900 dark:text-white text-lg leading-tight">{viewTarget.nom}</p>
-                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-lg ${viewTarget.creePar === 'SUPERADMIN' ? 'bg-slate-100 dark:bg-zinc-950 text-slate-500 dark:text-zinc-400' : 'bg-indigo-50 dark:bg-indigo-400/15 text-indigo-600 dark:text-indigo-300'}`}>
-                        {viewTarget.creePar === 'SUPERADMIN' ? 'Global' : 'Centre'}
+            <>
+              {/* Header coloré */}
+              <div className={`px-6 pt-6 pb-5 ${viewTarget.creePar === 'CENTRE' ? 'bg-orange-50 dark:bg-orange-400/10' : 'bg-brand/8 dark:bg-brand/12'}`}>
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <div className={`h-11 w-11 rounded-xl flex items-center justify-center flex-shrink-0 ${viewTarget.creePar === 'CENTRE' ? 'bg-orange-100 dark:bg-orange-400/20' : 'bg-brand/15 dark:bg-brand/20'}`}>
+                      <ShieldCheck className={`h-5 w-5 ${viewTarget.creePar === 'CENTRE' ? 'text-orange-600 dark:text-orange-400' : 'text-brand'}`} />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="font-extrabold text-slate-900 dark:text-white text-lg leading-tight truncate">{viewTarget.nom}</p>
+                      <span className={`inline-block text-[10px] font-bold px-2 py-0.5 rounded-lg mt-1 ${viewTarget.creePar === 'CENTRE' ? 'bg-orange-100 dark:bg-orange-400/20 text-orange-600 dark:text-orange-400' : 'bg-brand/15 dark:bg-brand/20 text-brand'}`}>
+                        {viewTarget.creePar === 'SUPERADMIN' ? 'Ministère' : 'Centre'}
                       </span>
                     </div>
-                    {viewTarget.description && <p className="text-sm text-slate-500 dark:text-zinc-400 mt-1">{viewTarget.description}</p>}
                   </div>
                 </div>
-                <div className="flex items-center gap-3 px-4 py-3 bg-slate-50 dark:bg-zinc-950 rounded-xl">
-                  <Users className="h-4 w-4 text-slate-400 dark:text-zinc-500 flex-shrink-0" />
-                  <div>
-                    <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-zinc-500">Personnel assigné</p>
-                    <p className="text-sm font-semibold text-slate-700 dark:text-zinc-300">{viewTarget._count?.utilisateurs ?? 0} personne(s)</p>
-                  </div>
-                </div>
-                <div>
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-zinc-500 mb-3">
-                    Permissions ({viewTarget.permissions.length})
-                  </p>
-                  {viewTarget.permissions.length === 0 ? (
-                    <p className="text-xs text-slate-400 dark:text-zinc-500 italic p-3">Aucune permission assignée</p>
-                  ) : (
-                    <div className="space-y-2">
-                      {viewTarget.permissions.map((rp) => (
-                        <div key={rp.permission.code} className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-zinc-950 rounded-xl">
-                          <span className="text-[10px] font-mono bg-white dark:bg-zinc-950 border border-slate-200 dark:border-zinc-700 px-2 py-1 rounded-lg text-slate-600 dark:text-zinc-300 flex-shrink-0 whitespace-nowrap">
-                            {rp.permission.code}
-                          </span>
-                          <p className="text-xs text-slate-700 dark:text-zinc-300">{rp.permission.description}</p>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-                <div className="flex gap-2 pt-1">
-                  <Button variant="outline" className="flex-1 h-10 rounded-xl" onClick={() => setViewTarget(null)}>Fermer</Button>
-                  {isMinistere && viewTarget.creePar !== 'SUPERADMIN' && (
-                    <Button className="flex-1 h-10 bg-brand hover:bg-brand-dark text-white rounded-xl" onClick={() => { openEdit(viewTarget); setViewTarget(null) }}>
-                      <Pencil className="h-3.5 w-3.5 mr-1.5" />Modifier
-                    </Button>
-                  )}
-                </div>
+                {viewTarget.description && (
+                  <p className="text-sm text-slate-600 dark:text-zinc-300 mt-3 leading-relaxed">{viewTarget.description}</p>
+                )}
               </div>
-            </DialogScrollableWrapper>
+
+              <DialogScrollableWrapper>
+                <div className="space-y-5">
+
+                  {/* Stat personnel */}
+                  <div className="flex items-center gap-3 p-4 bg-slate-50 dark:bg-emerald-900/50 rounded-xl border border-slate-100 dark:border-zinc-800">
+                    <div className="h-10 w-10 rounded-xl bg-white dark:bg-zinc-950 border border-slate-100 dark:border-zinc-900 flex items-center justify-center flex-shrink-0">
+                      <Users className="h-4 w-4 text-slate-400 dark:text-zinc-500" />
+                    </div>
+                    <div>
+                      <p className="text-2xl font-extrabold text-slate-900 dark:text-white leading-none">{viewTarget._count?.utilisateurs ?? 0}</p>
+                      <p className="text-xs text-slate-500 dark:text-zinc-400 mt-0.5">personnel(s) assigné(s) à ce type</p>
+                    </div>
+                  </div>
+
+                  {/* Permissions */}
+                  <div>
+                    <div className="flex items-center justify-between mb-3">
+                      <p className="text-xs font-bold uppercase tracking-widest text-slate-400 dark:text-zinc-500">
+                        Permissions
+                      </p>
+                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${viewTarget.permissions.length > 0 ? 'bg-brand/10 dark:bg-brand/15 text-brand' : 'bg-slate-100 dark:bg-zinc-800 text-slate-400 dark:text-zinc-500'}`}>
+                        {viewTarget.permissions.length}
+                      </span>
+                    </div>
+                    {viewTarget.permissions.length === 0 ? (
+                      <div className="flex flex-col items-center justify-center py-8 bg-slate-50 dark:bg-zinc-900 rounded-xl border border-dashed border-slate-200 dark:border-zinc-700">
+                        <ShieldCheck className="h-6 w-6 text-slate-300 dark:text-zinc-600 mb-2" />
+                        <p className="text-xs text-slate-400 dark:text-zinc-500">Aucune permission assignée</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-2">
+                        {viewTarget.permissions.map((rp) => (
+                          <div key={rp.permission.code} className="flex items-center gap-3 px-3 py-3 bg-slate-50 dark:bg-transparent rounded-xl border border-slate-100 dark:border-zinc-900">
+                            <div className="h-1.5 w-1.5 rounded-full bg-brand flex-shrink-0" />
+                            <p className="text-sm text-slate-700 dark:text-zinc-300 flex-1">{rp.permission.description}</p>
+                            <span className="text-[10px] font-mono text-slate-400 dark:text-zinc-500 flex-shrink-0">{rp.permission.code}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex gap-2 pt-1">
+                    <Button variant="outline" className="flex-1 h-10 rounded-xl border-slate-200 dark:border-zinc-700" onClick={() => setViewTarget(null)}>Fermer</Button>
+                  </div>
+                </div>
+              </DialogScrollableWrapper>
+            </>
           )}
         </DialogContent>
       </Dialog>

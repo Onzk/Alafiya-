@@ -186,7 +186,27 @@ function printFacturePDF(facture: Facture, centreName: string) {
 }
 
 /* ─── Coordonnées dialog ─── */
+interface ConfigPaiement {
+  mobileMoney:  string
+  mobileNumero: string
+  mobileNom:    string
+  virementInfo: string
+  contactEmail: string
+  contactTel:   string
+  noteFacture:  string
+}
+
 function CoordonneesDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const [config, setConfig] = useState<ConfigPaiement | null>(null)
+
+  useEffect(() => {
+    if (!open || config) return
+    fetch('/api/configuration/paiement')
+      .then(r => r.json())
+      .then(d => setConfig(d))
+      .catch(() => {})
+  }, [open])
+
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
       <DialogContent className="max-w-sm">
@@ -195,40 +215,46 @@ function CoordonneesDialog({ open, onClose }: { open: boolean; onClose: () => vo
           title="Coordonnées de paiement"
           description="Règlement des factures à N'di Solutions"
         />
-        <div className="mt-1 space-y-3 p-6 pt-2">
-          <div className="p-4 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-100 dark:border-emerald-500/15 space-y-3">
-            <div>
-              <p className="text-[10px] font-bold uppercase tracking-widest text-emerald-600 dark:text-emerald-400 mb-1">Mobile Money</p>
-              <p className="text-sm font-semibold text-slate-900 dark:text-white">Orange Money / MTN MoMo</p>
-              <p className="text-sm text-slate-700 dark:text-zinc-300 font-mono mt-0.5">+224 6XX XX XX XX</p>
-              <p className="text-xs text-slate-500 dark:text-zinc-400 mt-0.5">Au nom de N'di Solutions</p>
-            </div>
+        {!config ? (
+          <div className="flex items-center justify-center py-10">
+            <Loader2 className="h-5 w-5 animate-spin text-slate-400" />
           </div>
-
-          <div className="p-4 rounded-xl bg-slate-50 dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 space-y-3">
-            <div>
-              <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500 dark:text-zinc-400 mb-1">Virement bancaire</p>
-              <p className="text-sm font-semibold text-slate-900 dark:text-white">N'di Solutions</p>
-              <p className="text-xs text-slate-500 dark:text-zinc-400 mt-1">IBAN / RIB fourni sur demande</p>
+        ) : (
+          <div className="mt-1 space-y-3 p-6 pt-2">
+            <div className="p-4 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-100 dark:border-emerald-500/15 space-y-3">
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-widest text-emerald-600 dark:text-emerald-400 mb-1">Mobile Money</p>
+                <p className="text-sm font-semibold text-slate-900 dark:text-white">{config.mobileMoney}</p>
+                <p className="text-sm text-slate-700 dark:text-zinc-300 font-mono mt-0.5">{config.mobileNumero}</p>
+                <p className="text-xs text-slate-500 dark:text-zinc-400 mt-0.5">{config.mobileNom}</p>
+              </div>
             </div>
+
+            <div className="p-4 rounded-xl bg-slate-50 dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 space-y-3">
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500 dark:text-zinc-400 mb-1">Virement bancaire</p>
+                <p className="text-sm font-semibold text-slate-900 dark:text-white">N'di Solutions</p>
+                <p className="text-xs text-slate-500 dark:text-zinc-400 mt-1">{config.virementInfo}</p>
+              </div>
+            </div>
+
+            <div className="p-4 rounded-xl bg-slate-50 dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500 dark:text-zinc-400 mb-2">Contact facturation</p>
+              <div className="flex items-center gap-2 text-sm text-slate-700 dark:text-zinc-300">
+                <Mail className="h-3.5 w-3.5 text-slate-400" />
+                {config.contactEmail}
+              </div>
+              <div className="flex items-center gap-2 text-sm text-slate-700 dark:text-zinc-300 mt-1">
+                <Phone className="h-3.5 w-3.5 text-slate-400" />
+                {config.contactTel}
+              </div>
+            </div>
+
+            <p className="text-[11px] text-slate-400 dark:text-zinc-500 text-center pb-1">
+              {config.noteFacture}
+            </p>
           </div>
-
-          <div className="p-4 rounded-xl bg-slate-50 dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800">
-            <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500 dark:text-zinc-400 mb-2">Contact facturation</p>
-            <div className="flex items-center gap-2 text-sm text-slate-700 dark:text-zinc-300">
-              <Mail className="h-3.5 w-3.5 text-slate-400" />
-              facturation@ndisolutions.com
-            </div>
-            <div className="flex items-center gap-2 text-sm text-slate-700 dark:text-zinc-300 mt-1">
-              <Phone className="h-3.5 w-3.5 text-slate-400" />
-              +224 6XX XX XX XX
-            </div>
-          </div>
-
-          <p className="text-[11px] text-slate-400 dark:text-zinc-500 text-center pb-1">
-            Merci d'indiquer le numéro de facture dans votre virement.
-          </p>
-        </div>
+        )}
       </DialogContent>
     </Dialog>
   )
