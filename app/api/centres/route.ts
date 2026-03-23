@@ -13,6 +13,8 @@ const creerCentreSchema = z.object({
   region: z.string().min(1),
   prefecture: z.string().min(1),
   type: z.enum(['HOPITAL', 'CLINIQUE', 'CSU', 'CMS', 'AUTRE']),
+  prixParDossier: z.coerce.number().int().min(0).optional().default(0),
+  commissionNdi: z.coerce.number().int().min(0).optional().default(0),
   adminNom: z.string().min(1),
   adminPrenoms: z.string().min(1),
   adminEmail: z.string().email(),
@@ -37,7 +39,7 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   const session = await auth()
-  if (!session?.user || (session.user as { niveauAcces?: string }).niveauAcces !== 'MINISTERE') {
+  if (!session?.user || (session.user as { niveauAcces?: string }).niveauAcces !== 'SUPERADMIN') {
     return NextResponse.json({ error: 'Réservé au Ministère' }, { status: 403 })
   }
 
@@ -52,40 +54,56 @@ export async function POST(req: NextRequest) {
     ...centreData
   } = validation.data
 
+  // Vérifier si l'email admin est déjà utilisé
+  const existingUser = await prisma.user.findUnique({ where: { email: adminEmail } })
+  if (existingUser) {
+    return NextResponse.json({ error: 'Un compte avec cet email existe déjà' }, { status: 409 })
+  }
+
   const hashedPwd = await bcrypt.hash(adminMotDePasse, 12)
 
-  // Transaction : créer centre + admin en une seule opération atomique
-  const { centre, admin } = await prisma.$transaction(async (tx) => {
-    const centre = await tx.centre.create({
-      data: {
-        ...centreData,
-        estActif: true,
-        creeParId: session.user!.id,
-      },
-    })
+  let centre: Awaited<ReturnType<typeof prisma.centre.create>>
+  let admin: Awaited<ReturnType<typeof prisma.user.create>>
 
-    const admin = await tx.user.create({
-      data: {
-        nom: adminNom,
-        prenoms: adminPrenoms,
-        email: adminEmail,
-        motDePasse: hashedPwd,
-        telephone: adminTelephone,
-        niveauAcces: 'ADMIN_CENTRE',
-        estActif: true,
-        creeParId: session.user!.id,
-        centreActifId: centre.id,
-        centres: { create: { centreId: centre.id } },
-      },
-    })
+  try {
+    // Transaction : créer centre + admin en une seule opération atomique
+    const result = await prisma.$transaction(async (tx) => {
+      const c = await tx.centre.create({
+        data: {
+          ...centreData,
+          estActif: true,
+          creeParId: session.user!.id,
+        },
+      })
 
-    await tx.centre.update({
-      where: { id: centre.id },
-      data: { adminId: admin.id },
-    })
+      const a = await tx.user.create({
+        data: {
+          nom: adminNom,
+          prenoms: adminPrenoms,
+          email: adminEmail,
+          motDePasse: hashedPwd,
+          telephone: adminTelephone,
+          niveauAcces: 'ADMIN_CENTRE',
+          estActif: true,
+          creeParId: session.user!.id,
+          centreActifId: c.id,
+          centres: { create: { centreId: c.id } },
+        },
+      })
 
-    return { centre, admin }
-  })
+      await tx.centre.update({
+        where: { id: c.id },
+        data: { adminId: a.id },
+      })
+
+      return { centre: c, admin: a }
+    })
+    centre = result.centre
+    admin = result.admin
+  } catch (err) {
+    console.error('[POST /api/centres]', err)
+    return NextResponse.json({ error: 'Erreur lors de la création du centre' }, { status: 500 })
+  }
 
   const { ip, userAgent } = getRequestInfo(req)
   await logger({

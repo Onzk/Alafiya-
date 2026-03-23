@@ -19,9 +19,9 @@ export async function GET() {
 
   const where =
     user.niveauAcces === 'ADMIN_CENTRE'
-      ? { OR: [{ creePar: 'MINISTERE' as const }, { centreId: user.centreActif }] }
+      ? { OR: [{ creePar: 'SUPERADMIN' as const }, { centreId: user.centreActif }] }
       : user.niveauAcces === 'PERSONNEL'
-      ? { creePar: 'MINISTERE' as const }
+      ? { creePar: 'SUPERADMIN' as const }
       : {}
 
   const roles = await prisma.role.findMany({
@@ -40,7 +40,7 @@ export async function POST(req: NextRequest) {
   if (!session?.user) return NextResponse.json({ error: 'Non autorisé' }, { status: 401 })
 
   const user = session.user as unknown as SessionUser
-  if (user.niveauAcces !== 'MINISTERE') {
+  if (user.niveauAcces !== 'SUPERADMIN') {
     return NextResponse.json({ error: 'Réservé au ministère' }, { status: 403 })
   }
 
@@ -52,7 +52,7 @@ export async function POST(req: NextRequest) {
     data: {
       nom: validation.data.nom,
       description: validation.data.description,
-      creePar: user.niveauAcces === 'MINISTERE' ? 'MINISTERE' : 'CENTRE',
+      creePar: user.niveauAcces === 'SUPERADMIN' ? 'SUPERADMIN' : 'CENTRE',
       centreId: user.niveauAcces === 'ADMIN_CENTRE' ? user.centreActif : null,
       permissions: validation.data.permissions.length > 0
         ? { create: validation.data.permissions.map((pid) => ({ permissionId: pid })) }

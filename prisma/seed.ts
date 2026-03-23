@@ -34,21 +34,21 @@ async function main() {
   ])
   console.log(`✓ ${specialites.length} spécialités créées`)
 
-  // Compte Ministère
-  const ministerePwd = await bcrypt.hash('AlafiyaMinistere2024!', 12)
+  // Compte Superadmin (N'di Solutions)
+  const superadminPwd = await bcrypt.hash('AlafiyaSuperAdmin2024!', 12)
   const ministere = await prisma.user.upsert({
-    where: { email: 'admin@ministere-sante.tg' },
+    where: { email: 'admin@ndisolutions.tg' },
     update: {},
     create: {
-      nom: 'MINISTÈRE',
-      prenoms: 'de la Santé',
-      email: 'admin@ministere-sante.tg',
-      motDePasse: ministerePwd,
-      niveauAcces: 'MINISTERE',
+      nom: 'N\'DI SOLUTIONS',
+      prenoms: 'Administrateur',
+      email: 'admin@ndisolutions.tg',
+      motDePasse: superadminPwd,
+      niveauAcces: 'SUPERADMIN',
       estActif: true,
     },
   })
-  console.log(`✓ Compte Ministère créé : admin@ministere-sante.tg`)
+  console.log(`✓ Compte Superadmin créé : admin@ndisolutions.tg`)
 
   // Centre de démonstration
   let centreDem = await prisma.centre.findFirst({ where: { nom: 'CHU Sylvanus Olympio' } })
@@ -94,8 +94,8 @@ async function main() {
 
   console.log('\n✅ Base de données initialisée avec succès !')
   console.log('\n📋 Comptes de connexion :')
-  console.log('  Ministère : admin@ministere-sante.tg / AlafiyaMinistere2024!')
-  console.log('  Admin CHU : admin@chu-lomé.tg / AdminCHU2024!')
+  console.log('  Superadmin  : admin@ndisolutions.tg / AlafiyaSuperAdmin2024!')
+  console.log('  Admin CHU   : admin@chu-lomé.tg / AdminCHU2024!')
 }
 
 main()

@@ -35,13 +35,13 @@ export default async function DossierPatientPage({ params }: { params: { id: str
   const accesActif = patient.dossier?.accesEnCours.find(
     (a) => a.medecinId === user.id
   )
-  const accesValide = !!accesActif || user.niveauAcces === 'MINISTERE'
+  const accesValide = !!accesActif || user.niveauAcces === 'SUPERADMIN'
   const modeUrgence = accesActif?.modeUrgence ?? false
 
   // Spécialités accessibles
   let specialitesAccessibles: { id: string; nom: string; code: string }[] = []
 
-  if (modeUrgence || user.niveauAcces === 'MINISTERE') {
+  if (modeUrgence || user.niveauAcces === 'SUPERADMIN') {
     specialitesAccessibles = await prisma.specialite.findMany({
       where: { estActive: true },
       select: { id: true, nom: true, code: true },

@@ -49,7 +49,7 @@ export async function GET(req: NextRequest) {
     }),
     prisma.role.findMany({
       where: {
-        OR: [{ creePar: 'MINISTERE' }, { centreId }],
+        OR: [{ creePar: 'SUPERADMIN' }, { centreId }],
         nom: { contains: q, mode: 'insensitive' },
       },
       select: { id: true, nom: true, creePar: true },
@@ -76,7 +76,7 @@ export async function GET(req: NextRequest) {
       type: 'role' as const,
       id: r.id,
       label: r.nom,
-      sublabel: r.creePar === 'MINISTERE' ? 'Ministère' : 'Ce centre',
+      sublabel: r.creePar === 'SUPERADMIN' ? 'N\'di Solutions' : 'Ce centre',
       href: `/admin/roles`,
     })),
   ]

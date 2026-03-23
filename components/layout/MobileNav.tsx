@@ -24,13 +24,13 @@ export function MobileNav({ user }: MobileNavProps) {
   const pathname = usePathname()
 
   const items =
-    user.niveauAcces === 'MINISTERE'
+    user.niveauAcces === 'SUPERADMIN'
       ? [
-          { href: '/ministere/dashboard',   label: 'Accueil',     icon: LayoutDashboard },
-          { href: '/ministere/centres',     label: 'Centres',     icon: Building2 },
-          { href: '/ministere/medecins',    label: 'Personnel',   icon: Users },
-          { href: '/ministere/specialites', label: 'Spécialités', icon: Stethoscope },
-          { href: '/ministere/roles',       label: 'Rôles',       icon: Shield },
+          { href: '/superadmin/dashboard',   label: 'Accueil',     icon: LayoutDashboard },
+          { href: '/superadmin/centres',     label: 'Centres',     icon: Building2 },
+          { href: '/superadmin/medecins',    label: 'Personnel',   icon: Users },
+          { href: '/superadmin/specialites', label: 'Spécialités', icon: Stethoscope },
+          { href: '/superadmin/roles',       label: 'Rôles',       icon: Shield },
         ]
       : user.niveauAcces === 'ADMIN_CENTRE'
       ? [

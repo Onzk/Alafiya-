@@ -24,7 +24,7 @@ export async function GET(req: NextRequest) {
 
   const user = session.user as unknown as SessionUser
 
-  if (!['MINISTERE', 'ADMIN_CENTRE'].includes(user.niveauAcces)) {
+  if (!['SUPERADMIN', 'ADMIN_CENTRE'].includes(user.niveauAcces)) {
     return NextResponse.json({ error: 'Non autorisé' }, { status: 403 })
   }
 
@@ -59,7 +59,7 @@ export async function POST(req: NextRequest) {
   if (!session?.user) return NextResponse.json({ error: 'Non autorisé' }, { status: 401 })
 
   const user = session.user as unknown as SessionUser
-  if (!['MINISTERE', 'ADMIN_CENTRE'].includes(user.niveauAcces)) {
+  if (!['SUPERADMIN', 'ADMIN_CENTRE'].includes(user.niveauAcces)) {
     return NextResponse.json({ error: 'Non autorisé' }, { status: 403 })
   }
 
@@ -72,7 +72,7 @@ export async function POST(req: NextRequest) {
   const { specialites, motDePasse, roleId, telephone, centreId, ...rest } = validation.data
   const hashedPwd = await bcrypt.hash(motDePasse, 12)
 
-  const effectiveCentreId = (user.niveauAcces === 'MINISTERE' && centreId)
+  const effectiveCentreId = (user.niveauAcces === 'SUPERADMIN' && centreId)
     ? centreId
     : (user.centreActif || null)
 

@@ -22,7 +22,7 @@ const creerEnregistrementSchema = z.object({
 })
 
 async function verifierAcces(dossierId: string, userId: string, niveauAcces: string): Promise<boolean> {
-  if (niveauAcces === 'MINISTERE') return true
+  if (niveauAcces === 'SUPERADMIN') return true
   const acces = await prisma.accesDossier.findFirst({
     where: { dossierId, medecinId: userId, finAcces: { gt: new Date() } },
   })

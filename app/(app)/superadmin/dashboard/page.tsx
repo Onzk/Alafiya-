@@ -5,6 +5,7 @@ import prisma from '@/lib/db'
 import { Building2, Users, FileText, Zap, Settings, Stethoscope, Plus, ArrowRight, UserCheck, XCircle, ChevronRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { SessionUser } from '@/types'
+import SuperadminDashboardCharts from '@/components/superadmin/dashboard-charts'
 
 /* ── Stat card style DentaClinic ── */
 function StatCard({
@@ -60,7 +61,7 @@ export default async function MinistereDashboardPage() {
   const session = await auth()
   if (!session?.user) redirect('/login')
   const user = session.user as unknown as SessionUser
-  if (user.niveauAcces !== 'MINISTERE') redirect('/dashboard')
+  if (user.niveauAcces !== 'SUPERADMIN') redirect('/dashboard')
 
   const [centresActifs, totalCentres, totalPatients, totalConsultations, totalPersonnel] = await Promise.all([
     prisma.centre.count({ where: { estActif: true } }),
@@ -102,7 +103,7 @@ export default async function MinistereDashboardPage() {
           </p>
         </div>
         {/* <Button asChild size="sm" className="bg-brand hover:bg-brand-dark text-white rounded-xl gap-1.5 shadow-sm shadow-brand/20 flex-shrink-0">
-          <Link href="/ministere/centres"><Plus className="h-4 w-4" /> Nouveau centre</Link>
+          <Link href="/superadmin/centres"><Plus className="h-4 w-4" /> Nouveau centre</Link>
         </Button> */}
       </div>
 
@@ -142,14 +143,20 @@ export default async function MinistereDashboardPage() {
         />
       </div>
 
+      {/* Graphes */}
+      <div className="dash-in delay-150">
+        <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-zinc-500 mb-2.5">Activité médicale</p>
+        <SuperadminDashboardCharts />
+      </div>
+
       {/* Actions */}
       <div className="dash-in delay-150">
         <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-zinc-500 mb-2.5">Gestion nationale</p>
         <div className="grid sm:grid-cols-4 gap-3">
-          <ActionCard href="/ministere/centres" icon={Building2} iconBg="bg-brand/10 dark:bg-brand/15" iconColor="text-brand" label="Gérer les centres" sub="Configuration & statuts" delay="delay-0" />
-          <ActionCard href="/ministere/medecins" icon={Users} iconBg="bg-yellow-500/10 dark:bg-yellow-500/15" iconColor="text-yellow-500" label="Gérer les personnels" sub="Personnels médicaux" delay="delay-75" />
-          <ActionCard href="/ministere/roles" icon={Settings} iconBg="bg-blue-50 dark:bg-blue-400/15" iconColor="text-blue-600 dark:text-blue-300" label="Rôles & Accès" sub="Matrice de sécurité" delay="delay-150" />
-          <ActionCard href="/ministere/specialites" icon={Stethoscope} iconBg="bg-purple-50 dark:bg-purple-400/15" iconColor="text-purple-600 dark:text-purple-300" label="Spécialités" sub="Catalogue médical" delay="delay-225" />
+          <ActionCard href="/superadmin/centres" icon={Building2} iconBg="bg-brand/10 dark:bg-brand/15" iconColor="text-brand" label="Gérer les centres" sub="Configuration & statuts" delay="delay-0" />
+          <ActionCard href="/superadmin/medecins" icon={Users} iconBg="bg-yellow-500/10 dark:bg-yellow-500/15" iconColor="text-yellow-500" label="Gérer les personnels" sub="Personnels médicaux" delay="delay-75" />
+          <ActionCard href="/superadmin/roles" icon={Settings} iconBg="bg-blue-50 dark:bg-blue-400/15" iconColor="text-blue-600 dark:text-blue-300" label="Rôles & Accès" sub="Matrice de sécurité" delay="delay-150" />
+          <ActionCard href="/superadmin/specialites" icon={Stethoscope} iconBg="bg-purple-50 dark:bg-purple-400/15" iconColor="text-purple-600 dark:text-purple-300" label="Spécialités" sub="Catalogue médical" delay="delay-225" />
         </div>
       </div>
 
@@ -160,7 +167,7 @@ export default async function MinistereDashboardPage() {
             <div>
               <h2 className="font-bold text-slate-900 dark:text-white text-sm">Derniers centres enregistrés</h2>
             </div>
-              <Link href="/ministere/centres" className='flex items-center text-primary text-[12px] font-bold'><ChevronRight className="h-3.5 w-3.5" /> Voir tout</Link>
+              <Link href="/superadmin/centres" className='flex items-center text-primary text-[12px] font-bold'><ChevronRight className="h-3.5 w-3.5" /> Voir tout</Link>
           </div>
 
           {derniersCentres.length === 0 ? (
@@ -215,7 +222,7 @@ export default async function MinistereDashboardPage() {
             <div>
               <h2 className="font-bold text-slate-900 dark:text-white text-sm">Personnel récemment enregistré</h2>
             </div>
-              <Link href="/ministere/medecins" className='flex items-center text-primary text-[12px] font-bold'><ChevronRight className="h-3.5 w-3.5" /> Voir tout</Link>
+              <Link href="/superadmin/medecins" className='flex items-center text-primary text-[12px] font-bold'><ChevronRight className="h-3.5 w-3.5" /> Voir tout</Link>
           </div>
 
           {derniersMedecins.length === 0 ? (

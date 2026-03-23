@@ -21,13 +21,13 @@ export default auth(function middleware(req) {
 
   const niveau = session.user.niveauAcces
 
-  // Protection des routes Ministère
-  if (pathname.startsWith('/ministere') && niveau !== 'MINISTERE') {
+  // Protection des routes Superadmin
+  if (pathname.startsWith('/superadmin') && niveau !== 'SUPERADMIN') {
     return NextResponse.redirect(new URL('/dashboard', req.url))
   }
 
   // Protection des routes Admin Centre
-  if (pathname.startsWith('/admin') && !['MINISTERE', 'ADMIN_CENTRE'].includes(niveau || '')) {
+  if (pathname.startsWith('/admin') && !['SUPERADMIN', 'ADMIN_CENTRE'].includes(niveau || '')) {
     return NextResponse.redirect(new URL('/dashboard', req.url))
   }
 

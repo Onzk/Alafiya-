@@ -69,11 +69,11 @@ export default function LoginPage() {
 
     const niveau = user.niveauAcces
     const destination =
-      niveau === 'MINISTERE' ? '/ministere/dashboard' :
+      niveau === 'SUPERADMIN' ? '/superadmin/dashboard' :
       niveau === 'ADMIN_CENTRE' ? '/admin/dashboard' :
       '/dashboard'
 
-    if (niveau !== 'MINISTERE' && user.centres && user.centres.length > 1) {
+    if (niveau !== 'SUPERADMIN' && user.centres && user.centres.length > 1) {
       setRedirectionApresSelection(destination)
       const centresRes = await fetch('/api/centres')
       const centresData = await centresRes.json()
@@ -321,7 +321,7 @@ export default function LoginPage() {
       <Dialog open={inscriptionModalOpen} onOpenChange={setInscriptionModalOpen}>
         <DialogContent className="max-w-sm">
           <DialogHeader title="Accès sur invitation" description="Alafiya Plus est une plateforme réservée aux professionnels de santé autorisés. La création de compte se fait uniquement via votre centre de santé." icon={ShieldAlert} />
-          <div className="px-5 md:px-7 pb-5 md:pb-6 space-y-4 pt-5">
+          <div className="px-5 md:px-7 pb-5 md:pb-6 space-y-4 pt-3">
 
             {/* Personnel de centre */}
             <div className="bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/50 rounded-xl p-4 flex items-start gap-3">

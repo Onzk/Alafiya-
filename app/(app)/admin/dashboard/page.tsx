@@ -60,7 +60,7 @@ export default async function AdminDashboardPage() {
   const session = await auth()
   if (!session?.user) redirect('/login')
   const user = session.user as unknown as SessionUser
-  if (!['MINISTERE', 'ADMIN_CENTRE'].includes(user.niveauAcces)) redirect('/dashboard')
+  if (!['SUPERADMIN', 'ADMIN_CENTRE'].includes(user.niveauAcces)) redirect('/dashboard')
 
   const centreId = user.centreActif
   if (!centreId) {

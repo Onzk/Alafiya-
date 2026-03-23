@@ -13,7 +13,7 @@ export async function POST(req: NextRequest) {
   const user = session.user as unknown as SessionUser
 
   // Vérifier appartenance (sauf Ministère)
-  if (user.niveauAcces !== 'MINISTERE') {
+  if (user.niveauAcces !== 'SUPERADMIN') {
     const appartient = await prisma.userCentre.findUnique({
       where: { userId_centreId: { userId: user.id!, centreId } },
     })

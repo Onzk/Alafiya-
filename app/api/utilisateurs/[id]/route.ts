@@ -18,7 +18,7 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
   if (!session?.user) return NextResponse.json({ error: 'Non autorisé' }, { status: 401 })
 
   const user = session.user as unknown as SessionUser
-  if (!['MINISTERE', 'ADMIN_CENTRE'].includes(user.niveauAcces)) {
+  if (!['SUPERADMIN', 'ADMIN_CENTRE'].includes(user.niveauAcces)) {
     return NextResponse.json({ error: 'Non autorisé' }, { status: 403 })
   }
 
@@ -49,7 +49,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   if (!session?.user) return NextResponse.json({ error: 'Non autorisé' }, { status: 401 })
 
   const user = session.user as unknown as SessionUser
-  if (!['MINISTERE', 'ADMIN_CENTRE'].includes(user.niveauAcces)) {
+  if (!['SUPERADMIN', 'ADMIN_CENTRE'].includes(user.niveauAcces)) {
     return NextResponse.json({ error: 'Non autorisé' }, { status: 403 })
   }
 
@@ -88,7 +88,7 @@ export async function DELETE(_req: NextRequest, { params }: { params: { id: stri
   if (!session?.user) return NextResponse.json({ error: 'Non autorisé' }, { status: 401 })
 
   const user = session.user as unknown as SessionUser
-  if (!['MINISTERE', 'ADMIN_CENTRE'].includes(user.niveauAcces)) {
+  if (!['SUPERADMIN', 'ADMIN_CENTRE'].includes(user.niveauAcces)) {
     return NextResponse.json({ error: 'Non autorisé' }, { status: 403 })
   }
 

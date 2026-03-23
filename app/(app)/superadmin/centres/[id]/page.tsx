@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo } from 'react'
 import { useParams } from 'next/navigation'
 import {
   Building2, Loader2, ArrowLeft, Phone, Mail, MapPin, Users, UserCheck,
-  ClipboardList, AlertTriangle, Pencil, CheckCircle2, XCircle, User,
+  ClipboardList, AlertTriangle, Pencil, CheckCircle2, XCircle, Banknote,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -13,6 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogScrollableWrapp
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useToast } from '@/hooks/use-toast'
 import Link from 'next/link'
+import CentreCharts from '@/components/superadmin/centre-charts'
 
 interface UserSpecialite {
   specialite: { nom: string; code: string }
@@ -37,12 +38,13 @@ interface CentreDetail {
   email: string
   region: string
   prefecture: string
+  prixParDossier: number
+  commissionNdi: number
   estActif: boolean
   createdAt: string
   admin?: { nom: string; prenoms: string; email: string; telephone?: string }
   _count: { utilisateurs: number; patients: number; enregistrements: number; accesUrgences: number }
   utilisateurs: { user: PersonnelUser }[]
-  patients: { id: string; nom: string; prenoms: string; createdAt: string }[]
 }
 
 const TYPE_LABELS: Record<string, string> = {
@@ -50,7 +52,7 @@ const TYPE_LABELS: Record<string, string> = {
 }
 
 const NIVEAU_LABELS: Record<string, string> = {
-  MINISTERE: 'Ministère', ADMIN_CENTRE: 'Admin centre', PERSONNEL: 'Personnel médical',
+  SUPERADMIN: 'N\'di Solutions', ADMIN_CENTRE: 'Admin centre', PERSONNEL: 'Personnel médical',
 }
 
 const inputCls = 'h-11 border-slate-200 dark:border-zinc-700 rounded-lg text-sm bg-white dark:bg-zinc-950 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-zinc-500 focus-visible:ring-emerald-500 focus-visible:border-emerald-400'
@@ -73,14 +75,16 @@ function StatCard({ icon: Icon, label, value, color }: { icon: React.ElementType
 }
 
 function DonutChart({ data }: { data: { label: string; count: number }[] }) {
+  const [hovered, setHovered] = useState<number | null>(null)
   const total = data.reduce((s, d) => s + d.count, 0)
+
   if (total === 0) return (
-    <div className="flex items-center justify-center py-6">
+    <div className="flex items-center justify-center h-40">
       <p className="text-xs text-slate-400 dark:text-zinc-500">Aucune donnée</p>
     </div>
   )
 
-  const r = 38, cx = 52, cy = 52, strokeW = 16
+  const r = 62, cx = 76, cy = 76, strokeW = 22
   const circ = 2 * Math.PI * r
   let cumulativePct = 0
 
@@ -89,32 +93,62 @@ function DonutChart({ data }: { data: { label: string; count: number }[] }) {
     const dashLen = pct * circ
     const rotateAngle = cumulativePct * 360 - 90
     cumulativePct += pct
-    return { ...d, dashLen, rotateAngle, color: CHART_COLORS[i % CHART_COLORS.length] }
+    return { ...d, pct, dashLen, rotateAngle, color: CHART_COLORS[i % CHART_COLORS.length] }
   })
 
+  const hSeg = hovered !== null ? segments[hovered] : null
+
   return (
-    <div className="flex items-center gap-5 flex-wrap">
-      <svg width="104" height="104" viewBox="0 0 104 104" className="flex-shrink-0">
+    <div className="flex flex-col items-center gap-4 w-full">
+      <svg width="152" height="152" viewBox="0 0 152 152">
+        {/* track */}
+        <circle cx={cx} cy={cy} r={r} fill="none" stroke="currentColor" strokeWidth={strokeW} className="text-slate-100 dark:text-zinc-800" />
         {segments.map((s, i) => (
           <circle
             key={i}
             cx={cx} cy={cy} r={r}
             fill="none"
             stroke={s.color}
-            strokeWidth={strokeW}
+            strokeWidth={hovered === i ? strokeW + 4 : strokeW}
             strokeDasharray={`${s.dashLen} ${circ}`}
-            strokeDashoffset={0}
             transform={`rotate(${s.rotateAngle} ${cx} ${cy})`}
+            style={{
+              cursor: 'pointer',
+              opacity: hovered === null || hovered === i ? 1 : 0.2,
+              transition: 'opacity 0.15s, stroke-width 0.15s',
+            }}
+            onMouseEnter={() => setHovered(i)}
+            onMouseLeave={() => setHovered(null)}
           />
         ))}
-        <text x={cx} y={cy + 6} textAnchor="middle" fontSize="18" fontWeight="700" fill="currentColor">{total}</text>
+        {hSeg ? (
+          <>
+            <text x={cx} y={cy - 10} textAnchor="middle" fontSize="22" fontWeight="800" fill="currentColor">{hSeg.count}</text>
+            <text x={cx} y={cy + 10} textAnchor="middle" fontSize="13" fontWeight="700" fill={hSeg.color}>{Math.round(hSeg.pct * 100)}%</text>
+            <text x={cx} y={cy + 26} textAnchor="middle" fontSize="9" fill="#94a3b8">
+              {hSeg.label.length > 16 ? hSeg.label.slice(0, 15) + '…' : hSeg.label}
+            </text>
+          </>
+        ) : (
+          <>
+            <text x={cx} y={cy + 7} textAnchor="middle" fontSize="24" fontWeight="800" fill="currentColor">{total}</text>
+            <text x={cx} y={cy + 22} textAnchor="middle" fontSize="9" fill="#94a3b8">total</text>
+          </>
+        )}
       </svg>
-      <div className="space-y-2 flex-1 min-w-[120px]">
-        {segments.map((s) => (
-          <div key={s.label} className="flex items-center gap-2">
+
+      <div className="w-full space-y-1">
+        {segments.map((s, i) => (
+          <div
+            key={s.label}
+            className="flex items-center gap-2 px-2 py-1 rounded-lg transition-colors cursor-default"
+            style={{ backgroundColor: hovered === i ? `${s.color}18` : 'transparent' }}
+            onMouseEnter={() => setHovered(i)}
+            onMouseLeave={() => setHovered(null)}
+          >
             <div className="w-2.5 h-2.5 rounded-sm flex-shrink-0" style={{ backgroundColor: s.color }} />
             <span className="text-xs text-slate-600 dark:text-zinc-400 flex-1 truncate">{s.label}</span>
-            <span className="text-xs font-bold text-slate-900 dark:text-white">{s.count}</span>
+            <span className="text-xs font-bold text-slate-900 dark:text-white tabular-nums">{s.count}</span>
           </div>
         ))}
       </div>
@@ -132,7 +166,7 @@ export default function CentreDetailPage() {
 
   // Edit dialog
   const [editOpen, setEditOpen] = useState(false)
-  const [editForm, setEditForm] = useState({ nom: '', adresse: '', telephone: '', email: '', region: '', prefecture: '', type: 'HOPITAL' })
+  const [editForm, setEditForm] = useState({ nom: '', adresse: '', telephone: '', email: '', region: '', prefecture: '', type: 'HOPITAL', prixParDossier: 0, commissionNdi: 0 })
   const [editSubmitting, setEditSubmitting] = useState(false)
 
   useEffect(() => {
@@ -163,7 +197,7 @@ export default function CentreDetailPage() {
 
   function openEdit() {
     if (!centre) return
-    setEditForm({ nom: centre.nom, adresse: centre.adresse, telephone: centre.telephone, email: centre.email, region: centre.region, prefecture: centre.prefecture, type: centre.type })
+    setEditForm({ nom: centre.nom, adresse: centre.adresse, telephone: centre.telephone, email: centre.email, region: centre.region, prefecture: centre.prefecture, type: centre.type, prixParDossier: centre.prixParDossier ?? 0, commissionNdi: centre.commissionNdi ?? 0 })
     setEditOpen(true)
   }
 
@@ -207,7 +241,7 @@ export default function CentreDetailPage() {
     return (
       <div className="py-20 text-center">
         <p className="text-sm font-semibold text-slate-600 dark:text-zinc-300 mb-2">Centre introuvable</p>
-        <Link href="/ministere/centres">
+        <Link href="/superadmin/centres">
           <Button variant="outline" className="h-10 rounded-xl">Retour</Button>
         </Link>
       </div>
@@ -217,11 +251,11 @@ export default function CentreDetailPage() {
   const dateCreation = new Date(centre.createdAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })
 
   return (
-    <div className="space-y-6 max-w-[1200px]">
+    <div className="space-y-6">
 
       {/* Retour + en-tête */}
       <div className="dash-in delay-0">
-        <Link href="/ministere/centres" className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-400 dark:text-zinc-500 hover:text-slate-700 dark:hover:text-zinc-300 transition-colors mb-4">
+        <Link href="/superadmin/centres" className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-400 dark:text-zinc-500 hover:text-slate-700 dark:hover:text-zinc-300 transition-colors mb-4">
           <ArrowLeft className="h-3.5 w-3.5" /> Centres de santé
         </Link>
         <div className="flex items-start justify-between gap-4 flex-wrap">
@@ -254,159 +288,93 @@ export default function CentreDetailPage() {
 
       {/* Stats */}
       <div className="dash-in delay-75 grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard icon={Users}         label="Personnel médical"  value={centre._count.utilisateurs}   color="bg-blue-50 dark:bg-blue-500/10 text-blue-500" />
-        <StatCard icon={UserCheck}     label="Patients enregistrés" value={centre._count.patients}      color="bg-emerald-50 dark:bg-emerald-500/10 text-emerald-500" />
-        <StatCard icon={ClipboardList} label="Consultations"       value={centre._count.enregistrements} color="bg-violet-50 dark:bg-violet-500/10 text-violet-500" />
-        <StatCard icon={AlertTriangle} label="Accès urgences"      value={centre._count.accesUrgences}  color="bg-orange-50 dark:bg-orange-500/10 text-orange-500" />
+        <StatCard icon={Users}         label="Personnel médical"    value={centre._count.utilisateurs}    color="bg-blue-50 dark:bg-blue-500/10 text-blue-500" />
+        <StatCard icon={UserCheck}     label="Patients enregistrés" value={centre._count.patients}        color="bg-emerald-50 dark:bg-emerald-500/10 text-emerald-500" />
+        <StatCard icon={ClipboardList} label="Consultations"         value={centre._count.enregistrements} color="bg-violet-50 dark:bg-violet-500/10 text-violet-500" />
+        <StatCard icon={AlertTriangle} label="Accès urgences"        value={centre._count.accesUrgences}   color="bg-orange-50 dark:bg-orange-500/10 text-orange-500" />
       </div>
 
-      <div className="dash-in delay-100 grid lg:grid-cols-3 gap-5">
+      {/* 3 graphes sur une ligne : répartition personnel + 2 area charts */}
+      <div className="dash-in delay-100 grid lg:grid-cols-3 gap-4">
 
-        {/* Informations */}
-        <div className="bg-white dark:bg-zinc-950 rounded-2xl border border-slate-100 dark:border-zinc-800 p-5 space-y-4">
-          <h2 className="font-bold text-slate-900 dark:text-white text-sm">Informations</h2>
-          <div className="space-y-3">
-            <div className="flex items-start gap-3">
-              <MapPin className="h-4 w-4 text-slate-400 mt-0.5 flex-shrink-0" />
-              <div>
-                <p className="text-xs font-semibold text-slate-700 dark:text-zinc-300">{centre.adresse}</p>
-                <p className="text-xs text-slate-400 dark:text-zinc-500">{centre.region} · {centre.prefecture}</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-3">
-              <Phone className="h-4 w-4 text-slate-400 flex-shrink-0" />
-              <p className="text-xs text-slate-700 dark:text-zinc-300">{centre.telephone}</p>
-            </div>
-            <div className="flex items-center gap-3">
-              <Mail className="h-4 w-4 text-slate-400 flex-shrink-0" />
-              <p className="text-xs text-slate-700 dark:text-zinc-300 break-all">{centre.email}</p>
-            </div>
+        {/* Répartition du personnel */}
+        <div className="bg-white dark:bg-zinc-950 rounded-2xl border border-slate-100 dark:border-zinc-800 p-5 flex flex-col gap-4">
+          <div>
+            <p className="text-sm font-bold text-slate-900 dark:text-white leading-tight">Répartition du personnel</p>
+            <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-zinc-500 mt-0.5">Par spécialité ou rôle · ce centre</p>
           </div>
-
-          {centre.admin && (
-            <div className="border-t border-slate-100 dark:border-zinc-800 pt-4">
-              <p className="text-xs font-bold text-slate-500 dark:text-zinc-500 uppercase tracking-wider mb-3">Administrateur</p>
-              <div className="flex items-center gap-3">
-                <div className="h-9 w-9 rounded-full bg-brand/10 dark:bg-brand/15 flex items-center justify-center flex-shrink-0">
-                  <span className="text-brand font-bold text-xs">{centre.admin.nom[0]}{centre.admin.prenoms[0]}</span>
-                </div>
-                <div>
-                  <p className="text-sm font-semibold text-slate-900 dark:text-white">{centre.admin.nom} {centre.admin.prenoms}</p>
-                  <p className="text-xs text-slate-400 dark:text-zinc-500">{centre.admin.email}</p>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Personnel médical */}
-        <div className="bg-white dark:bg-zinc-950 rounded-2xl border border-slate-100 dark:border-zinc-800 overflow-hidden">
-          <div className="px-5 py-4 border-b border-slate-50 dark:border-zinc-800">
-            <h2 className="font-bold text-slate-900 dark:text-white text-sm">Personnel médical</h2>
-            <p className="text-xs text-slate-400 dark:text-zinc-500 mt-0.5">{centre._count.utilisateurs} au total</p>
-          </div>
-          {centre.utilisateurs.length === 0 ? (
-            <div className="py-10 text-center">
-              <User className="h-6 w-6 text-slate-300 dark:text-zinc-600 mx-auto mb-2" />
+          {personnelTypeData.length === 0 ? (
+            <div className="flex-1 flex flex-col items-center justify-center py-6">
+              <Users className="h-8 w-8 text-slate-200 dark:text-zinc-700 mb-2" />
               <p className="text-xs text-slate-400 dark:text-zinc-500">Aucun personnel</p>
             </div>
           ) : (
-            <ul className="max-h-[340px] overflow-y-auto">
-              {centre.utilisateurs.map((u, i) => (
-                <li key={i} className="flex items-center gap-3 px-5 py-3 border-b border-slate-50 dark:border-zinc-800/60 last:border-0">
-                  <div className="h-8 w-8 rounded-full bg-slate-100 dark:bg-zinc-950 flex items-center justify-center flex-shrink-0">
-                    <span className="text-slate-600 dark:text-zinc-300 font-bold text-xs">{u.user.nom[0]}{u.user.prenoms[0]}</span>
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-xs font-semibold text-slate-900 dark:text-white truncate">{u.user.nom} {u.user.prenoms}</p>
-                    <p className="text-[10px] text-slate-400 dark:text-zinc-500 truncate">
-                      {u.user.specialites.length > 0
-                        ? u.user.specialites.map((s) => s.specialite.nom).join(', ')
-                        : NIVEAU_LABELS[u.user.niveauAcces] ?? u.user.niveauAcces}
-                    </p>
-                  </div>
-                  <div className={`h-1.5 w-1.5 rounded-full flex-shrink-0 ${u.user.estActif ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-zinc-950'}`} />
-                </li>
-              ))}
-            </ul>
+            <DonutChart data={personnelTypeData} />
           )}
         </div>
 
-        {/* Patients récents */}
-        <div className="bg-white dark:bg-zinc-950 rounded-2xl border border-slate-100 dark:border-zinc-800 overflow-hidden">
-          <div className="px-5 py-4 border-b border-slate-50 dark:border-zinc-800">
-            <h2 className="font-bold text-slate-900 dark:text-white text-sm">Patients récents</h2>
-            <p className="text-xs text-slate-400 dark:text-zinc-500 mt-0.5">{centre._count.patients} au total</p>
-          </div>
-          {centre.patients.length === 0 ? (
-            <div className="py-10 text-center">
-              <Users className="h-6 w-6 text-slate-300 dark:text-zinc-600 mx-auto mb-2" />
-              <p className="text-xs text-slate-400 dark:text-zinc-500">Aucun patient</p>
-            </div>
-          ) : (
-            <ul>
-              {centre.patients.map((p) => (
-                <li key={p.id} className="flex items-center gap-3 px-5 py-3 border-b border-slate-50 dark:border-zinc-800/60 last:border-0">
-                  <div className="h-8 w-8 rounded-full bg-slate-100 dark:bg-zinc-950 flex items-center justify-center flex-shrink-0">
-                    <span className="text-slate-600 dark:text-zinc-300 font-bold text-xs">{p.nom[0]}{p.prenoms[0]}</span>
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-xs font-semibold text-slate-900 dark:text-white truncate">{p.nom} {p.prenoms}</p>
-                    <p className="text-[10px] text-slate-400 dark:text-zinc-500">
-                      Enregistré le {new Date(p.createdAt).toLocaleDateString('fr-FR')}
-                    </p>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
+        {/* 2 area charts via CentreCharts, contents = participent directement au grid parent */}
+        <CentreCharts centreId={centre.id} className="contents" />
+
       </div>
 
-      {/* Graphique répartition du personnel */}
+      {/* Informations en grid */}
       <div className="dash-in delay-150 bg-white dark:bg-zinc-950 rounded-2xl border border-slate-100 dark:border-zinc-800 p-5">
-        <div className="mb-4">
-          <h2 className="font-bold text-slate-900 dark:text-white text-sm">Répartition du personnel par type</h2>
-          <p className="text-xs text-slate-400 dark:text-zinc-500 mt-0.5">
-            Distribution des {centre._count.utilisateurs} membres du personnel par spécialité ou rôle
-          </p>
-        </div>
-        {personnelTypeData.length === 0 ? (
-          <div className="py-8 text-center">
-            <Users className="h-8 w-8 text-slate-200 dark:text-zinc-700 mx-auto mb-2" />
-            <p className="text-xs text-slate-400 dark:text-zinc-500">Aucun personnel enregistré</p>
-          </div>
-        ) : (
-          <div className="grid md:grid-cols-2 gap-8 items-center">
-            {/* Donut chart */}
-            <DonutChart data={personnelTypeData} />
+        <h2 className="font-bold text-slate-900 dark:text-white text-sm mb-4">Informations</h2>
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-5">
 
-            {/* Barres horizontales */}
-            <div className="space-y-3">
-              {personnelTypeData.map((d, i) => {
-                const max = personnelTypeData[0].count
-                const pct = Math.round((d.count / (centre._count.utilisateurs || 1)) * 100)
-                return (
-                  <div key={d.label}>
-                    <div className="flex items-center justify-between text-xs mb-1">
-                      <span className="font-medium text-slate-700 dark:text-zinc-300 truncate max-w-[180px]">{d.label}</span>
-                      <span className="font-bold text-slate-900 dark:text-white ml-2 flex-shrink-0">{d.count} <span className="font-normal text-slate-400">({pct}%)</span></span>
-                    </div>
-                    <div className="h-2 bg-slate-100 dark:bg-zinc-950 rounded-full overflow-hidden">
-                      <div
-                        className="h-2 rounded-full transition-all duration-500"
-                        style={{
-                          width: `${(d.count / max) * 100}%`,
-                          backgroundColor: CHART_COLORS[i % CHART_COLORS.length],
-                        }}
-                      />
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
+          <div className="space-y-1">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-zinc-500 flex items-center gap-1.5">
+              <MapPin className="h-3 w-3" /> Adresse
+            </p>
+            <p className="text-sm font-semibold text-slate-900 dark:text-white">{centre.adresse}</p>
+            <p className="text-xs text-slate-400 dark:text-zinc-500">{centre.region} · {centre.prefecture}</p>
           </div>
-        )}
+
+          <div className="space-y-1">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-zinc-500 flex items-center gap-1.5">
+              <Phone className="h-3 w-3" /> Téléphone
+            </p>
+            <p className="text-sm font-semibold text-slate-900 dark:text-white">{centre.telephone}</p>
+          </div>
+
+          <div className="space-y-1">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-zinc-500 flex items-center gap-1.5">
+              <Mail className="h-3 w-3" /> Email
+            </p>
+            <p className="text-sm font-semibold text-slate-900 dark:text-white break-all">{centre.email}</p>
+          </div>
+
+          <div className="space-y-1">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-zinc-500 flex items-center gap-1.5">
+              <Banknote className="h-3 w-3" /> Prix par dossier
+            </p>
+            <p className="text-sm font-bold text-slate-900 dark:text-white">{centre.prixParDossier.toLocaleString('fr-FR')} FCFA</p>
+          </div>
+
+          <div className="space-y-1">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-zinc-500 flex items-center gap-1.5">
+              <Banknote className="h-3 w-3" /> Commission N&apos;di
+            </p>
+            <p className="text-sm font-bold text-brand">{centre.commissionNdi.toLocaleString('fr-FR')} FCFA</p>
+          </div>
+
+          {centre.admin && (
+            <div className="space-y-1.5">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-zinc-500">Administrateur</p>
+              <div className="flex items-center gap-2.5">
+                <div className="h-8 w-8 rounded-full bg-brand/10 dark:bg-brand/15 flex items-center justify-center flex-shrink-0">
+                  <span className="text-brand font-bold text-xs">{centre.admin.nom[0]}{centre.admin.prenoms[0]}</span>
+                </div>
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold text-slate-900 dark:text-white truncate">{centre.admin.nom} {centre.admin.prenoms}</p>
+                  <p className="text-xs text-slate-400 dark:text-zinc-500 truncate">{centre.admin.email}</p>
+                </div>
+              </div>
+            </div>
+          )}
+
+        </div>
       </div>
 
       {/* ── Dialog modifier ── */}
@@ -440,6 +408,20 @@ export default function CentreDetailPage() {
                       {Object.entries(TYPE_LABELS).map(([v, l]) => <SelectItem key={v} value={v}>{l}</SelectItem>)}
                     </SelectContent>
                   </Select>
+                </div>
+                <div className="space-y-1.5">
+                  <Label className={labelCls}>Prix par dossier (FCFA)</Label>
+                  <Input type="number" min="0" placeholder="Ex : 2000"
+                    value={editForm.prixParDossier}
+                    onChange={(e) => setEditForm((p) => ({ ...p, prixParDossier: Number(e.target.value) }))}
+                    className={inputCls} />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className={labelCls}>Commission N'di Solutions (FCFA)</Label>
+                  <Input type="number" min="0" placeholder="Ex : 1000"
+                    value={editForm.commissionNdi}
+                    onChange={(e) => setEditForm((p) => ({ ...p, commissionNdi: Number(e.target.value) }))}
+                    className={inputCls} />
                 </div>
               </div>
               <Button type="submit" disabled={editSubmitting} className="w-full h-11 bg-brand hover:bg-brand-dark text-white rounded-xl shadow-sm shadow-brand/20">

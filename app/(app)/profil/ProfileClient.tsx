@@ -71,7 +71,7 @@ export function ProfileClient({ user, photo: initialPhoto }: { user: SessionUser
 
   const initials = `${user.nom[0]}${user.prenoms[0]}`
   const roleLabel =
-    user.niveauAcces === 'MINISTERE'    ? 'Administrateur National' :
+    user.niveauAcces === 'SUPERADMIN'    ? 'Administrateur National' :
     user.niveauAcces === 'ADMIN_CENTRE' ? 'Admin de centre' :
     'Personnel médical'
 

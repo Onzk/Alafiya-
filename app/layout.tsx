@@ -4,6 +4,7 @@ import './globals.css'
 import { ThemeProvider } from '@/components/ThemeProvider'
 import { Providers } from '@/components/Providers'
 import { Toaster } from '@/components/ui/toaster'
+import NextTopLoader from 'nextjs-toploader'
 
 const jakarta = Plus_Jakarta_Sans({
   subsets: ['latin'],
@@ -29,6 +30,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="fr" suppressHydrationWarning>
       <body className={jakarta.className}>
+        <NextTopLoader
+          color="#10b981"
+          shadow="0 0 10px #10b981, 0 0 5px #10b981"
+          height={3}
+          showSpinner={false}
+          easing="ease"
+          speed={200}
+        />
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <Providers>{children}</Providers>
           <Toaster />

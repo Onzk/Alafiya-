@@ -3,9 +3,9 @@
 import { useState, useEffect, useRef } from 'react'
 import { useParams } from 'next/navigation'
 import {
-  Loader2, ArrowLeft, Phone, Mail, Building2, Stethoscope, Users,
+  Loader2, ArrowLeft, Phone, Mail, Building2, Stethoscope,
   Pencil, CheckCircle2, XCircle, Camera, ClipboardList, AlertTriangle,
-  UserPlus, Power,
+  UserPlus, Power, Users,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -28,7 +28,6 @@ interface MedecinDetail {
   specialites: { specialite: { id: string; nom: string; code: string } }[]
   centres: { centre: { id: string; nom: string; type: string } }[]
   _count: { enregistrements: number; accesUrgences: number; patientsCrees: number }
-  patientsCrees: { id: string; nom: string; prenoms: string; createdAt: string }[]
 }
 
 interface Specialite { id: string; nom: string; code: string }
@@ -160,7 +159,7 @@ export default function MedecinDetailPage() {
     return (
       <div className="py-20 text-center">
         <p className="text-sm font-semibold text-slate-600 dark:text-zinc-300 mb-2">Personnel introuvable</p>
-        <Link href="/ministere/medecins">
+        <Link href="/superadmin/medecins">
           <Button variant="outline" className="h-10 rounded-xl">Retour</Button>
         </Link>
       </div>
@@ -171,11 +170,11 @@ export default function MedecinDetailPage() {
   const initiales = `${medecin.nom[0]}${medecin.prenoms[0]}`
 
   return (
-    <div className="space-y-6 max-w-[1200px]">
+    <div className="space-y-6 max-w-[1400px]">
 
       {/* ── En-tête ── */}
       <div className="dash-in delay-0">
-        <Link href="/ministere/medecins" className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-400 dark:text-zinc-500 hover:text-slate-700 dark:hover:text-zinc-300 transition-colors mb-4">
+        <Link href="/superadmin/medecins" className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-400 dark:text-zinc-500 hover:text-slate-700 dark:hover:text-zinc-300 transition-colors mb-4">
           <ArrowLeft className="h-3.5 w-3.5" /> Personnel médical
         </Link>
         <div className="flex items-start justify-between gap-4 flex-wrap">
@@ -232,13 +231,13 @@ export default function MedecinDetailPage() {
 
       {/* ── Stats ── */}
       <div className="dash-in delay-75 grid grid-cols-2 lg:grid-cols-3 gap-4">
-        <StatCard icon={ClipboardList} label="Consultations"       value={medecin._count.enregistrements} color="bg-violet-50 dark:bg-violet-500/10 text-violet-500" />
-        <StatCard icon={AlertTriangle} label="Accès urgences"      value={medecin._count.accesUrgences}   color="bg-orange-50 dark:bg-orange-500/10 text-orange-500" />
-        <StatCard icon={UserPlus}      label="Patients enregistrés" value={medecin._count.patientsCrees}  color="bg-blue-50 dark:bg-blue-500/10 text-blue-500" />
+        <StatCard icon={ClipboardList} label="Consultations"        value={medecin._count.enregistrements} color="bg-violet-50 dark:bg-violet-500/10 text-violet-500" />
+        <StatCard icon={AlertTriangle} label="Accès urgences"       value={medecin._count.accesUrgences}   color="bg-orange-50 dark:bg-orange-500/10 text-orange-500" />
+        <StatCard icon={Users}         label="Patients enregistrés" value={medecin._count.patientsCrees}   color="bg-blue-50 dark:bg-blue-500/10 text-blue-500" />
       </div>
 
       {/* ── Panneaux ── */}
-      <div className="dash-in delay-100 grid lg:grid-cols-3 gap-5">
+      <div className="dash-in delay-100 grid lg:grid-cols-2 gap-5">
 
         {/* Informations + Spécialités */}
         <div className="space-y-5">
@@ -308,35 +307,6 @@ export default function MedecinDetailPage() {
           )}
         </div>
 
-        {/* Patients récents créés */}
-        <div className="bg-white dark:bg-zinc-950 rounded-2xl border border-slate-100 dark:border-zinc-800 overflow-hidden">
-          <div className="px-5 py-4 border-b border-slate-50 dark:border-zinc-800">
-            <h2 className="font-bold text-slate-900 dark:text-white text-sm">Patients enregistrés</h2>
-            <p className="text-xs text-slate-400 dark:text-zinc-500 mt-0.5">{medecin._count.patientsCrees} au total</p>
-          </div>
-          {medecin.patientsCrees.length === 0 ? (
-            <div className="py-10 text-center">
-              <Users className="h-6 w-6 text-slate-300 dark:text-zinc-600 mx-auto mb-2" />
-              <p className="text-xs text-slate-400 dark:text-zinc-500">Aucun patient enregistré</p>
-            </div>
-          ) : (
-            <ul>
-              {medecin.patientsCrees.map((p) => (
-                <li key={p.id} className="flex items-center gap-3 px-5 py-3 border-b border-slate-50 dark:border-zinc-800/60 last:border-0">
-                  <div className="h-8 w-8 rounded-full bg-slate-100 dark:bg-zinc-950 flex items-center justify-center flex-shrink-0">
-                    <span className="text-slate-600 dark:text-zinc-300 font-bold text-xs">{p.nom[0]}{p.prenoms[0]}</span>
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-xs font-semibold text-slate-900 dark:text-white truncate">{p.nom} {p.prenoms}</p>
-                    <p className="text-[10px] text-slate-400 dark:text-zinc-500">
-                      {new Date(p.createdAt).toLocaleDateString('fr-FR')}
-                    </p>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
       </div>
 
       {/* ── Dialog confirmation toggle ── */}

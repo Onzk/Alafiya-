@@ -6,7 +6,7 @@ import { LogoIcon } from '@/components/ui/logo'
 import { signOut } from 'next-auth/react'
 import {
   LayoutDashboard, Users, QrCode, FileText, Building2,
-  Shield, Activity, LogOut, Stethoscope, AlertCircle, UserRound,
+  Shield, Activity, LogOut, Stethoscope, AlertCircle, UserRound, Settings,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { SessionUser } from '@/types'
@@ -16,18 +16,21 @@ interface SidebarProps { user: SessionUser }
 type NavItem = { href: string; label: string; icon: React.ElementType; isUrgence?: boolean }
 type NavGroup = { section: string | null; items: NavItem[] }
 
-const navigationMinistere: NavGroup[] = [
+const navigationSuperAdmin: NavGroup[] = [
   { section: null, items: [
-    { href: '/ministere/dashboard', label: 'Tableau de bord', icon: LayoutDashboard },
+    { href: '/superadmin/dashboard', label: 'Tableau de bord', icon: LayoutDashboard },
   ]},
   { section: 'RÉSEAU', items: [
-    { href: '/ministere/centres',    label: 'Centres de santé',    icon: Building2 },
-    { href: '/ministere/medecins',   label: 'Personnel médical',   icon: Users },
-    { href: '/ministere/specialites',label: 'Spécialités',         icon: Stethoscope },
-    { href: '/ministere/roles',      label: 'Types de personnel',  icon: Shield },
+    { href: '/superadmin/centres',    label: 'Centres de santé',    icon: Building2 },
+    { href: '/superadmin/medecins',   label: 'Personnel médical',   icon: Users },
+    { href: '/superadmin/specialites',label: 'Spécialités',         icon: Stethoscope },
+    { href: '/superadmin/roles',      label: 'Types de personnel',  icon: Shield },
   ]},
   { section: 'SUIVI', items: [
     { href: '/logs', label: "Journaux d'activité", icon: Activity },
+  ]},
+  { section: 'COMPTE', items: [
+    { href: '/parametres', label: 'Paramètres', icon: Settings },
   ]},
 ]
 
@@ -43,6 +46,9 @@ const navigationAdmin: NavGroup[] = [
   { section: 'SUIVI', items: [
     { href: '/logs', label: "Journaux d'activité", icon: Activity },
   ]},
+  { section: 'COMPTE', items: [
+    { href: '/parametres', label: 'Paramètres', icon: Settings },
+  ]},
 ]
 
 const navigationPersonnel: NavGroup[] = [
@@ -57,18 +63,21 @@ const navigationPersonnel: NavGroup[] = [
     { href: '/scanner', label: 'Scanner QR', icon: QrCode },
     { href: '/urgence', label: 'Urgence',    icon: AlertCircle, isUrgence: true },
   ]},
+  { section: 'COMPTE', items: [
+    { href: '/parametres', label: 'Paramètres', icon: Settings },
+  ]},
 ]
 
 export function Sidebar({ user }: SidebarProps) {
   const pathname = usePathname()
 
   const groups =
-    user.niveauAcces === 'MINISTERE'    ? navigationMinistere :
+    user.niveauAcces === 'SUPERADMIN'   ? navigationSuperAdmin :
     user.niveauAcces === 'ADMIN_CENTRE' ? navigationAdmin :
     navigationPersonnel
 
   const roleLabel =
-    user.niveauAcces === 'MINISTERE'    ? 'Ministère de la Santé' :
+    user.niveauAcces === 'SUPERADMIN'   ? 'N\'di Solutions' :
     user.niveauAcces === 'ADMIN_CENTRE' ? 'Admin de centre' :
     'Personnel médical'
 
@@ -137,7 +146,7 @@ export function Sidebar({ user }: SidebarProps) {
       {/* Bas : logout */}
       <div className="relative z-10 flex-shrink-0 p-3 border-t border-white/10 dark:border-zinc-800">
         <button
-          onClick={() => signOut({ callbackUrl: '/login' })}
+          onClick={() => signOut({ callbackUrl: `${window.location.origin}/login` })}
           className="flex w-full items-center gap-3 h-12 rounded-xl px-3 py-2.5 text-sm font-semibold transition-all duration-150 text-white/75 hover:bg-white/15 hover:text-white dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-white"
         >
           <LogOut className="h-4 w-4 flex-shrink-0" />

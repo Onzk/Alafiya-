@@ -43,7 +43,7 @@ const DialogContent = React.forwardRef<
         'rounded-2xl',
         // Desktop : centré, largeur max, arrondi partout
         'md:bottom-auto md:left-1/2 md:top-1/2 md:right-auto',
-        'md:-translate-x-1/2 md:-translate-y-1/2 md:max-w-2xl md:w-auto',
+        'md:-translate-x-1/2 md:-translate-y-1/2 md:max-w-md md:w-auto',
         // Fond + ombre améliorée
         'bg-white dark:bg-zinc-950',
         'border border-slate-200 dark:border-zinc-800/70',

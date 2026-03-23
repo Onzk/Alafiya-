@@ -15,6 +15,7 @@ import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem,
   DropdownMenuSeparator, DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useToast } from '@/hooks/use-toast'
 
 interface Centre {
@@ -44,6 +45,7 @@ export default function CentresPage() {
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [filterStatut, setFilterStatut] = useState<'tous' | 'actif' | 'inactif'>('tous')
+  const [filterType, setFilterType] = useState<string>('tous')
 
   // Delete dialog
   const [deleteTarget, setDeleteTarget] = useState<Centre | null>(null)
@@ -63,9 +65,10 @@ export default function CentresPage() {
       const matchSearch = search === '' ||
         `${c.nom} ${c.region} ${c.prefecture} ${c.type}`.toLowerCase().includes(search.toLowerCase())
       const matchStatut = filterStatut === 'tous' || (filterStatut === 'actif' ? c.estActif : !c.estActif)
-      return matchSearch && matchStatut
+      const matchType = filterType === 'tous' || c.type === filterType
+      return matchSearch && matchStatut && matchType
     })
-  }, [centres, search, filterStatut])
+  }, [centres, search, filterStatut, filterType])
 
   async function handleDelete() {
     if (!deleteTarget) return
@@ -105,7 +108,7 @@ export default function CentresPage() {
         </div>
 
         <Button
-          onClick={() => router.push('/ministere/centres/nouveau')}
+          onClick={() => router.push('/superadmin/centres/nouveau')}
           className="h-11 bg-brand hover:bg-brand-dark text-white rounded-xl gap-1.5 shadow-sm shadow-brand/20 flex-shrink-0"
         >
           <Plus className="h-4 w-4" />Nouveau centre
@@ -127,8 +130,19 @@ export default function CentresPage() {
             </button>
           ))}
         </div>
-        {(search || filterStatut !== 'tous') && (
-          <button onClick={() => { setSearch(''); setFilterStatut('tous') }}
+        <Select value={filterType} onValueChange={setFilterType}>
+          <SelectTrigger className="h-11 w-[150px] border-slate-200 dark:border-zinc-700 rounded-xl text-sm bg-white dark:bg-zinc-950 text-slate-900 dark:text-white focus:ring-emerald-500 focus:border-emerald-400">
+            <SelectValue placeholder="Type" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="tous">Tous les types</SelectItem>
+            {Object.entries(TYPE_LABELS).map(([v, l]) => (
+              <SelectItem key={v} value={v}>{l}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        {(search || filterStatut !== 'tous' || filterType !== 'tous') && (
+          <button onClick={() => { setSearch(''); setFilterStatut('tous'); setFilterType('tous') }}
             className="flex items-center gap-1.5 text-xs font-semibold text-slate-400 dark:text-zinc-500 hover:text-slate-700 dark:hover:text-zinc-300 transition-colors">
             <X className="h-3.5 w-3.5" /> Réinitialiser
           </button>
@@ -160,7 +174,7 @@ export default function CentresPage() {
             <ul>
               {filtered.map((c, i) => (
                 <li key={c.id}
-                  onClick={() => router.push(`/ministere/centres/${c.id}`)}
+                  onClick={() => router.push(`/superadmin/centres/${c.id}`)}
                   className={`dash-in delay-${[0,75,100,150,200,225,300][Math.min(i,6)]} grid grid-cols-[2fr_100px_1fr_1fr_70px_90px_44px] items-center gap-4 px-5 py-3.5 border-b border-slate-50 dark:border-zinc-800/60 last:border-0 hover:bg-slate-50/60 dark:hover:bg-zinc-800/30 transition-colors cursor-pointer`}>
                   {/* Centre */}
                   <div className="flex items-center gap-3 min-w-0">
@@ -205,11 +219,11 @@ export default function CentresPage() {
                         </button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end" className="w-44">
-                        <DropdownMenuItem onClick={() => router.push(`/ministere/centres/${c.id}`)}>
+                        <DropdownMenuItem onClick={() => router.push(`/superadmin/centres/${c.id}`)}>
                           <Eye className="h-4 w-4 text-slate-400" />
                           <span>Voir les détails</span>
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => router.push(`/ministere/centres/${c.id}/modifier`)}>
+                        <DropdownMenuItem onClick={() => router.push(`/superadmin/centres/${c.id}/modifier`)}>
                           <Pencil className="h-4 w-4 text-slate-400" />
                           <span>Modifier</span>
                         </DropdownMenuItem>
@@ -238,7 +252,7 @@ export default function CentresPage() {
           <div className="dash-in delay-100 lg:hidden grid sm:grid-cols-2 gap-4">
             {filtered.map((c, i) => (
               <div key={c.id}
-                onClick={() => router.push(`/ministere/centres/${c.id}`)}
+                onClick={() => router.push(`/superadmin/centres/${c.id}`)}
                 className={`dash-in delay-${[0,75,100,150,200,225,300][Math.min(i,6)]} bg-white dark:bg-zinc-950 rounded-2xl border border-slate-100 dark:border-zinc-800 overflow-hidden cursor-pointer hover:shadow-md transition-shadow`}>
                 <div className="h-1 bg-brand" />
                 <div className="p-4 space-y-3">
@@ -260,10 +274,10 @@ export default function CentresPage() {
                           </button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="w-44">
-                          <DropdownMenuItem onClick={() => router.push(`/ministere/centres/${c.id}`)}>
+                          <DropdownMenuItem onClick={() => router.push(`/superadmin/centres/${c.id}`)}>
                             <Eye className="h-4 w-4 text-slate-400" /><span>Voir les détails</span>
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => router.push(`/ministere/centres/${c.id}/modifier`)}>
+                          <DropdownMenuItem onClick={() => router.push(`/superadmin/centres/${c.id}/modifier`)}>
                             <Pencil className="h-4 w-4 text-slate-400" /><span>Modifier</span>
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />

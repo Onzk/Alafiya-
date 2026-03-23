@@ -149,7 +149,7 @@ export default async function DashboardPage() {
   if (!session?.user) redirect('/login')
 
   const user = session.user as unknown as SessionUser
-  if (user.niveauAcces === 'MINISTERE') redirect('/ministere/dashboard')
+  if (user.niveauAcces === 'SUPERADMIN') redirect('/superadmin/dashboard')
   if (user.niveauAcces === 'ADMIN_CENTRE') redirect('/admin/dashboard')
 
   /* ── Data fetching ── */

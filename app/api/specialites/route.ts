@@ -23,7 +23,7 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   const session = await auth()
-  if (!session?.user || (session.user as { niveauAcces?: string }).niveauAcces !== 'MINISTERE') {
+  if (!session?.user || (session.user as { niveauAcces?: string }).niveauAcces !== 'SUPERADMIN') {
     return NextResponse.json({ error: 'Réservé au Ministère' }, { status: 403 })
   }
 

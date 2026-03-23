@@ -27,7 +27,7 @@ interface Role {
   id: string
   nom: string
   description?: string
-  creePar: 'MINISTERE' | 'CENTRE'
+  creePar: 'SUPERADMIN' | 'CENTRE'
   permissions: { permission: { code: string; description: string } }[]
   _count?: { utilisateurs: number }
 }
@@ -41,7 +41,7 @@ export default function AdminRolesPage() {
   const { toast } = useToast()
   const { data: session } = useSession()
   const currentUser = session?.user as unknown as SessionUser | undefined
-  const isMinistere = currentUser?.niveauAcces === 'MINISTERE'
+  const isMinistere = currentUser?.niveauAcces === 'SUPERADMIN'
   const [roles, setRoles] = useState<Role[]>([])
   const [permissions, setPermissions] = useState<Permission[]>([])
   const [loading, setLoading] = useState(true)
@@ -161,7 +161,7 @@ export default function AdminRolesPage() {
   }, [roles, search])
 
   const rolesLocaux = filtered.filter((r) => r.creePar === 'CENTRE')
-  const rolesGlobaux = filtered.filter((r) => r.creePar === 'MINISTERE')
+  const rolesGlobaux = filtered.filter((r) => r.creePar === 'SUPERADMIN')
 
   return (
     <div className="space-y-5 max-w-[1400px]">
@@ -253,7 +253,7 @@ export default function AdminRolesPage() {
             </div>
             <ul>
               {filtered.map((role, i) => {
-                const isGlobal = role.creePar === 'MINISTERE'
+                const isGlobal = role.creePar === 'SUPERADMIN'
                 return (
                   <li key={role.id} onClick={() => setViewTarget(role)} className={`dash-in delay-${[0,75,100,150,200,225,300][Math.min(i,6)]} grid grid-cols-[2fr_100px_70px_1fr_44px] items-center gap-4 px-5 py-3.5 border-b border-slate-50 dark:border-zinc-800/60 last:border-0 hover:bg-slate-50/60 dark:hover:bg-zinc-800/30 transition-colors cursor-pointer`}>
                     {/* Rôle */}
@@ -359,8 +359,8 @@ export default function AdminRolesPage() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
                       <p className="font-bold text-slate-900 dark:text-white text-lg leading-tight">{viewTarget.nom}</p>
-                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-lg ${viewTarget.creePar === 'MINISTERE' ? 'bg-slate-100 dark:bg-zinc-950 text-slate-500 dark:text-zinc-400' : 'bg-indigo-50 dark:bg-indigo-400/15 text-indigo-600 dark:text-indigo-300'}`}>
-                        {viewTarget.creePar === 'MINISTERE' ? 'Global' : 'Centre'}
+                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-lg ${viewTarget.creePar === 'SUPERADMIN' ? 'bg-slate-100 dark:bg-zinc-950 text-slate-500 dark:text-zinc-400' : 'bg-indigo-50 dark:bg-indigo-400/15 text-indigo-600 dark:text-indigo-300'}`}>
+                        {viewTarget.creePar === 'SUPERADMIN' ? 'Global' : 'Centre'}
                       </span>
                     </div>
                     {viewTarget.description && <p className="text-sm text-slate-500 dark:text-zinc-400 mt-1">{viewTarget.description}</p>}
@@ -394,7 +394,7 @@ export default function AdminRolesPage() {
                 </div>
                 <div className="flex gap-2 pt-1">
                   <Button variant="outline" className="flex-1 h-10 rounded-xl" onClick={() => setViewTarget(null)}>Fermer</Button>
-                  {isMinistere && viewTarget.creePar !== 'MINISTERE' && (
+                  {isMinistere && viewTarget.creePar !== 'SUPERADMIN' && (
                     <Button className="flex-1 h-10 bg-brand hover:bg-brand-dark text-white rounded-xl" onClick={() => { openEdit(viewTarget); setViewTarget(null) }}>
                       <Pencil className="h-3.5 w-3.5 mr-1.5" />Modifier
                     </Button>

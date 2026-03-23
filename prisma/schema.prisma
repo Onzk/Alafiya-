@@ -60,6 +60,8 @@ model Centre {
   region            String
   prefecture        String
   type              TypeCentre
+  prixParDossier    Int                     @default(0)
+  commissionNdi     Int                     @default(0)
   estActif          Boolean                 @default(true)
   createdAt         DateTime                @default(now())
   updatedAt         DateTime                @updatedAt
@@ -261,7 +263,7 @@ model Log {
 }
 
 enum NiveauAcces {
-  MINISTERE
+  SUPERADMIN
   ADMIN_CENTRE
   PERSONNEL
 }
@@ -296,7 +298,7 @@ enum ActionLog {
 }
 
 enum CreateurRole {
-  MINISTERE
+  SUPERADMIN
   CENTRE
 }
 

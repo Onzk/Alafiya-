@@ -27,6 +27,7 @@ interface Medecin {
   telephone?: string
   estActif: boolean
   createdAt: string
+  role?: { nom: string } | null
   specialites: { specialite: { nom: string; code: string } }[]
   centres: { centre: { id: string; nom: string; type: string } }[]
 }
@@ -55,6 +56,7 @@ export default function MedecinsPage() {
   const [filterStatut, setFilterStatut] = useState<StatusFilter>('tous')
   const [filterCentre, setFilterCentre] = useState('tous')
   const [filterSpecialite, setFilterSpecialite] = useState('tous')
+  const [filterRole, setFilterRole] = useState('tous')
   const [toggling, setToggling] = useState<string | null>(null)
 
   useEffect(() => {
@@ -95,6 +97,18 @@ export default function MedecinsPage() {
     }
   }
 
+  const rolesDisponibles = useMemo(() => {
+    const seen = new Set<string>()
+    const roles: string[] = []
+    medecins.forEach((m) => {
+      if (m.role?.nom && !seen.has(m.role.nom)) {
+        seen.add(m.role.nom)
+        roles.push(m.role.nom)
+      }
+    })
+    return roles.sort()
+  }, [medecins])
+
   const filtered = useMemo(() => {
     return medecins.filter((m) => {
       const matchSearch = search === '' ||
@@ -105,13 +119,14 @@ export default function MedecinsPage() {
         m.centres.some((c) => c.centre.id === filterCentre)
       const matchSpecialite = filterSpecialite === 'tous' ||
         m.specialites.some((s) => s.specialite.code === filterSpecialite)
-      return matchSearch && matchStatut && matchCentre && matchSpecialite
+      const matchRole = filterRole === 'tous' || m.role?.nom === filterRole
+      return matchSearch && matchStatut && matchCentre && matchSpecialite && matchRole
     })
-  }, [medecins, search, filterStatut, filterCentre, filterSpecialite])
+  }, [medecins, search, filterStatut, filterCentre, filterSpecialite, filterRole])
 
   const actifs = medecins.filter((m) => m.estActif).length
   const inactifs = medecins.length - actifs
-  const hasFilters = search !== '' || filterStatut !== 'tous' || filterCentre !== 'tous' || filterSpecialite !== 'tous'
+  const hasFilters = search !== '' || filterStatut !== 'tous' || filterCentre !== 'tous' || filterSpecialite !== 'tous' || filterRole !== 'tous'
 
   return (
     <div className="space-y-5 max-w-[1400px]">
@@ -126,7 +141,7 @@ export default function MedecinsPage() {
         </div>
 
         <Button
-          onClick={() => router.push('/ministere/medecins/nouveau')}
+          onClick={() => router.push('/superadmin/medecins/nouveau')}
           className="h-11 bg-brand hover:bg-brand-dark text-white rounded-xl gap-1.5 shadow-sm shadow-brand/20 flex-shrink-0"
         >
           <Plus className="h-4 w-4" />Ajouter un personnel
@@ -173,8 +188,18 @@ export default function MedecinsPage() {
           </SelectContent>
         </Select>
 
+        <Select value={filterRole} onValueChange={setFilterRole}>
+          <SelectTrigger className={`${inputCls} w-[160px]`}>
+            <SelectValue placeholder="Tous les types" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="tous">Tous les types</SelectItem>
+            {rolesDisponibles.map((r) => <SelectItem key={r} value={r}>{r}</SelectItem>)}
+          </SelectContent>
+        </Select>
+
         {hasFilters && (
-          <button onClick={() => { setSearch(''); setFilterStatut('tous'); setFilterCentre('tous'); setFilterSpecialite('tous') }}
+          <button onClick={() => { setSearch(''); setFilterStatut('tous'); setFilterCentre('tous'); setFilterSpecialite('tous'); setFilterRole('tous') }}
             className="flex items-center gap-1.5 text-xs font-semibold text-slate-400 dark:text-zinc-500 hover:text-slate-700 dark:hover:text-zinc-300 transition-colors">
             <X className="h-3.5 w-3.5" /> Réinitialiser
           </button>
@@ -211,7 +236,7 @@ export default function MedecinsPage() {
               {filtered.map((m, i) => {
                 const centre = m.centres[0]?.centre
                 return (
-                  <li key={m.id} onClick={() => router.push(`/ministere/medecins/${m.id}`)} className={`dash-in delay-${[0,75,100,150,200,225,300][Math.min(i,6)]} grid grid-cols-[2fr_1fr_1fr_90px_44px] items-center gap-4 px-5 py-3.5 border-b border-slate-50 dark:border-zinc-800/60 last:border-0 hover:bg-slate-50/60 dark:hover:bg-zinc-800/30 transition-colors cursor-pointer`}>
+                  <li key={m.id} onClick={() => router.push(`/superadmin/medecins/${m.id}`)} className={`dash-in delay-${[0,75,100,150,200,225,300][Math.min(i,6)]} grid grid-cols-[2fr_1fr_1fr_90px_44px] items-center gap-4 px-5 py-3.5 border-b border-slate-50 dark:border-zinc-800/60 last:border-0 hover:bg-slate-50/60 dark:hover:bg-zinc-800/30 transition-colors cursor-pointer`}>
                     <div className="flex items-center gap-3 min-w-0">
                       <div className="h-9 w-9 rounded-full bg-brand/10 dark:bg-brand/15 flex items-center justify-center flex-shrink-0">
                         <span className="text-brand font-bold text-xs">{m.nom[0]}{m.prenoms[0]}</span>
@@ -253,10 +278,10 @@ export default function MedecinsPage() {
                           </button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="w-44">
-                          <DropdownMenuItem onClick={() => router.push(`/ministere/medecins/${m.id}`)}>
+                          <DropdownMenuItem onClick={() => router.push(`/superadmin/medecins/${m.id}`)}>
                             <Eye className="h-4 w-4 text-slate-400" /><span>Voir les détails</span>
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => router.push(`/ministere/medecins/${m.id}/modifier`)}>
+                          <DropdownMenuItem onClick={() => router.push(`/superadmin/medecins/${m.id}/modifier`)}>
                             <Pencil className="h-4 w-4 text-slate-400" /><span>Modifier</span>
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
@@ -285,7 +310,7 @@ export default function MedecinsPage() {
             {filtered.map((m, i) => {
               const centre = m.centres[0]?.centre
               return (
-                <div key={m.id} onClick={() => router.push(`/ministere/medecins/${m.id}`)} className={`dash-in delay-${[0,75,100,150,200,225,300][Math.min(i,6)]} bg-white dark:bg-zinc-950 rounded-2xl border border-slate-100 dark:border-zinc-800 overflow-hidden cursor-pointer hover:shadow-md transition-shadow`}>
+                <div key={m.id} onClick={() => router.push(`/superadmin/medecins/${m.id}`)} className={`dash-in delay-${[0,75,100,150,200,225,300][Math.min(i,6)]} bg-white dark:bg-zinc-950 rounded-2xl border border-slate-100 dark:border-zinc-800 overflow-hidden cursor-pointer hover:shadow-md transition-shadow`}>
                   <div className="h-1 bg-brand" />
                   <div className="p-4 space-y-3">
                     <div className="flex items-start justify-between gap-2">
@@ -306,10 +331,10 @@ export default function MedecinsPage() {
                             </button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end" className="w-44">
-                            <DropdownMenuItem onClick={() => router.push(`/ministere/medecins/${m.id}`)}>
+                            <DropdownMenuItem onClick={() => router.push(`/superadmin/medecins/${m.id}`)}>
                               <Eye className="h-4 w-4 text-slate-400" /><span>Voir les détails</span>
                             </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => router.push(`/ministere/medecins/${m.id}/modifier`)}>
+                            <DropdownMenuItem onClick={() => router.push(`/superadmin/medecins/${m.id}/modifier`)}>
                               <Pencil className="h-4 w-4 text-slate-400" /><span>Modifier</span>
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />

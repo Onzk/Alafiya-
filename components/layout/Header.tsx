@@ -38,11 +38,11 @@ const PAGE_TITLES: Record<string, string> = {
   '/admin/personnels':      'Personnel médical',
   '/admin/patients':        'Patients',
   '/admin/roles':           'Types de personnel',
-  '/ministere/dashboard':   'Tableau de bord',
-  '/ministere/centres':     'Centres de santé',
-  '/ministere/medecins':    'Personnel médical',
-  '/ministere/roles':       'Types de personnel',
-  '/ministere/specialites': 'Spécialités',
+  '/superadmin/dashboard':   'Tableau de bord',
+  '/superadmin/centres':     'Centres de santé',
+  '/superadmin/medecins':    'Personnel médical',
+  '/superadmin/roles':       'Types de personnel',
+  '/superadmin/specialites': 'Spécialités',
   '/logs':                  "Journaux d'activité",
   '/profil':                'Paramètres',
   '/parametres':            'Paramètres',
@@ -62,17 +62,17 @@ export function Header({ user }: HeaderProps) {
   const title    = getTitle(pathname)
 
   const displayName =
-    user.niveauAcces === 'MINISTERE'
-      ? 'Ministère'
+    user.niveauAcces === 'SUPERADMIN'
+      ? 'N\'di Solutions'
       : `${user.prenoms} ${user.nom}`
 
   const roleLabel =
-    user.niveauAcces === 'MINISTERE'    ? 'Administrateur National' :
+    user.niveauAcces === 'SUPERADMIN'   ? 'Superadmin' :
     user.niveauAcces === 'ADMIN_CENTRE' ? 'Admin de centre' :
     'Personnel médical'
 
-  /* ── Réseau search (MINISTERE only) ── */
-  const isMinistere   = user.niveauAcces === 'MINISTERE'
+  /* ── Réseau search (SUPERADMIN only) ── */
+  const isSuperAdmin  = user.niveauAcces === 'SUPERADMIN'
   const isAdminCentre = user.niveauAcces === 'ADMIN_CENTRE'
 
   const [query,           setQuery]           = useState('')
@@ -101,16 +101,16 @@ export function Header({ user }: HeaderProps) {
   type NavItem  = { href: string; label: string; icon: React.ElementType; isUrgence?: boolean }
   type NavGroup = { section: string | null; items: NavItem[] }
   const mobileGroups: NavGroup[] =
-    user.niveauAcces === 'MINISTERE'
+    user.niveauAcces === 'SUPERADMIN'
       ? [
           { section: null, items: [
-            { href: '/ministere/dashboard', label: 'Tableau de bord', icon: LayoutDashboard },
+            { href: '/superadmin/dashboard', label: 'Tableau de bord', icon: LayoutDashboard },
           ]},
           { section: 'RÉSEAU', items: [
-            { href: '/ministere/centres',     label: 'Centres de santé',   icon: Building2 },
-            { href: '/ministere/medecins',    label: 'Personnel médical',  icon: Users },
-            { href: '/ministere/specialites', label: 'Spécialités',        icon: Stethoscope },
-            { href: '/ministere/roles',       label: 'Types de personnel', icon: Shield },
+            { href: '/superadmin/centres',     label: 'Centres de santé',   icon: Building2 },
+            { href: '/superadmin/medecins',    label: 'Personnel médical',  icon: Users },
+            { href: '/superadmin/specialites', label: 'Spécialités',        icon: Stethoscope },
+            { href: '/superadmin/roles',       label: 'Types de personnel', icon: Shield },
           ]},
           { section: 'SUIVI', items: [
             { href: '/logs', label: "Journaux d'activité", icon: Activity },
@@ -157,9 +157,9 @@ export function Header({ user }: HeaderProps) {
     return () => document.removeEventListener('mousedown', handleClick)
   }, [])
 
-  // Load Réseau data once for MINISTERE users
+  // Load Réseau data once for SUPERADMIN users
   useEffect(() => {
-    if (!isMinistere) return
+    if (!isSuperAdmin) return
     Promise.all([
       fetch('/api/centres').then(r => r.json()),
       fetch('/api/utilisateurs?niveauAcces=PERSONNEL').then(r => r.json()),
@@ -173,7 +173,7 @@ export function Header({ user }: HeaderProps) {
         roles:       r.roles        || [],
       })
     })
-  }, [isMinistere])
+  }, [isSuperAdmin])
 
   // Debounced Centre search
   useEffect(() => {
@@ -234,7 +234,7 @@ export function Header({ user }: HeaderProps) {
         .slice(0, 3)
         .map(c => ({
           type: 'Centre', label: c.nom, sub: c.region || c.type,
-          href: `/ministere/centres/${c.id}`, Icon: Building2,
+          href: `/superadmin/centres/${c.id}`, Icon: Building2,
           iconBg: 'bg-emerald-50 dark:bg-emerald-500/10',
           iconColor: 'text-emerald-600 dark:text-emerald-400',
         })),
@@ -243,7 +243,7 @@ export function Header({ user }: HeaderProps) {
         .slice(0, 3)
         .map(m => ({
           type: 'Personnel', label: `${m.nom} ${m.prenoms}`, sub: m.email,
-          href: '/ministere/medecins', Icon: Users,
+          href: '/superadmin/medecins', Icon: Users,
           iconBg: 'bg-blue-50 dark:bg-blue-500/10',
           iconColor: 'text-blue-600 dark:text-blue-400',
         })),
@@ -252,7 +252,7 @@ export function Header({ user }: HeaderProps) {
         .slice(0, 2)
         .map(s => ({
           type: 'Spécialité', label: s.nom, sub: s.code,
-          href: '/ministere/specialites', Icon: Stethoscope,
+          href: '/superadmin/specialites', Icon: Stethoscope,
           iconBg: 'bg-purple-50 dark:bg-purple-500/10',
           iconColor: 'text-purple-600 dark:text-purple-400',
         })),
@@ -261,7 +261,7 @@ export function Header({ user }: HeaderProps) {
         .slice(0, 2)
         .map(r => ({
           type: 'Rôle', label: r.nom, sub: r.description,
-          href: '/ministere/roles', Icon: Shield,
+          href: '/superadmin/roles', Icon: Shield,
           iconBg: 'bg-orange-50 dark:bg-orange-500/10',
           iconColor: 'text-orange-600 dark:text-orange-400',
         })),
@@ -297,7 +297,7 @@ export function Header({ user }: HeaderProps) {
 
       {/* Centre : barre de recherche — desktop */}
       <div className="hidden lg:flex flex-1 max-w-xs mx-8">
-        {isMinistere ? (
+        {isSuperAdmin ? (
           /* ── Réseau search ── */
           <div ref={searchRef} className="relative w-full">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-primary pointer-events-none z-10" />
@@ -531,14 +531,19 @@ export function Header({ user }: HeaderProps) {
               <Link
                 href="/parametres"
                 onClick={() => setProfileOpen(false)}
-                className="flex items-center gap-3 px-4 py-3 text-sm font-semibold text-slate-700 dark:text-zinc-200 hover:bg-slate-50 dark:hover:bg-zinc-800 transition-colors"
+                className={cn(
+                  "flex items-center gap-3 px-4 py-3 text-sm font-semibold transition-colors",
+                  pathname === '/parametres'
+                    ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+                    : 'text-slate-700 dark:text-zinc-200 hover:bg-slate-50 dark:hover:bg-zinc-800'
+                )}
               >
-                <Settings className="h-4 w-4 text-slate-400 dark:text-zinc-500" />
+                <Settings className={cn("h-4 w-4", pathname === '/parametres' ? 'text-emerald-500' : 'text-slate-400 dark:text-zinc-500')} />
                 Paramètres
               </Link>
               <div className="h-px bg-slate-100 dark:bg-zinc-950" />
               <button
-                onClick={() => signOut({ callbackUrl: '/login' })}
+                onClick={() => signOut({ callbackUrl: `${window.location.origin}/login` })}
                 className="flex w-full items-center gap-3 px-4 py-3 text-sm font-semibold text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors"
               >
                 <LogOut className="h-4 w-4" />
@@ -644,7 +649,7 @@ export function Header({ user }: HeaderProps) {
               Paramètres
             </Link>
             <button
-              onClick={() => signOut({ callbackUrl: '/login' })}
+              onClick={() => signOut({ callbackUrl: `${window.location.origin}/login` })}
               className="flex w-full items-center gap-3 h-12 rounded-xl px-3 text-sm font-semibold text-white/75 hover:bg-white/15 hover:text-white dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-white transition-all"
             >
               <LogOut className="h-4 w-4 flex-shrink-0" />

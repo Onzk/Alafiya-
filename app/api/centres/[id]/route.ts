@@ -1,6 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
 import prisma from '@/lib/db'
+import { z } from 'zod'
+
+const patchCentreSchema = z.object({
+  nom: z.string().min(1).optional(),
+  adresse: z.string().min(1).optional(),
+  telephone: z.string().min(1).optional(),
+  email: z.string().email().optional(),
+  region: z.string().min(1).optional(),
+  prefecture: z.string().min(1).optional(),
+  type: z.enum(['HOPITAL', 'CLINIQUE', 'CSU', 'CMS', 'AUTRE']).optional(),
+  prixParDossier: z.coerce.number().int().min(0).optional(),
+  commissionNdi: z.coerce.number().int().min(0).optional(),
+  estActif: z.boolean().optional(),
+})
 
 export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
   const session = await auth()
@@ -39,15 +53,19 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
 
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
   const session = await auth()
-  if (!session?.user || (session.user as { niveauAcces?: string }).niveauAcces !== 'MINISTERE') {
+  if (!session?.user || (session.user as { niveauAcces?: string }).niveauAcces !== 'SUPERADMIN') {
     return NextResponse.json({ error: 'Réservé au Ministère' }, { status: 403 })
   }
 
   const body = await req.json()
+  const validation = patchCentreSchema.safeParse(body)
+  if (!validation.success) {
+    return NextResponse.json({ error: 'Données invalides', details: validation.error.flatten() }, { status: 400 })
+  }
 
   const centre = await prisma.centre.update({
     where: { id: params.id },
-    data: body,
+    data: validation.data,
     include: { admin: { select: { nom: true, prenoms: true, email: true } } },
   })
 
@@ -56,7 +74,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
 
 export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
   const session = await auth()
-  if (!session?.user || (session.user as { niveauAcces?: string }).niveauAcces !== 'MINISTERE') {
+  if (!session?.user || (session.user as { niveauAcces?: string }).niveauAcces !== 'SUPERADMIN') {
     return NextResponse.json({ error: 'Réservé au Ministère' }, { status: 403 })
   }
 

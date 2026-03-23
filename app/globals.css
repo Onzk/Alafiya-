@@ -138,6 +138,12 @@
   .dark .vitrine-card-muted { background: var(--vitrine-card-dark); }
 }
 
+/* Hide scrollbar */
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+}
+
 /* Scroll reveal */
 @layer utilities {
   .animate-on-scroll {

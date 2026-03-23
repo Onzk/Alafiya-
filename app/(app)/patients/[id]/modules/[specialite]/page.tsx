@@ -36,7 +36,7 @@ export default async function ModuleSpecialitePage({
 
   // Vérifier accès valide
   const accesValide =
-    user.niveauAcces === 'MINISTERE' ||
+    user.niveauAcces === 'SUPERADMIN' ||
     !!(await prisma.accesDossier.findFirst({
       where: { dossierId, medecinId: user.id, finAcces: { gt: new Date() } },
     }))

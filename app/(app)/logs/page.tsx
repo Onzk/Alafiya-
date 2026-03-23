@@ -29,7 +29,7 @@ export default async function LogsPage({
   if (!session?.user) redirect('/login')
 
   const user = session.user as unknown as SessionUser
-  if (!['MINISTERE', 'ADMIN_CENTRE'].includes(user.niveauAcces)) redirect('/dashboard')
+  if (!['SUPERADMIN', 'ADMIN_CENTRE'].includes(user.niveauAcces)) redirect('/dashboard')
 
   const page = Math.max(1, parseInt(searchParams.page || '1'))
   const action = searchParams.action || ''
