@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
   const [patient, medecin, centre] = await Promise.all([
     prisma.patient.findUnique({
       where: { id: patientId },
-      select: { nom: true, prenoms: true, urgenceTel: true },
+      select: { nom: true, prenoms: true, personnesUrgence: { select: { telephone: true } } },
     }),
     prisma.user.findUnique({
       where: { id: session.user.id! },
@@ -50,11 +50,11 @@ export async function POST(req: NextRequest) {
     },
   })
 
-  if (patient.urgenceTel) {
+  if (patient.personnesUrgence.length > 0) {
     const nomMedecin = medecin ? `${medecin.nom} ${medecin.prenoms}` : 'Un professionnel de santé'
     const nomCentre = centre?.nom ?? 'un établissement de santé'
     const msg = messageUrgence(`${patient.nom} ${patient.prenoms}`, nomMedecin, nomCentre, justification)
-    await envoyerSMS(patient.urgenceTel, msg)
+    await Promise.all(patient.personnesUrgence.map((p) => envoyerSMS(p.telephone, msg)))
   }
 
   const { ip, userAgent } = getRequestInfo(req)

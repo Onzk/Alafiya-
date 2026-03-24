@@ -5,6 +5,7 @@ import Image from 'next/image'
 import {
   Camera, Lock, Eye, EyeOff,
   Loader2, Shield, Smartphone, User, Mail, BadgeCheck, CreditCard, Phone,
+  Building2, MapPin, ImageIcon,
 } from 'lucide-react'
 import { useSession } from 'next-auth/react'
 import { SessionUser } from '@/types'
@@ -12,7 +13,7 @@ import { useToast } from '@/hooks/use-toast'
 import { cn } from '@/lib/utils'
 import { Input } from '@/components/ui/input'
 
-type Section = 'profil' | 'mot-de-passe' | 'securite' | 'paiement'
+type Section = 'profil' | 'mot-de-passe' | 'securite' | 'paiement' | 'centre'
 
 const navItemsBase: { id: Section; label: string; icon: React.ElementType }[] = [
   { id: 'profil',        label: 'Profil',         icon: User },
@@ -22,6 +23,23 @@ const navItemsBase: { id: Section; label: string; icon: React.ElementType }[] = 
 
 const navItemSuperAdmin: { id: Section; label: string; icon: React.ElementType } = {
   id: 'paiement', label: 'Paiement', icon: CreditCard,
+}
+
+const navItemAdminCentre: { id: Section; label: string; icon: React.ElementType } = {
+  id: 'centre', label: 'Mon centre', icon: Building2,
+}
+
+interface InfoCentre {
+  id: string
+  nom: string
+  adresse: string
+  telephone: string
+  email: string
+  region: string
+  prefecture: string
+  type: string
+  logo: string | null
+  banniere: string | null
 }
 
 interface ConfigPaiement {
@@ -39,7 +57,12 @@ export function ParametresClient({ user, photo: initialPhoto }: { user: SessionU
   const { toast } = useToast()
 
   const isSuperAdmin = user.niveauAcces === 'SUPERADMIN'
-  const navItems = isSuperAdmin ? [...navItemsBase, navItemSuperAdmin] : navItemsBase
+  const isAdminCentre = user.niveauAcces === 'ADMIN_CENTRE'
+  const navItems = [
+    ...navItemsBase,
+    ...(isSuperAdmin ? [navItemSuperAdmin] : []),
+    ...(isAdminCentre ? [navItemAdminCentre] : []),
+  ]
 
   const [activeSection, setActiveSection] = useState<Section>('profil')
 
@@ -80,6 +103,38 @@ export function ParametresClient({ user, photo: initialPhoto }: { user: SessionU
         return
       }
       toast({ description: 'Informations de paiement mises à jour', variant: 'success' })
+    })
+  }
+
+  /* ── Centre (admin_centre) ── */
+  const [centre, setCentre] = useState<InfoCentre | null>(null)
+  const [logoUploading, startLogoUpload] = useTransition()
+  const [banniereUploading, startBanniereUpload] = useTransition()
+  const logoRef = useRef<HTMLInputElement>(null)
+  const banniereRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    if (!isAdminCentre) return
+    fetch('/api/admin/centre')
+      .then(r => r.json())
+      .then(d => setCentre(d))
+      .catch(() => {})
+  }, [isAdminCentre])
+
+  function handleImageUpload(type: 'logo' | 'banniere', file: File) {
+    const startTransition = type === 'logo' ? startLogoUpload : startBanniereUpload
+    startTransition(async () => {
+      const fd = new FormData()
+      fd.append('type', type)
+      fd.append('fichier', file)
+      const res = await fetch('/api/admin/centre', { method: 'POST', body: fd })
+      const data = await res.json()
+      if (!res.ok) {
+        toast({ description: data.error ?? 'Erreur', variant: 'destructive' })
+        return
+      }
+      setCentre(prev => prev ? { ...prev, [type]: data[type] } : prev)
+      toast({ description: type === 'logo' ? 'Logo mis à jour' : 'Bannière mise à jour', variant: 'success' })
     })
   }
 
@@ -477,6 +532,128 @@ export function ParametresClient({ user, photo: initialPhoto }: { user: SessionU
                   </div>
                 </form>
               </div>
+            </div>
+          )}
+
+          {/* ════ Centre (admin_centre) ════ */}
+          {activeSection === 'centre' && isAdminCentre && (
+            <div className="space-y-6">
+
+              {/* Bannière */}
+              <div className="bg-white dark:bg-zinc-950 rounded-2xl border border-slate-100 dark:border-zinc-800 overflow-hidden">
+                <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-zinc-800">
+                  <div>
+                    <p className="text-xs font-bold uppercase tracking-widest text-slate-400 dark:text-zinc-500">
+                      Image bannière
+                    </p>
+                    <p className="text-[11px] text-slate-400 dark:text-zinc-500 mt-0.5">Format recommandé : 1200 × 300 px — max 5 Mo</p>
+                  </div>
+                  <button
+                    onClick={() => banniereRef.current?.click()}
+                    disabled={banniereUploading}
+                    className="h-9 px-4 rounded-xl bg-brand hover:bg-brand/90 text-white text-xs font-bold transition-colors disabled:opacity-60 flex items-center gap-2"
+                  >
+                    {banniereUploading
+                      ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      : <ImageIcon className="h-3.5 w-3.5" />
+                    }
+                    {centre?.banniere ? 'Changer' : 'Ajouter'}
+                  </button>
+                  <input
+                    ref={banniereRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={e => { const f = e.target.files?.[0]; if (f) handleImageUpload('banniere', f) }}
+                  />
+                </div>
+                <div className="p-6">
+                  {centre?.banniere ? (
+                    <div className="relative w-full h-32 rounded-xl overflow-hidden border border-slate-100 dark:border-zinc-800">
+                      <Image src={centre.banniere} alt="Bannière du centre" fill className="object-cover" />
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => banniereRef.current?.click()}
+                      disabled={banniereUploading}
+                      className="w-full h-32 rounded-xl border-2 border-dashed border-slate-200 dark:border-zinc-700 flex flex-col items-center justify-center gap-2 text-slate-400 dark:text-zinc-500 hover:border-brand hover:text-brand transition-colors disabled:opacity-60"
+                    >
+                      <ImageIcon className="h-6 w-6" />
+                      <span className="text-xs font-semibold">Cliquer pour ajouter une bannière</span>
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Logo + infos */}
+              <div className="bg-white dark:bg-zinc-950 rounded-2xl border border-slate-100 dark:border-zinc-800 overflow-hidden">
+                <div className="px-6 py-4 border-b border-slate-100 dark:border-zinc-800">
+                  <p className="text-xs font-bold uppercase tracking-widest text-slate-400 dark:text-zinc-500">
+                    Logo du centre
+                  </p>
+                  <p className="text-[11px] text-slate-400 dark:text-zinc-500 mt-0.5">Format carré recommandé — max 2 Mo</p>
+                </div>
+                <div className="px-6 py-5 flex items-center gap-5">
+                  <div className="relative flex-shrink-0">
+                    <div className="h-20 w-20 rounded-2xl border-2 border-slate-100 dark:border-zinc-800 shadow-sm overflow-hidden bg-brand/10 dark:bg-brand/15 flex items-center justify-center">
+                      {centre?.logo
+                        ? <Image src={centre.logo} alt="Logo du centre" fill className="object-cover rounded-2xl" />
+                        : <Building2 className="h-8 w-8 text-brand/40" />
+                      }
+                    </div>
+                    <button
+                      onClick={() => logoRef.current?.click()}
+                      disabled={logoUploading}
+                      className="absolute -bottom-1 -right-1 h-6 w-6 rounded-full bg-brand text-white flex items-center justify-center shadow-md hover:bg-brand/90 transition-colors disabled:opacity-60"
+                    >
+                      {logoUploading
+                        ? <Loader2 className="h-3 w-3 animate-spin" />
+                        : <Camera className="h-3 w-3" />
+                      }
+                    </button>
+                    <input
+                      ref={logoRef}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={e => { const f = e.target.files?.[0]; if (f) handleImageUpload('logo', f) }}
+                    />
+                  </div>
+                  <div>
+                    <p className="font-bold text-slate-900 dark:text-white">{centre?.nom ?? '…'}</p>
+                    <p className="text-xs text-slate-400 dark:text-zinc-500 mt-0.5">{centre?.type ?? ''}</p>
+                    {centre?.logo && (
+                      <span className="inline-flex mt-1.5 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-emerald-500/10 dark:bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">
+                        Logo actif
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Informations du centre */}
+              <div className="bg-white dark:bg-zinc-950 rounded-2xl border border-slate-100 dark:border-zinc-800 overflow-hidden">
+                <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-zinc-800">
+                  <p className="text-xs font-bold uppercase tracking-widest text-slate-400 dark:text-zinc-500">
+                    Informations du centre
+                  </p>
+                  <span className="text-[10px] font-semibold px-2 py-1 rounded-lg bg-slate-100 dark:bg-zinc-800 text-slate-400 dark:text-zinc-500">
+                    Lecture seule
+                  </span>
+                </div>
+                <div className="px-6 py-5 grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-5">
+                  <Field icon={Building2} label="Nom"         value={centre?.nom ?? '…'} />
+                  <Field icon={Mail}      label="E-mail"      value={centre?.email ?? '…'} />
+                  <Field icon={Phone}     label="Téléphone"   value={centre?.telephone ?? '…'} />
+                  <Field icon={MapPin}    label="Adresse"     value={centre?.adresse ?? '…'} />
+                  <Field icon={MapPin}    label="Région"      value={centre?.region ?? '…'} />
+                  <Field icon={MapPin}    label="Préfecture"  value={centre?.prefecture ?? '…'} />
+                </div>
+                <div className="px-6 pb-4 text-[11px] text-slate-400 dark:text-zinc-500">
+                  Pour modifier ces informations, contactez l&apos;administrateur national.
+                </div>
+              </div>
+
             </div>
           )}
 

@@ -5,6 +5,14 @@ import { genererTokenQR } from '@/lib/qrcode'
 import { logger, getRequestInfo } from '@/lib/logger'
 import { z } from 'zod'
 
+const personneUrgenceSchema = z.object({
+  nom: z.string().min(1),
+  prenoms: z.string().min(1),
+  telephone: z.string().min(1),
+  adresse: z.string().min(1),
+  relation: z.string().min(1),
+})
+
 const creerPatientSchema = z.object({
   nom: z.string().min(1),
   prenoms: z.string().min(1),
@@ -15,13 +23,7 @@ const creerPatientSchema = z.object({
   telephone: z.string().optional(),
   email: z.string().email().optional().or(z.literal('')),
   numeroCNI: z.string().optional(),
-  personneUrgence: z.object({
-    nom: z.string().min(1),
-    prenoms: z.string().min(1),
-    telephone: z.string().min(1),
-    adresse: z.string().min(1),
-    relation: z.string().min(1),
-  }),
+  personnesUrgence: z.array(personneUrgenceSchema).min(1).max(3),
 })
 
 export async function GET(req: NextRequest) {
@@ -70,7 +72,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Données invalides', details: validation.error.flatten() }, { status: 400 })
   }
 
-  const { personneUrgence, dateNaissance, email, telephone, numeroCNI, ...rest } = validation.data
+  const { personnesUrgence, dateNaissance, email, telephone, numeroCNI, ...rest } = validation.data
   const token = genererTokenQR()
   const centreActifId = (session.user as { centreActif?: string }).centreActif
   const now = new Date()
@@ -86,13 +88,9 @@ export async function POST(req: NextRequest) {
       qrToken: token,
       qrGeneratedAt: now,
       qrAccesExpireAt,
-      urgenceNom: personneUrgence.nom,
-      urgencePrenoms: personneUrgence.prenoms,
-      urgenceTel: personneUrgence.telephone,
-      urgenceAdresse: personneUrgence.adresse,
-      urgenceRelation: personneUrgence.relation,
       creeParId: session.user.id!,
       centreCreationId: centreActifId!,
+      personnesUrgence: { create: personnesUrgence },
       dossier: { create: {} },
     },
     include: { dossier: true },

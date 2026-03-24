@@ -50,7 +50,7 @@ export default function ScannerPage() {
       return
     }
 
-    router.push(`/patients/${data.patient.id}`)
+    window.location.href = `/patients/${data.patient.id}`
   }, [router])
 
   return (

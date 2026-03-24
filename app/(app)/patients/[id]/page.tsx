@@ -2,7 +2,7 @@ import { auth } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import prisma from '@/lib/db'
-import { QrCode, Stethoscope, User, Phone, AlertTriangle } from 'lucide-react'
+import { QrCode, Stethoscope, User, Phone, AlertTriangle, Pencil } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -20,6 +20,7 @@ export default async function DossierPatientPage({ params }: { params: { id: str
     include: {
       creePar: { select: { nom: true, prenoms: true } },
       centreCreation: { select: { nom: true } },
+      personnesUrgence: true,
       dossier: {
         include: {
           accesEnCours: {
@@ -57,16 +58,26 @@ export default async function DossierPatientPage({ params }: { params: { id: str
 
   return (
     <div className="max-w-5xl mx-auto space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
           <h1 className="text-xl font-bold text-gray-900 dark:text-white">Dossier médical</h1>
         </div>
-        <Link href={`/patients/${params.id}/qrcode`}>
-          <Button variant="outline" size="sm">
-            <QrCode className="mr-2 h-4 w-4" />
-            QR Code
-          </Button>
-        </Link>
+        <div className="flex items-center gap-2">
+          {accesValide && (
+            <Link href={`/patients/${params.id}/modifier`}>
+              <Button variant="outline" size="sm">
+                <Pencil className="mr-2 h-4 w-4" />
+                Modifier
+              </Button>
+            </Link>
+          )}
+          <Link href={`/patients/${params.id}/qrcode`}>
+            <Button variant="outline" size="sm">
+              <QrCode className="mr-2 h-4 w-4" />
+              QR Code
+            </Button>
+          </Link>
+        </div>
       </div>
 
       {!accesValide && (
@@ -130,31 +141,40 @@ export default async function DossierPatientPage({ params }: { params: { id: str
         </CardContent>
       </Card>
 
-      {/* Personne d'urgence */}
+      {/* Personnes à prévenir */}
       <Card className="border-orange-100 dark:border-orange-900/40">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base text-orange-700 dark:text-orange-400">
             <Phone className="h-4 w-4" />
-            Personne à prévenir
+            Personnes à prévenir
           </CardTitle>
         </CardHeader>
-        <CardContent className="grid sm:grid-cols-2 gap-3 text-sm">
-          <div>
-            <p className="text-gray-500 dark:text-zinc-400 text-xs">Nom</p>
-            <p className="font-medium">{patient.urgenceNom} {patient.urgencePrenoms}</p>
-          </div>
-          <div>
-            <p className="text-gray-500 dark:text-zinc-400 text-xs">Relation</p>
-            <p>{patient.urgenceRelation}</p>
-          </div>
-          <div>
-            <p className="text-gray-500 dark:text-zinc-400 text-xs">Téléphone</p>
-            <p className="font-medium text-orange-700 dark:text-orange-400">{patient.urgenceTel}</p>
-          </div>
-          <div>
-            <p className="text-gray-500 dark:text-zinc-400 text-xs">Adresse</p>
-            <p>{patient.urgenceAdresse}</p>
-          </div>
+        <CardContent className="space-y-4">
+          {patient.personnesUrgence.map((p, i) => (
+            <div key={p.id} className={`grid sm:grid-cols-2 gap-3 text-sm ${i > 0 ? 'border-t border-orange-50 dark:border-orange-900/20 pt-4' : ''}`}>
+              {patient.personnesUrgence.length > 1 && (
+                <p className="sm:col-span-2 text-xs font-semibold text-orange-500 dark:text-orange-400 uppercase tracking-widest">
+                  Contact {i + 1}
+                </p>
+              )}
+              <div>
+                <p className="text-gray-500 dark:text-zinc-400 text-xs">Nom</p>
+                <p className="font-medium">{p.nom} {p.prenoms}</p>
+              </div>
+              <div>
+                <p className="text-gray-500 dark:text-zinc-400 text-xs">Relation</p>
+                <p>{p.relation}</p>
+              </div>
+              <div>
+                <p className="text-gray-500 dark:text-zinc-400 text-xs">Téléphone</p>
+                <p className="font-medium text-orange-700 dark:text-orange-400">{p.telephone}</p>
+              </div>
+              <div>
+                <p className="text-gray-500 dark:text-zinc-400 text-xs">Adresse</p>
+                <p>{p.adresse}</p>
+              </div>
+            </div>
+          ))}
         </CardContent>
       </Card>
 

@@ -29,6 +29,7 @@ export default async function AdminPatientDetailPage({ params }: { params: { id:
     include: {
       creePar: { select: { nom: true, prenoms: true } },
       centreCreation: { select: { nom: true } },
+      personnesUrgence: true,
       dossier: {
         include: {
           enregistrements: {
@@ -111,22 +112,27 @@ export default async function AdminPatientDetailPage({ params }: { params: { id:
           )}
         </div>
 
-        {/* Personne d'urgence */}
+        {/* Personnes à prévenir */}
         <div className="bg-white dark:bg-zinc-950 rounded-2xl border border-orange-100 dark:border-orange-400/20 p-5 space-y-4">
           <div className="flex items-center gap-2.5">
             <div className="h-8 w-8 rounded-xl bg-orange-50 dark:bg-orange-400/15 flex items-center justify-center">
               <Phone className="h-4 w-4 text-orange-500" />
             </div>
-            <h2 className="font-bold text-slate-900 dark:text-white text-sm">Personne à prévenir</h2>
+            <h2 className="font-bold text-slate-900 dark:text-white text-sm">Personnes à prévenir</h2>
           </div>
 
-          <div className="space-y-2.5">
-            <InfoRow icon={User} label="Nom" value={`${patient.urgenceNom} ${patient.urgencePrenoms}`} />
-            <InfoRow icon={User} label="Relation" value={patient.urgenceRelation} />
-            <InfoRow icon={Phone} label="Téléphone" value={patient.urgenceTel} highlight />
-            {patient.urgenceAdresse && (
-              <InfoRow icon={MapPin} label="Adresse" value={patient.urgenceAdresse} />
-            )}
+          <div className="space-y-4">
+            {patient.personnesUrgence.map((p, i) => (
+              <div key={p.id} className={i > 0 ? 'border-t border-orange-50 dark:border-orange-900/20 pt-4 space-y-2.5' : 'space-y-2.5'}>
+                {patient.personnesUrgence.length > 1 && (
+                  <p className="text-[10px] font-bold text-orange-500 uppercase tracking-widest">Contact {i + 1}</p>
+                )}
+                <InfoRow icon={User} label="Nom" value={`${p.nom} ${p.prenoms}`} />
+                <InfoRow icon={User} label="Relation" value={p.relation} />
+                <InfoRow icon={Phone} label="Téléphone" value={p.telephone} highlight />
+                {p.adresse && <InfoRow icon={MapPin} label="Adresse" value={p.adresse} />}
+              </div>
+            ))}
           </div>
         </div>
       </div>

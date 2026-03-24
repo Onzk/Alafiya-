@@ -1,14 +1,14 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import {
   Save, Loader2, ArrowLeft, ClipboardList, FlaskConical,
-  Pill, CalendarCheck, Check, X,
+  Pill, CalendarCheck, Check, X, Plus,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
 import { DicteeVocale } from '@/components/ia/DicteeVocale'
 import { StructureIA } from '@/types'
 import { useToast } from '@/hooks/use-toast'
@@ -20,8 +20,8 @@ interface FormulaireEnregistrementProps {
   specialiteNom: string
 }
 
-const labelCls = 'text-slate-700 dark:text-zinc-300 text-sm font-medium'
-const textareaCls = 'border-slate-200 dark:border-zinc-700 rounded-lg text-sm bg-white dark:bg-zinc-950 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-zinc-500 focus-visible:ring-emerald-500 focus-visible:border-emerald-400 resize-none'
+const labelCls  = 'text-slate-700 dark:text-zinc-300 text-sm font-medium'
+const inputCls  = 'h-12 border-slate-200 dark:border-zinc-700 rounded-lg text-sm bg-white dark:bg-zinc-950 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-zinc-500 focus-visible:ring-emerald-500 focus-visible:border-emerald-400'
 
 const STEPS
  = [
@@ -189,14 +189,14 @@ export function FormulaireEnregistrement({
                   {/* Étape 0 — Anamnèse */}
                   {step === 0 && (
                     <div className="grid sm:grid-cols-2 gap-3">
-                      <Champ
+                      <ListeChamp
                         id="antecedents"
                         label="Antécédents médicaux"
                         placeholder="Maladies chroniques, chirurgies, allergies…"
                         value={form.antecedents}
                         onChange={(v) => set('antecedents', v)}
                       />
-                      <Champ
+                      <ListeChamp
                         id="signes"
                         label="Signes & symptômes"
                         placeholder="Motif de consultation, plaintes…"
@@ -209,14 +209,14 @@ export function FormulaireEnregistrement({
                   {/* Étape 1 — Examens */}
                   {step === 1 && (
                     <div className="grid sm:grid-cols-2 gap-3">
-                      <Champ
+                      <ListeChamp
                         id="examens"
                         label="Examens effectués"
                         placeholder="Examen clinique, auscultation…"
                         value={form.examens}
                         onChange={(v) => set('examens', v)}
                       />
-                      <Champ
+                      <ListeChamp
                         id="bilan"
                         label="Résultats & analyses"
                         placeholder="Résultats biologiques, imagerie…"
@@ -229,30 +229,27 @@ export function FormulaireEnregistrement({
                   {/* Étape 2 — Traitements */}
                   {step === 2 && (
                     <div className="grid sm:grid-cols-2 gap-3">
-                      <Champ
+                      <ListeChamp
                         id="conseils"
                         label="Conseils au patient"
                         placeholder="Hygiène de vie, régime…"
                         value={form.traitements.conseils}
                         onChange={(v) => setTrait('conseils', v)}
-                        rows={2}
                       />
-                      <Champ
+                      <ListeChamp
                         id="injections"
                         label="Injections administrées"
                         placeholder="Produit, posologie, voie…"
                         value={form.traitements.injections}
                         onChange={(v) => setTrait('injections', v)}
-                        rows={2}
                       />
                       <div className="sm:col-span-2">
-                        <Champ
+                        <ListeChamp
                           id="ordonnance"
                           label="Ordonnance médicale"
                           placeholder="Médicaments prescrits, posologie, durée…"
                           value={form.traitements.ordonnance}
                           onChange={(v) => setTrait('ordonnance', v)}
-                          rows={3}
                         />
                       </div>
                     </div>
@@ -260,13 +257,12 @@ export function FormulaireEnregistrement({
 
                   {/* Étape 3 — Suivi */}
                   {step === 3 && (
-                    <Champ
+                    <ListeChamp
                       id="suivi"
                       label="Suivi préconisé"
                       placeholder="Prochain rendez-vous, examens complémentaires…"
                       value={form.suivi}
                       onChange={(v) => set('suivi', v)}
-                      rows={3}
                     />
                   )}
 
@@ -326,27 +322,94 @@ export function FormulaireEnregistrement({
 
 /* ── Composant interne ── */
 
-function Champ({
-  id, label, placeholder, value, onChange, rows = 3,
+function toItems(value: string): string[] {
+  const items = value.split('\n').filter((l) => l.trim() !== '')
+  return items.length > 0 ? items : ['']
+}
+
+function ListeChamp({
+  id, label, placeholder, value, onChange,
 }: {
   id: string
   label: string
   placeholder?: string
   value: string
   onChange: (v: string) => void
-  rows?: number
 }) {
+  const [items, setItems] = useState<string[]>(() => toItems(value))
+  const inputRefs = useRef<(HTMLInputElement | null)[]>([])
+  const focusNext = useRef<number | null>(null)
+
+  // Resync quand la valeur change depuis l'extérieur (ex : dictée IA)
+  const prevValue = useRef(value)
+  useEffect(() => {
+    if (value !== prevValue.current) {
+      prevValue.current = value
+      setItems(toItems(value))
+    }
+  }, [value])
+
+  // Focus sur le nouvel item après le rendu
+  useEffect(() => {
+    if (focusNext.current !== null) {
+      inputRefs.current[focusNext.current]?.focus()
+      focusNext.current = null
+    }
+  })
+
+  function update(idx: number, val: string) {
+    const next = items.map((it, i) => (i === idx ? val : it))
+    setItems(next)
+    onChange(next.filter((l) => l.trim() !== '').join('\n'))
+  }
+
+  function add() {
+    focusNext.current = items.length
+    setItems((prev) => [...prev, ''])
+  }
+
+  function remove(idx: number) {
+    const next = items.filter((_, i) => i !== idx)
+    const final = next.length > 0 ? next : ['']
+    setItems(final)
+    onChange(final.filter((l) => l.trim() !== '').join('\n'))
+  }
+
   return (
     <div className="space-y-1.5">
-      <Label htmlFor={id} className={labelCls}>{label}</Label>
-      <Textarea
-        id={id}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-        rows={rows}
-        className={textareaCls}
-      />
+      <Label htmlFor={`${id}-0`} className={labelCls}>{label}</Label>
+      <div className="space-y-2">
+        {items.map((item, idx) => (
+          <div key={idx} className="flex items-center gap-2">
+            <span className="text-slate-400 dark:text-zinc-500 shrink-0 select-none">•</span>
+            <Input
+              id={idx === 0 ? id : undefined}
+              ref={(el) => { inputRefs.current[idx] = el }}
+              value={item}
+              onChange={(e) => update(idx, e.target.value)}
+              placeholder={placeholder}
+              className={cn(inputCls, 'flex-1')}
+            />
+            {items.length > 1 && (
+              <button
+                type="button"
+                onClick={() => remove(idx)}
+                className="text-slate-300 hover:text-red-500 dark:text-zinc-600 dark:hover:text-red-400 transition-colors shrink-0"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            )}
+          </div>
+        ))}
+        <button
+          type="button"
+          onClick={add}
+          className="flex items-center gap-1 text-xs text-brand hover:text-brand-dark font-medium mt-1 transition-colors"
+        >
+          <Plus className="h-3.5 w-3.5" />
+          Ajouter
+        </button>
+      </div>
     </div>
   )
 }

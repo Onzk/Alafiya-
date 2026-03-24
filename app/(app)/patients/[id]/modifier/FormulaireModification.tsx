@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Loader2, UserPlus, ArrowLeft, Check, Plus, X } from 'lucide-react'
+import { Loader2, Save, ArrowLeft, Check, Plus, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -35,26 +35,48 @@ const emptyContact = (): PersonneUrgence => ({
   nom: '', prenoms: '', telephone: '', adresse: '', relation: '',
 })
 
-export default function NouveauPatientPage() {
+type InitialData = {
+  nom: string
+  prenoms: string
+  genre: 'M' | 'F'
+  dateNaissance: string
+  dateNaissancePresumee: boolean
+  adresse: string
+  telephone: string
+  email: string
+  numeroCNI: string
+  personnesUrgence: PersonneUrgence[]
+}
+
+export function FormulaireModificationPatient({
+  patientId,
+  initialData,
+}: {
+  patientId: string
+  initialData: InitialData
+}) {
   const router = useRouter()
   const { toast } = useToast()
   const [step, setStep] = useState(0)
   const [loading, setLoading] = useState(false)
 
   const [form, setForm] = useState({
-    nom: '',
-    prenoms: '',
-    genre: 'M' as 'M' | 'F',
-    dateNaissance: '',
-    dateNaissancePresumee: false,
-    adresse: '',
-    telephone: '',
-    email: '',
-    numeroCNI: '',
+    nom: initialData.nom,
+    prenoms: initialData.prenoms,
+    genre: initialData.genre,
+    dateNaissance: initialData.dateNaissance,
+    dateNaissancePresumee: initialData.dateNaissancePresumee,
+    adresse: initialData.adresse,
+    telephone: initialData.telephone,
+    email: initialData.email,
+    numeroCNI: initialData.numeroCNI,
   })
 
-  const [personnesUrgence, setPersonnesUrgence] = useState<PersonneUrgence[]>([emptyContact()])
-  const [contactSelectVals, setContactSelectVals] = useState<string[]>([''])
+  const initialContacts = initialData.personnesUrgence.length > 0 ? initialData.personnesUrgence : [emptyContact()]
+  const [personnesUrgence, setPersonnesUrgence] = useState<PersonneUrgence[]>(initialContacts)
+  const [contactSelectVals, setContactSelectVals] = useState<string[]>(
+    initialContacts.map((c) => RELATIONS_PRESET.includes(c.relation) ? c.relation : (c.relation ? 'autre' : ''))
+  )
 
   const update = (field: string, value: string | boolean) => {
     setForm((prev) => ({ ...prev, [field]: value }))
@@ -111,8 +133,8 @@ export default function NouveauPatientPage() {
     }
     setLoading(true)
 
-    const res = await fetch('/api/patients', {
-      method: 'POST',
+    const res = await fetch(`/api/patients/${patientId}`, {
+      method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         ...form,
@@ -127,11 +149,13 @@ export default function NouveauPatientPage() {
     setLoading(false)
 
     if (!res.ok) {
-      toast({ description: data.error || 'Erreur lors de la création du patient.', variant: 'destructive' })
+      toast({ description: data.error || 'Erreur lors de la modification.', variant: 'destructive' })
       return
     }
 
-    router.push(`/patients/${data.patient._id}/qrcode`)
+    toast({ description: 'Dossier mis à jour avec succès.' })
+    router.push(`/patients/${patientId}`)
+    router.refresh()
   }
 
   const inputCls = 'h-12 border-slate-200 dark:border-zinc-700 rounded-lg text-sm bg-white dark:bg-zinc-950 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-zinc-500 focus-visible:ring-emerald-500 focus-visible:border-emerald-400'
@@ -140,17 +164,19 @@ export default function NouveauPatientPage() {
   return (
     <div className="max-w-2xl space-y-6">
 
-      <div className="dash-in delay-0 flex items-center gap-3">
+      <div className="flex items-center gap-3">
         <div className="h-10 w-10 rounded-xl bg-brand/10 dark:bg-brand/15 flex items-center justify-center">
-          <UserPlus className="h-5 w-5 text-brand" />
+          <Save className="h-5 w-5 text-brand" />
         </div>
         <div>
-          <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white leading-tight">Nouveau patient</h1>
-          <p className="text-sm text-slate-500 dark:text-zinc-400 mt-0.5">Créer un dossier médical patient</p>
+          <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white leading-tight">Modifier le dossier</h1>
+          <p className="text-sm text-slate-500 dark:text-zinc-400 mt-0.5">
+            {initialData.nom.toUpperCase()} {initialData.prenoms}
+          </p>
         </div>
       </div>
 
-      <div className="dash-in delay-75">
+      <div>
         {STEPS.map((s, i) => (
           <div key={i} className="flex gap-4">
 
@@ -364,7 +390,7 @@ export default function NouveauPatientPage() {
                         <ArrowLeft className="mr-2 h-4 w-4" /> Précédent
                       </Button>
                     ) : (
-                      <Link href="/patients">
+                      <Link href={`/patients/${patientId}`}>
                         <Button variant="outline" type="button" className="h-10 border-slate-200 dark:border-zinc-700 text-slate-600 dark:text-zinc-300">
                           Annuler
                         </Button>
@@ -383,8 +409,8 @@ export default function NouveauPatientPage() {
                         onClick={handleSubmit}
                       >
                         {loading
-                          ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Création...</>
-                          : <><UserPlus className="mr-2 h-4 w-4" />Créer le dossier</>
+                          ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Enregistrement...</>
+                          : <><Save className="mr-2 h-4 w-4" />Enregistrer</>
                         }
                       </Button>
                     )}

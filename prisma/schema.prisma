@@ -60,6 +60,8 @@ model Centre {
   region            String
   prefecture        String
   type              TypeCentre
+  logo              String?
+  banniere          String?
   prixParDossier    Int                     @default(0)
   commissionNdi     Int                     @default(0)
   estActif          Boolean                 @default(true)
@@ -156,33 +158,40 @@ model UserPermission {
 }
 
 model Patient {
-  id                    String          @id @default(cuid())
+  id                    String             @id @default(cuid())
   nom                   String
   prenoms               String
   genre                 Genre
   dateNaissance         DateTime
-  dateNaissancePresumee Boolean         @default(false)
+  dateNaissancePresumee Boolean            @default(false)
   adresse               String
   telephone             String?
   email                 String?
   numeroCNI             String?
-  qrToken               String          @unique
-  qrGeneratedAt         DateTime        @default(now())
+  qrToken               String             @unique
+  qrGeneratedAt         DateTime           @default(now())
   qrAccesExpireAt       DateTime?
-  createdAt             DateTime        @default(now())
-  updatedAt             DateTime        @updatedAt
-  urgenceNom            String
-  urgencePrenoms        String
-  urgenceTel            String
-  urgenceAdresse        String
-  urgenceRelation       String
+  createdAt             DateTime           @default(now())
+  updatedAt             DateTime           @updatedAt
   creeParId             String
   centreCreationId      String
   accesUrgences         AccesUrgence[]
   dossier               DossierMedical?
   otps                  OTP[]
-  centreCreation        Centre          @relation(fields: [centreCreationId], references: [id])
-  creePar               User            @relation(fields: [creeParId], references: [id])
+  personnesUrgence      PersonneUrgence[]
+  centreCreation        Centre             @relation(fields: [centreCreationId], references: [id])
+  creePar               User               @relation(fields: [creeParId], references: [id])
+}
+
+model PersonneUrgence {
+  id        String  @id @default(cuid())
+  nom       String
+  prenoms   String
+  telephone String
+  adresse   String
+  relation  String
+  patientId String
+  patient   Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
 }
 
 model DossierMedical {
@@ -309,6 +318,7 @@ enum ActionLog {
   MODIFICATION_DOSSIER
   URGENCE_ACTIVATION
   CREATION_PATIENT
+  MODIFICATION_PATIENT
   CREATION_USER
   CREATION_CENTRE
   CREATION_ROLE
