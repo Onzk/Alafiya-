@@ -98,7 +98,7 @@ export default function FacturesChart({ data, loading }: FacturesChartProps) {
                   boxShadow: '0 4px 16px rgba(0,0,0,0.08)',
                 }}
                 labelFormatter={(_, payload) => payload?.[0]?.payload?.mois ?? ''}
-                formatter={(v: number) => [`${v.toLocaleString('fr-FR')} FCFA`, 'Revenus']}
+                formatter={(v) => [`${Number(v).toLocaleString('fr-FR')} FCFA`, 'Revenus']}
                 cursor={{ fill: 'rgba(33,196,136,0.06)' }}
               />
               <Bar

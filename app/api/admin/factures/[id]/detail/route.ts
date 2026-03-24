@@ -43,10 +43,11 @@ export async function GET(
     > = {}
 
     for (const p of patients) {
-      if (!parAgent[p.creeParId]) {
-        parAgent[p.creeParId] = { agent: p.creePar, count: 0 }
+      const agentId = p.creePar.id
+      if (!parAgent[agentId]) {
+        parAgent[agentId] = { agent: p.creePar, count: 0 }
       }
-      parAgent[p.creeParId].count++
+      parAgent[agentId].count++
     }
 
     const detail = Object.values(parAgent).sort((a, b) => b.count - a.count)

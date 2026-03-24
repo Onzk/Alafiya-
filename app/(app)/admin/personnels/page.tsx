@@ -89,7 +89,7 @@ export default function PersonnelsPage() {
 
   const rolesDisponibles = useMemo(() => {
     const noms = personnel.map((p) => p.role?.nom).filter(Boolean) as string[]
-    return [...new Set(noms)].sort()
+    return Array.from(new Set(noms)).sort()
   }, [personnel])
 
   const filtered = useMemo(() => {

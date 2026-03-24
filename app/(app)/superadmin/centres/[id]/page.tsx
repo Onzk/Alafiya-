@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useParams } from 'next/navigation'
 import {
-  Building2, Loader2, ArrowLeft, Phone, Mail, MapPin, Users, UserCheck,
+  Building2, Loader2, Phone, Mail, MapPin, Users, UserCheck,
   ClipboardList, AlertTriangle, Pencil, CheckCircle2, XCircle, Banknote,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -255,9 +255,7 @@ export default function CentreDetailPage() {
 
       {/* Retour + en-tête */}
       <div className="dash-in delay-0">
-        <Link href="/superadmin/centres" className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-400 dark:text-zinc-500 hover:text-slate-700 dark:hover:text-zinc-300 transition-colors mb-4">
-          <ArrowLeft className="h-3.5 w-3.5" /> Centres de santé
-        </Link>
+
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div className="flex items-center gap-4">
             <div className="h-14 w-14 rounded-2xl bg-brand/10 dark:bg-brand/15 flex items-center justify-center flex-shrink-0">
@@ -395,7 +393,7 @@ export default function CentreDetailPage() {
                   <div key={key} className="space-y-1.5">
                     <Label className={labelCls}>{label} *</Label>
                     <Input type={type || 'text'} placeholder={placeholder}
-                      value={(editForm as Record<string, string>)[key]}
+                      value={(editForm as Record<string, unknown>)[key] as string}
                       onChange={(e) => setEditForm((p) => ({ ...p, [key]: e.target.value }))}
                       required className={inputCls} />
                   </div>

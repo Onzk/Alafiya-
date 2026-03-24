@@ -93,19 +93,19 @@ export function DicteeVocale({ onStructure }: DicteeVocaleProps) {
   const formatDuree = (s: number) => `${Math.floor(s / 60).toString().padStart(2, '0')}:${(s % 60).toString().padStart(2, '0')}`
 
   return (
-    <div className="border border-dashed border-green-300 rounded-lg p-4 bg-green-50 space-y-3">
+    <div className="border border-dashed border-green-300 dark:border-emerald-700/50 rounded-lg p-4 bg-green-50 dark:bg-emerald-950/20 space-y-3">
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-sm font-medium text-green-800">Dictée vocale IA</p>
-          <p className="text-xs text-green-600">
+          <p className="text-sm font-medium text-green-800 dark:text-emerald-300">Dictée vocale IA</p>
+          <p className="text-xs text-green-600 dark:text-emerald-400">
             Dictez vos observations, l&apos;IA structure automatiquement les données
           </p>
         </div>
-        <Wand2 className="h-5 w-5 text-green-600" />
+        <Wand2 className="h-5 w-5 text-green-600 dark:text-emerald-400" />
       </div>
 
       {erreur && (
-        <p className="text-xs text-red-600 bg-red-50 px-3 py-2 rounded">{erreur}</p>
+        <p className="text-xs text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/30 px-3 py-2 rounded">{erreur}</p>
       )}
 
       <div className="flex items-center gap-3">
@@ -114,7 +114,7 @@ export function DicteeVocale({ onStructure }: DicteeVocaleProps) {
             type="button"
             variant="outline"
             onClick={demarrerEnregistrement}
-            className="border-green-400 text-green-700 hover:bg-green-100"
+            className="border-green-400 dark:border-emerald-600 text-green-700 dark:text-emerald-400 hover:bg-green-100 dark:hover:bg-emerald-950/40"
           >
             <Mic className="mr-2 h-4 w-4" />
             Démarrer la dictée
@@ -133,13 +133,13 @@ export function DicteeVocale({ onStructure }: DicteeVocaleProps) {
             </Button>
             <div className="flex items-center gap-1">
               <div className="h-2 w-2 rounded-full bg-red-500 animate-pulse" />
-              <span className="text-xs text-red-600 font-medium">Enregistrement en cours</span>
+              <span className="text-xs text-red-600 dark:text-red-400 font-medium">Enregistrement en cours</span>
             </div>
           </>
         )}
 
         {(etat === 'transcription' || etat === 'structuration') && (
-          <div className="flex items-center gap-2 text-sm text-gray-600">
+          <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-zinc-400">
             <Loader2 className="h-4 w-4 animate-spin text-green-600" />
             {etat === 'transcription' ? 'Transcription Whisper...' : 'Structuration par IA...'}
           </div>

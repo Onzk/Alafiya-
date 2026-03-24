@@ -168,7 +168,7 @@ export default function RevenueChart() {
                   boxShadow: '0 4px 16px rgba(0,0,0,0.08)',
                 }}
                 labelFormatter={(v) => `Jour ${v}`}
-                formatter={(v: number) => [formatMontant(v), 'Revenu']}
+                formatter={(v) => [formatMontant(Number(v)), 'Revenu']}
                 cursor={{ stroke: '#10b981', strokeWidth: 1, strokeDasharray: '4 4' }}
               />
               <Area

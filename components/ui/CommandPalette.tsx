@@ -60,83 +60,6 @@ function HighlightMatch({ text, query }: { text: string; query: string }) {
   )
 }
 
-/* ─── Tree line helpers ─── */
-function TreeItem({
-  result, isLast, isSelected, query, onClick,
-}: {
-  result: SearchResult
-  isLast: boolean
-  isSelected: boolean
-  query: string
-  onClick: () => void
-}) {
-  return (
-    <button
-      onClick={onClick}
-      className={cn(
-        'group w-full flex items-center gap-0 text-left transition-all duration-100',
-        isSelected
-          ? 'bg-slate-50 dark:bg-zinc-800/80'
-          : 'hover:bg-slate-50/60 dark:hover:bg-zinc-800/40'
-      )}
-    >
-      {/* Tree connector */}
-      <div className="flex-shrink-0 flex items-center self-stretch pl-5 pr-0" aria-hidden>
-        <div className="flex flex-col items-center self-stretch w-4">
-          {/* Vertical line going down (not for last item) */}
-          <div className={cn(
-            'w-px flex-1',
-            isLast ? 'bg-transparent' : 'bg-slate-200 dark:bg-zinc-700'
-          )} />
-          {/* Elbow: horizontal connector */}
-          <div className="relative flex items-center" style={{ height: 0 }}>
-            <div className="absolute w-3 h-px bg-slate-200 dark:bg-zinc-700 left-0" />
-          </div>
-          {/* Vertical stub going to center */}
-          <div className="w-px flex-1 bg-slate-200 dark:bg-zinc-700" style={{ maxHeight: '50%' }} />
-        </div>
-        <div className="w-2" />
-      </div>
-
-      {/* Icon */}
-      <div className={cn(
-        'h-7 w-7 rounded-lg flex items-center justify-center flex-shrink-0 transition-all',
-        result.iconBg,
-        isSelected ? 'scale-105' : ''
-      )}>
-        <result.Icon className={cn('h-3.5 w-3.5', result.iconColor)} />
-      </div>
-
-      {/* Text */}
-      <div className="min-w-0 flex-1 px-3 py-2.5">
-        <p className={cn(
-          'text-[13px] font-semibold truncate transition-colors',
-          isSelected ? 'text-slate-900 dark:text-white' : 'text-slate-700 dark:text-zinc-300'
-        )}>
-          <HighlightMatch text={result.label} query={query} />
-        </p>
-        {result.sub && (
-          <p className="text-[11px] text-slate-400 dark:text-zinc-500 truncate mt-0.5">
-            <HighlightMatch text={result.sub} query={query} />
-          </p>
-        )}
-      </div>
-
-      {/* Type badge */}
-      <div className="flex-shrink-0 pr-3">
-        <span className={cn(
-          'text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-md transition-colors',
-          isSelected
-            ? 'bg-brand/10 dark:bg-brand/20 text-brand dark:text-emerald-400'
-            : 'bg-slate-100 dark:bg-zinc-800 text-slate-400 dark:text-zinc-500'
-        )}>
-          {result.type}
-        </span>
-      </div>
-    </button>
-  )
-}
-
 /* ─── Main component ─── */
 export function CommandPalette({ open, onClose, user, reseauData }: CommandPaletteProps) {
   const router  = useRouter()
@@ -346,7 +269,7 @@ export function CommandPalette({ open, onClose, user, reseauData }: CommandPalet
   const isLoading = isAdminCentre && centreLoading
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-start justify-center pt-[12vh] px-4">
+    <div className="fixed inset-0 z-[60] flex items-start justify-center pt-4 sm:pt-[12vh] px-4">
       {/* Backdrop */}
       <div className="absolute inset-0 bg-primary/10 backdrop-blur-sm" onClick={onClose} aria-hidden />
 
@@ -391,7 +314,7 @@ export function CommandPalette({ open, onClose, user, reseauData }: CommandPalet
         </div>
 
         {/* ── Results ── */}
-        <div ref={listRef} className="max-h-[380px] overflow-y-auto overscroll-contain">
+        <div ref={listRef} className="max-h-[40vh] sm:max-h-[380px] overflow-y-auto overscroll-contain">
           {isLoading ? (
             <div className="flex items-center justify-center py-12">
               <div className="h-5 w-5 rounded-full border-2 border-brand border-t-transparent animate-spin" />

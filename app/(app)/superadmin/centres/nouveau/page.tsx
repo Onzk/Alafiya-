@@ -106,12 +106,7 @@ export default function NouveauCentrePage() {
   return (
     <div className="max-w-2xl space-y-6">
       <div className="dash-in delay-0">
-        <Link
-          href="/superadmin/centres"
-          className="inline-flex items-center gap-1.5 text-sm text-slate-500 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white transition-colors mb-4"
-        >
-          <ArrowLeft className="h-4 w-4" /> Retour aux centres
-        </Link>
+
         <div className="flex items-center gap-3">
           <div className="h-10 w-10 rounded-xl bg-brand/10 dark:bg-brand/15 flex items-center justify-center">
             <Building2 className="h-5 w-5 text-brand" />

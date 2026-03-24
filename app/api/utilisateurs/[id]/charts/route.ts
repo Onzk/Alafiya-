@@ -36,7 +36,7 @@ export async function GET(
   } else {
     // enregistrements
     const enregistrements = await prisma.enregistrementMedical.findMany({
-      where: { userId: id, createdAt: { gte: start, lt: end } },
+      where: { medecinId: id, createdAt: { gte: start, lt: end } },
       select: { createdAt: true },
     })
     enregistrements.forEach(e => { parJour[e.createdAt.getDate() - 1].count++ })

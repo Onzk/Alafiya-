@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter, useParams } from 'next/navigation'
-import { Loader2, ArrowLeft, Users, Search } from 'lucide-react'
+import { Loader2, Users, Search } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -102,12 +102,7 @@ export default function ModifierPersonnelPage() {
   return (
     <div className="space-y-6">
       <div className="dash-in delay-0">
-        <Link
-          href="/admin/personnels"
-          className="inline-flex items-center gap-1.5 text-sm text-slate-500 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white transition-colors mb-4"
-        >
-          <ArrowLeft className="h-4 w-4" /> Retour au personnel
-        </Link>
+
         <div className="flex items-center gap-3">
           <div className="h-10 w-10 rounded-xl bg-brand/10 dark:bg-brand/15 flex items-center justify-center">
             <Users className="h-5 w-5 text-brand" />

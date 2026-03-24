@@ -168,6 +168,7 @@ model Patient {
   numeroCNI             String?
   qrToken               String          @unique
   qrGeneratedAt         DateTime        @default(now())
+  qrAccesExpireAt       DateTime?
   createdAt             DateTime        @default(now())
   updatedAt             DateTime        @updatedAt
   urgenceNom            String
@@ -312,6 +313,7 @@ enum ActionLog {
   CREATION_CENTRE
   CREATION_ROLE
   MODIFICATION_PERMISSIONS
+  QR_ACCES_RENOUVELE
 }
 
 enum CreateurRole {

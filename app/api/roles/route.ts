@@ -52,8 +52,8 @@ export async function POST(req: NextRequest) {
     data: {
       nom: validation.data.nom,
       description: validation.data.description,
-      creePar: user.niveauAcces === 'SUPERADMIN' ? 'SUPERADMIN' : 'CENTRE',
-      centreId: user.niveauAcces === 'ADMIN_CENTRE' ? user.centreActif : null,
+      creePar: 'SUPERADMIN' as const,
+      centreId: null,
       permissions: validation.data.permissions.length > 0
         ? { create: validation.data.permissions.map((pid) => ({ permissionId: pid })) }
         : undefined,

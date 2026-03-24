@@ -255,42 +255,18 @@ export default async function DashboardPage() {
         {/* ══ COLONNE PRINCIPALE ══ */}
         <div className="space-y-5">
 
-          {/* Activité hebdomadaire + Spécialités breakdown */}
-          <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-5">
-
-            {/* Bar chart */}
-            <div className="bg-white dark:bg-zinc-950 rounded-2xl border border-slate-100 dark:border-zinc-800 p-5">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h2 className="font-bold text-slate-900 dark:text-white text-sm">Activité hebdomadaire</h2>
-                  <p className="text-xs text-slate-400 dark:text-zinc-500 mt-0.5">Consultations des 7 derniers jours</p>
-                </div>
-                <span className="text-xs font-bold text-slate-400 dark:text-zinc-500 bg-slate-50 dark:bg-zinc-950 px-3 py-1 rounded-full">
-                  Total : {totalSemaine}
-                </span>
+          {/* Activité hebdomadaire */}
+          <div className="bg-white dark:bg-zinc-950 rounded-2xl border border-slate-100 dark:border-zinc-800 p-5">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="font-bold text-slate-900 dark:text-white text-sm">Activité hebdomadaire</h2>
+                <p className="text-xs text-slate-400 dark:text-zinc-500 mt-0.5">Consultations des 7 derniers jours</p>
               </div>
-              <WeeklyChart data={weeklyData} />
+              <span className="text-xs font-bold text-slate-400 dark:text-zinc-500 bg-slate-50 dark:bg-zinc-950 px-3 py-1 rounded-full">
+                Total : {totalSemaine}
+              </span>
             </div>
-
-            {/* Donut breakdown */}
-            <div className="bg-white dark:bg-zinc-950 rounded-2xl border border-slate-100 dark:border-zinc-800 p-5 flex flex-col items-center justify-center gap-4 min-w-[180px]">
-              <div className="text-center">
-                <h2 className="font-bold text-slate-900 dark:text-white text-sm">Spécialités</h2>
-                <p className="text-xs text-slate-400 dark:text-zinc-500">Répartition</p>
-              </div>
-              <DonutChart segments={specSegments} />
-              <div className="w-full space-y-1.5">
-                {user.specialites?.slice(0, 3).map((s, i) => (
-                  <div key={i} className="flex items-center gap-2">
-                    <span className="h-2 w-2 rounded-full flex-shrink-0" style={{ background: specColors[i] }} />
-                    <span className="text-xs text-slate-600 dark:text-zinc-300 truncate">{s}</span>
-                  </div>
-                ))}
-                {(nbSpecialites === 0) && (
-                  <p className="text-xs text-slate-400 dark:text-zinc-500 text-center">Aucune spécialité</p>
-                )}
-              </div>
-            </div>
+            <WeeklyChart data={weeklyData} />
           </div>
 
           {/* Carte urgence / highlight (style sombre) */}
@@ -383,37 +359,6 @@ export default async function DashboardPage() {
 
         {/* ══ COLONNE DROITE ══ */}
         <div className="space-y-4">
-
-          {/* Carte profil */}
-          <div className="bg-white dark:bg-zinc-950 rounded-2xl border border-slate-100 dark:border-zinc-800 overflow-hidden">
-            <div className="h-16 bg-gradient-to-r from-brand/20 via-brand/10 to-transparent dark:from-brand/15 dark:to-transparent relative">
-              <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_50%,rgba(33,196,136,0.2),transparent_70%)]" />
-            </div>
-            <div className="px-5 pb-5 -mt-7">
-              <div className="h-14 w-14 rounded-2xl bg-brand flex items-center justify-center border-4 border-white dark:border-zinc-900 shadow-md mb-3">
-                <span className="text-white font-extrabold text-lg">{user.nom[0]}{user.prenoms[0]}</span>
-              </div>
-              <p className="font-extrabold text-slate-900 dark:text-white text-base leading-tight">{user.prenoms} {user.nom}</p>
-              <p className="text-xs text-slate-400 dark:text-zinc-500 mt-0.5">Personnel médical</p>
-
-              {/* Indicateur de statut */}
-              <div className="mt-3 inline-flex items-center gap-1.5 bg-brand/8 dark:bg-brand/12 border border-brand/20 rounded-full px-3 py-1">
-                <span className="h-1.5 w-1.5 rounded-full bg-brand animate-pulse" />
-                <span className="text-[10px] font-bold text-brand">En ligne</span>
-              </div>
-
-              <div className="mt-4 pt-4 border-t border-slate-50 dark:border-zinc-800 grid grid-cols-2 gap-3">
-                <div className="text-center p-3 rounded-xl bg-slate-50 dark:bg-zinc-950">
-                  <p className="text-xl font-extrabold text-slate-900 dark:text-white tabular-nums">{totalPatients}</p>
-                  <p className="text-[10px] font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wide mt-0.5">Patients</p>
-                </div>
-                <div className="text-center p-3 rounded-xl bg-slate-50 dark:bg-zinc-950">
-                  <p className="text-xl font-extrabold text-slate-900 dark:text-white tabular-nums">{nbSpecialites}</p>
-                  <p className="text-[10px] font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wide mt-0.5">Spécialités</p>
-                </div>
-              </div>
-            </div>
-          </div>
 
           {/* Actions rapides */}
           <div className="bg-white dark:bg-zinc-950 rounded-2xl border border-slate-100 dark:border-zinc-800 p-4">

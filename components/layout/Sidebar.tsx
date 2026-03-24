@@ -82,6 +82,9 @@ export function Sidebar({ user }: SidebarProps) {
     user.niveauAcces === 'ADMIN_CENTRE' ? navigationAdmin :
     navigationPersonnel
 
+  const allHrefs = groups.flatMap(g => g.items.map(i => i.href))
+  const exactMatch = allHrefs.includes(pathname)
+
   const roleLabel =
     user.niveauAcces === 'SUPERADMIN'   ? 'N\'di Solutions' :
     user.niveauAcces === 'ADMIN_CENTRE' ? 'Admin de centre' :
@@ -122,7 +125,7 @@ export function Sidebar({ user }: SidebarProps) {
             <div className="space-y-1">
               {group.items.map((item) => {
                 const Icon = item.icon
-                const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
+                const isActive = pathname === item.href || (!exactMatch && pathname.startsWith(item.href + '/'))
                 const isUrgence = item.isUrgence
                 return (
                   <Link

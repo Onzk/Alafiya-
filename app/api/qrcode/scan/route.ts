@@ -27,12 +27,40 @@ export async function GET(req: NextRequest) {
   if (!patient) return NextResponse.json({ error: 'Patient introuvable' }, { status: 404 })
 
   const { ip, userAgent } = getRequestInfo(req)
+  const centreId = (session.user as { centreActif?: string }).centreActif
+
+  // Créer un accès dossier d'1h si le patient a un dossier
+  if (patient.dossier?.id && centreId) {
+    const debutAcces = new Date()
+    const finAcces = new Date(debutAcces.getTime() + 60 * 60 * 1000)
+    await prisma.accesDossier.create({
+      data: {
+        dossierId: patient.dossier.id,
+        medecinId: session.user.id!,
+        centreId,
+        debutAcces,
+        finAcces,
+        modeUrgence: false,
+      },
+    })
+    await logger({
+      userId: session.user.id,
+      action: 'ACCES_DOSSIER',
+      cible: 'DossierMedical',
+      cibleId: patient.dossier.id,
+      centreId,
+      details: { modeUrgence: false, finAcces, viaQR: true },
+      ip,
+      userAgent,
+    })
+  }
+
   await logger({
     userId: session.user.id,
     action: 'SCAN_QR',
     cible: 'Patient',
     cibleId: patient.id,
-    centreId: (session.user as { centreActif?: string }).centreActif,
+    centreId,
     details: { token },
     ip,
     userAgent,

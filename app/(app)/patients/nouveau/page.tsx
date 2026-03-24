@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, Loader2, UserPlus, User, Phone, AlertTriangle } from 'lucide-react'
+import { Loader2, UserPlus, User, Phone, AlertTriangle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -77,17 +77,9 @@ export default function NouveauPatientPage() {
     <div className="max-w-5xl mx-auto space-y-5">
 
       {/* En-tête */}
-      <div className="dash-in delay-0 flex items-center gap-3">
-        <Link href="/patients">
-          <Button variant="ghost" size="sm" className="rounded-xl text-slate-500 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white">
-            <ArrowLeft className="h-4 w-4 mr-1" />
-            Retour
-          </Button>
-        </Link>
-        <div>
-          <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white leading-tight">Nouveau patient</h1>
-          <p className="text-sm text-slate-500 dark:text-zinc-400 mt-0.5">Créer un dossier médical patient</p>
-        </div>
+      <div className="dash-in delay-0">
+        <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white leading-tight">Nouveau patient</h1>
+        <p className="text-sm text-slate-500 dark:text-zinc-400 mt-0.5">Créer un dossier médical patient</p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">

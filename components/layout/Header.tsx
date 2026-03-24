@@ -235,7 +235,7 @@ export function Header({ user }: HeaderProps) {
           </button>
 
           {notifOpen && (
-            <div className="absolute right-0 top-full mt-2 w-80 max-h-96 bg-white dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 rounded-2xl shadow-xl shadow-black/10 dark:shadow-black/30 overflow-hidden z-50 animate-in fade-in slide-in-from-top-1 duration-150 flex flex-col">
+            <div className="fixed inset-x-4 top-[4.5rem] sm:absolute sm:inset-x-auto sm:right-0 sm:top-full sm:mt-2 sm:w-80 max-h-96 bg-white dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 rounded-2xl shadow-xl shadow-black/10 dark:shadow-black/30 overflow-hidden z-50 animate-in fade-in slide-in-from-top-1 duration-150 flex flex-col">
               <div className="px-4 py-3 border-b border-slate-100 dark:border-zinc-800 flex-shrink-0">
                 <h3 className="text-sm font-bold text-slate-900 dark:text-white">Notifications</h3>
               </div>
@@ -344,7 +344,10 @@ export function Header({ user }: HeaderProps) {
 
           {/* Navigation */}
           <nav className="relative z-10 flex-1 overflow-y-auto px-3 py-2 space-y-5">
-            {mobileGroups.map((group, gi) => (
+            {(() => {
+              const allHrefs = mobileGroups.flatMap(g => g.items.map(i => i.href))
+              const exactMatch = allHrefs.includes(pathname)
+              return mobileGroups.map((group, gi) => (
               <div key={gi}>
                 {group.section && (
                   <p className="px-3 mb-1.5 text-[10px] font-extrabold uppercase tracking-widest text-white/40 dark:text-zinc-500">
@@ -354,7 +357,7 @@ export function Header({ user }: HeaderProps) {
                 <div className="space-y-1">
                   {group.items.map((item) => {
                     const Icon = item.icon
-                    const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
+                    const isActive = pathname === item.href || (!exactMatch && pathname.startsWith(item.href + '/'))
                     const isUrgence = item.isUrgence
                     return (
                       <Link
@@ -379,7 +382,8 @@ export function Header({ user }: HeaderProps) {
                   })}
                 </div>
               </div>
-            ))}
+              ))
+            })()}
           </nav>
 
           {/* Bottom: settings + logout */}

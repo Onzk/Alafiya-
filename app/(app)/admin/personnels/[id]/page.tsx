@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import {
-  Loader2, ArrowLeft, Phone, Mail, Calendar,
+  Loader2, Phone, Mail, Calendar,
   Pencil, CheckCircle2, XCircle, Camera, ClipboardList,
   AlertTriangle, Power, Users, Shield, Trash2, UserRound,
   ChevronLeft, ChevronRight, FileText, UserPlus,
@@ -295,9 +295,7 @@ export default function PersonnelDetailPage() {
 
       {/* ── En-tête ── */}
       <div className="dash-in delay-0">
-        <Link href="/admin/personnels" className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-400 dark:text-zinc-500 hover:text-slate-700 dark:hover:text-zinc-300 transition-colors mb-4">
-          <ArrowLeft className="h-3.5 w-3.5" /> Personnel médical
-        </Link>
+
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div className="flex items-center gap-4">
 

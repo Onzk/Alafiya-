@@ -35,5 +35,5 @@ export default auth(function middleware(req) {
 })
 
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico|icons|manifest.json).*)'],
+  matcher: ['/((?!_next/static|_next/image|favicon.ico|icons|manifest.json|\\.well-known).*)'],
 }

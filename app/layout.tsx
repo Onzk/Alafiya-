@@ -17,7 +17,7 @@ export const metadata: Metadata = {
   description:
     'Plateforme nationale de gestion sécurisée des dossiers médicaux patients au Togo.',
   manifest: '/manifest.json',
-  icons: { apple: '/icons/icon-192x192.png', icon: '/favicon.ico' },
+  icons: { apple: '/logo.png', icon: '/favicon.ico' },
 }
 
 export const viewport: Viewport = {

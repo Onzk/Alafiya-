@@ -73,6 +73,8 @@ export async function POST(req: NextRequest) {
   const { personneUrgence, dateNaissance, email, telephone, numeroCNI, ...rest } = validation.data
   const token = genererTokenQR()
   const centreActifId = (session.user as { centreActif?: string }).centreActif
+  const now = new Date()
+  const qrAccesExpireAt = new Date(now.getTime() + 24 * 60 * 60 * 1000)
 
   const patient = await prisma.patient.create({
     data: {
@@ -82,7 +84,8 @@ export async function POST(req: NextRequest) {
       telephone: telephone || null,
       numeroCNI: numeroCNI || null,
       qrToken: token,
-      qrGeneratedAt: new Date(),
+      qrGeneratedAt: now,
+      qrAccesExpireAt,
       urgenceNom: personneUrgence.nom,
       urgencePrenoms: personneUrgence.prenoms,
       urgenceTel: personneUrgence.telephone,

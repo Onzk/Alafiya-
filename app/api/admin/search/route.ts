@@ -38,11 +38,13 @@ export async function GET(req: NextRequest) {
     }),
     prisma.patient.findMany({
       where: {
-        OR: [
-          { centreCreationId: centreId },
-          { dossier: { enregistrements: { some: { centreId } } } },
+        AND: [
+          { OR: [
+            { centreCreationId: centreId },
+            { dossier: { enregistrements: { some: { centreId } } } },
+          ]},
+          nameFilter,
         ],
-        ...nameFilter,
       },
       select: { id: true, nom: true, prenoms: true, genre: true },
       take: 5,

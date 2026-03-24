@@ -49,10 +49,13 @@ export function MobileNav({ user }: MobileNavProps) {
           { href: '/urgence',          label: 'Urgence',  icon: AlertCircle },
         ]
 
+  const allHrefs = items.map(i => i.href)
+  const exactMatch = allHrefs.includes(pathname)
+
   return (
     <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white dark:bg-zinc-950 border-t border-slate-200 dark:border-zinc-800 flex items-stretch h-16 safe-area-pb">
       {items.map(({ href, label, icon: Icon }) => {
-        const isActive = pathname === href || pathname.startsWith(href + '/')
+        const isActive = pathname === href || (!exactMatch && pathname.startsWith(href + '/'))
         const isUrgence = href === '/urgence'
         return (
           <Link

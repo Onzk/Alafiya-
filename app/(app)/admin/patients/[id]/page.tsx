@@ -3,7 +3,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import prisma from '@/lib/db'
 import {
-  ArrowLeft, User, Phone, Calendar, MapPin,
+  User, Phone, Calendar, MapPin,
   Stethoscope, CheckCircle2, Clock, Activity,
 } from 'lucide-react'
 import { SessionUser } from '@/types'
@@ -54,12 +54,7 @@ export default async function AdminPatientDetailPage({ params }: { params: { id:
 
       {/* En-tête */}
       <div className="dash-in delay-0 flex items-center gap-3">
-        <Link
-          href="/admin/patients"
-          className="h-9 w-9 rounded-xl border border-slate-200 dark:border-zinc-700 flex items-center justify-center text-slate-500 dark:text-zinc-400 hover:bg-slate-50 dark:hover:bg-zinc-800 transition-colors flex-shrink-0"
-        >
-          <ArrowLeft className="h-4 w-4" />
-        </Link>
+
         <div className="min-w-0">
           <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white leading-tight truncate">
             {patient.nom.toUpperCase()} {patient.prenoms}

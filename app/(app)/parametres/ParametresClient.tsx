@@ -235,7 +235,7 @@ export function ParametresClient({ user, photo: initialPhoto }: { user: SessionU
                 <div className="px-6 py-5 grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-5">
                   <Field icon={User}       label="Prénom"         value={user.prenoms} />
                   <Field icon={User}       label="Nom"            value={user.nom} />
-                  <Field icon={Mail}       label="Adresse e-mail" value={user.email} />
+                  <Field icon={Mail}       label="Adresse e-mail" value={user.email ?? ''} />
                   <Field icon={BadgeCheck} label="Rôle"           value={roleLabel} />
                 </div>
                 <div className="px-6 pb-4 text-[11px] text-slate-400 dark:text-zinc-500">
