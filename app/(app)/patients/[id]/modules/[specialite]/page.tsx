@@ -74,8 +74,8 @@ export default async function ModuleSpecialitePage({
       </div>
 
       {afficherFormulaire && (
-        <Card className="border-green-200 dark:border-emerald-800/50">
-          <CardContent className="p-6">
+        <Card className="border-0 shadow-none">
+          <CardContent className="p-0">
             <FormulaireEnregistrement
               dossierId={dossierId}
               specialiteId={params.specialite}
@@ -85,10 +85,11 @@ export default async function ModuleSpecialitePage({
         </Card>
       )}
 
-      <div className="space-y-4">
-        <h2 className="font-semibold text-gray-700 dark:text-zinc-300">
-          Historique des consultations ({enregistrements.length})
-        </h2>
+      {!afficherFormulaire && (
+        <div className="space-y-4">
+          <h2 className="font-semibold text-gray-700 dark:text-zinc-300">
+            Historique des consultations ({enregistrements.length})
+          </h2>
 
         {enregistrements.length === 0 ? (
           <Card>
@@ -155,7 +156,8 @@ export default async function ModuleSpecialitePage({
             </Card>
           ))
         )}
-      </div>
+        </div>
+      )}
     </div>
   )
 }
