@@ -208,21 +208,23 @@ model DossierMedical {
 }
 
 model AccesDossier {
-  id           String         @id @default(cuid())
-  debutAcces   DateTime       @default(now())
-  finAcces     DateTime
-  modeUrgence  Boolean        @default(false)
-  dossierId    String
-  medecinId    String
-  centreId     String
-  specialiteId String?
-  centre       Centre         @relation(fields: [centreId], references: [id])
-  dossier      DossierMedical @relation(fields: [dossierId], references: [id], onDelete: Cascade)
-  medecin      User           @relation(fields: [medecinId], references: [id])
+  id                String         @id @default(cuid())
+  debutAcces        DateTime       @default(now())
+  finAcces          DateTime
+  modeUrgence       Boolean        @default(false)
+  modeAccesDoc      Boolean        @default(false)
+  justificatifPhoto String?
+  dossierId         String
+  medecinId         String
+  centreId          String
+  specialiteId      String?
+  centre            Centre         @relation(fields: [centreId], references: [id])
+  dossier           DossierMedical @relation(fields: [dossierId], references: [id], onDelete: Cascade)
+  medecin           User           @relation(fields: [medecinId], references: [id])
 }
 
 model EnregistrementMedical {
-  id                      String         @id @default(cuid())
+  id                      String                   @id @default(cuid())
   antecedents             String?
   signes                  String?
   examens                 String?
@@ -232,19 +234,43 @@ model EnregistrementMedical {
   traitOrdonnance         String?
   suivi                   String?
   audioTranscriptionBrute String?
-  genereParIA             Boolean        @default(false)
-  valideParMedecin        Boolean        @default(true)
-  dateConsultation        DateTime       @default(now())
-  createdAt               DateTime       @default(now())
-  updatedAt               DateTime       @updatedAt
+  genereParIA             Boolean                  @default(false)
+  valideParMedecin        Boolean                  @default(true)
+  dateConsultation        DateTime                 @default(now())
+  createdAt               DateTime                 @default(now())
+  updatedAt               DateTime                 @updatedAt
   dossierId               String
   specialiteId            String
   medecinId               String
   centreId                String
-  centre                  Centre         @relation(fields: [centreId], references: [id])
-  dossier                 DossierMedical @relation(fields: [dossierId], references: [id], onDelete: Cascade)
-  medecin                 User           @relation(fields: [medecinId], references: [id])
-  specialite              Specialite     @relation(fields: [specialiteId], references: [id])
+  centre                  Centre                   @relation(fields: [centreId], references: [id])
+  dossier                 DossierMedical           @relation(fields: [dossierId], references: [id], onDelete: Cascade)
+  medecin                 User                     @relation(fields: [medecinId], references: [id])
+  specialite              Specialite               @relation(fields: [specialiteId], references: [id])
+  documents               DocumentConsultation[]
+  ordonnances             OrdonnanceConsultation[]
+}
+
+model DocumentConsultation {
+  id               String                @id @default(cuid())
+  titre            String
+  note             String?
+  fichier          String
+  enregistrementId String
+  createdAt        DateTime              @default(now())
+  updatedAt        DateTime              @updatedAt
+  enregistrement   EnregistrementMedical @relation(fields: [enregistrementId], references: [id], onDelete: Cascade)
+}
+
+model OrdonnanceConsultation {
+  id               String                @id @default(cuid())
+  titre            String?
+  texte            String?
+  fichier          String?
+  enregistrementId String
+  createdAt        DateTime              @default(now())
+  updatedAt        DateTime              @updatedAt
+  enregistrement   EnregistrementMedical @relation(fields: [enregistrementId], references: [id], onDelete: Cascade)
 }
 
 model OTP {
@@ -327,6 +353,7 @@ enum ActionLog {
   CREATION_ROLE
   MODIFICATION_PERMISSIONS
   QR_ACCES_RENOUVELE
+  ACCES_PAR_DOCUMENT
 }
 
 enum CreateurRole {
@@ -363,6 +390,7 @@ model DocumentIdentification {
   patient   Patient                    @relation(fields: [patientId], references: [id], onDelete: Cascade)
 
   @@unique([patientId, type])
+  @@unique([type, numero])
 }
 
 model DocumentPatient {

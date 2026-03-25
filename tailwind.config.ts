@@ -54,9 +54,9 @@ const config: Config = {
           foreground: 'hsl(var(--card-foreground))',
         },
         brand: {
-          DEFAULT: '#21c488',
-          dark: '#1ba371',
-          light: '#e9f9f2',
+          DEFAULT: 'hsl(var(--brand) / <alpha-value>)',
+          dark: 'hsl(var(--brand-dark) / <alpha-value>)',
+          light: 'hsl(var(--brand-light) / <alpha-value>)',
         },
       },
       borderRadius: {

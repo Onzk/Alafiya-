@@ -2,7 +2,7 @@ import { auth } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import prisma from '@/lib/db'
-import { QrCode, Pencil, ArrowLeft } from 'lucide-react'
+import { QrCode, Pencil, ArrowLeft, CreditCard, TextQuote } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { SessionUser } from '@/types'
 import { DossierPatientClient } from './DossierPatientClient'
@@ -84,15 +84,23 @@ export default async function DossierPatientPage({ params }: { params: { id: str
         <div className="flex items-center gap-2">
           {accesValide && (
             <Link href={`/patients/${params.id}/modifier`}>
-              <Button variant="outline" size="sm">
+              <Button variant="warning" size="sm">
                 <Pencil className="mr-2 h-4 w-4" />
                 Modifier
               </Button>
             </Link>
           )}
+          {accesValide && (
+            <Link href={`/patients/${params.id}/documents`}>
+              <Button variant="secondary" size="sm">
+                <TextQuote className="mr-2 h-4 w-4" />
+                ID
+              </Button>
+            </Link>
+          )}
           {peutVoirQR && (
             <Link href={`/patients/${params.id}/qrcode`}>
-              <Button variant="outline" size="sm">
+              <Button variant="default" size="sm">
                 <QrCode className="mr-2 h-4 w-4" />
                 QR Code
               </Button>

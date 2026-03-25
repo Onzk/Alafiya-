@@ -2,7 +2,7 @@
 
 import { useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { AlertTriangle, Loader2 } from 'lucide-react'
+import { AlertTriangle, Loader2, CreditCard } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { QRScanner } from '@/components/qrcode/QRScanner'
 import { toast } from '@/hooks/use-toast'
@@ -66,6 +66,17 @@ export default function ScannerPage() {
         <>
           <div className="dash-in delay-75 bg-white dark:bg-zinc-950 rounded-2xl border border-slate-100 dark:border-zinc-800 overflow-hidden p-6">
             <QRScanner onScan={handleScan} onError={handleScanError} />
+          </div>
+
+          {/* Accès par document */}
+          <div className="dash-in delay-100 bg-white dark:bg-zinc-950 rounded-2xl border border-slate-100 dark:border-zinc-800 p-4">
+            <Button variant="outline" className="w-full rounded-xl gap-2" onClick={() => router.push('/acces-document')}>
+              <CreditCard className="h-4 w-4" />
+              Accès par document d&apos;identité
+            </Button>
+            <p className="text-xs text-slate-400 dark:text-zinc-500 text-center mt-2">
+              Alternative au QR code — CNI, Passeport, CNSS, eID.
+            </p>
           </div>
 
           {/* Mode urgence */}

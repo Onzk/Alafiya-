@@ -10,7 +10,7 @@
     --card-foreground: 222.2 84% 4.9%;
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
-    --primary: 158 72% 45%;
+    --primary: 157 60% 27%;
     --primary-foreground: 0 0% 100%;
     --secondary: 210 14% 89%;
     --secondary-foreground: 222.2 47.4% 11.2%;
@@ -22,8 +22,12 @@
     --destructive-foreground: 210 40% 98%;
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 158 72% 45%;
+    --ring: 157 60% 27%;
     --radius: 0.5rem;
+    /* Brand — mode jour */
+    --brand: 157 60% 27%;
+    --brand-dark: 157 62% 22%;
+    --brand-light: 154 37% 93%;
   }
 
   /* Mode nuit — zinc-950 profond */
@@ -47,6 +51,10 @@
     --border: 240 4% 18%;
     --input: 240 4% 18%;
     --ring: 158 72% 45%;
+    /* Brand — mode nuit */
+    --brand: 158 72% 45%;
+    --brand-dark: 158 72% 37%;
+    --brand-light: 158 72% 12%;
   }
 }
 
@@ -181,9 +189,9 @@ html {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #21c488;
+  background: hsl(var(--brand));
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #1ba371;
+  background: hsl(var(--brand-dark));
 }
