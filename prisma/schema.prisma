@@ -158,30 +158,32 @@ model UserPermission {
 }
 
 model Patient {
-  id                    String             @id @default(cuid())
-  nom                   String
-  prenoms               String
-  genre                 Genre
-  dateNaissance         DateTime
-  dateNaissancePresumee Boolean            @default(false)
-  adresse               String
-  telephone             String?
-  email                 String?
-  numeroCNI             String?
-  photo                 String?
-  qrToken               String             @unique
-  qrGeneratedAt         DateTime           @default(now())
-  qrAccesExpireAt       DateTime?
-  createdAt             DateTime           @default(now())
-  updatedAt             DateTime           @updatedAt
-  creeParId             String
-  centreCreationId      String
-  accesUrgences         AccesUrgence[]
-  dossier               DossierMedical?
-  otps                  OTP[]
-  personnesUrgence      PersonneUrgence[]
-  centreCreation        Centre             @relation(fields: [centreCreationId], references: [id])
-  creePar               User               @relation(fields: [creeParId], references: [id])
+  id                       String                   @id @default(cuid())
+  nom                      String
+  prenoms                  String
+  genre                    Genre
+  dateNaissance            DateTime
+  dateNaissancePresumee    Boolean                  @default(false)
+  adresse                  String
+  telephone                String?
+  email                    String?
+  numeroCNI                String?
+  photo                    String?
+  qrToken                  String                   @unique
+  qrGeneratedAt            DateTime                 @default(now())
+  qrAccesExpireAt          DateTime?
+  createdAt                DateTime                 @default(now())
+  updatedAt                DateTime                 @updatedAt
+  creeParId                String
+  centreCreationId         String
+  accesUrgences            AccesUrgence[]
+  dossier                  DossierMedical?
+  otps                     OTP[]
+  personnesUrgence         PersonneUrgence[]
+  documentsIdentification  DocumentIdentification[]
+  documents                DocumentPatient[]
+  centreCreation           Centre                   @relation(fields: [centreCreationId], references: [id])
+  creePar                  User                     @relation(fields: [creeParId], references: [id])
 }
 
 model PersonneUrgence {
@@ -341,6 +343,37 @@ enum StatutFacture {
   EN_ATTENTE
   PAYE
   EN_RETARD
+}
+
+enum TypeDocumentIdentification {
+  CNI
+  PASSEPORT
+  CNSS
+  EID_ANID
+}
+
+model DocumentIdentification {
+  id        String                     @id @default(cuid())
+  type      TypeDocumentIdentification
+  numero    String
+  fichier   String
+  patientId String
+  createdAt DateTime                   @default(now())
+  updatedAt DateTime                   @updatedAt
+  patient   Patient                    @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+  @@unique([patientId, type])
+}
+
+model DocumentPatient {
+  id        String   @id @default(cuid())
+  titre     String
+  note      String?
+  fichier   String
+  patientId String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  patient   Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
 }
 
 model Configuration {

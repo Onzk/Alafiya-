@@ -2,17 +2,21 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { User, Phone, Stethoscope, AlertTriangle } from 'lucide-react'
+import Image from 'next/image'
+import { User, Phone, Stethoscope, AlertTriangle, Building2, FolderOpen } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { formatDate, calculerAge, cn } from '@/lib/utils'
+import { DocumentsTab } from '@/components/patients/DocumentsTab'
 
-type Tab = 'informations' | 'contacts'
+type Tab = 'informations' | 'contacts' | 'documents' | 'origine'
 
 const TABS: { id: Tab; label: string; icon: React.ElementType }[] = [
-  { id: 'informations', label: 'Informations patient', icon: User },
-  { id: 'contacts',     label: 'Personnes à prévenir', icon: Phone },
+  { id: 'informations', label: 'Informations',        icon: User },
+  { id: 'contacts',     label: 'Contacts urgence',    icon: Phone },
+  { id: 'documents',    label: 'Documents',           icon: FolderOpen },
+  { id: 'origine',      label: 'Centre & création',   icon: Building2 },
 ]
 
 type PersonneUrgence = {
@@ -35,18 +39,45 @@ type PatientData = {
   numeroCNI: string | null
   photo: string | null
   personnesUrgence: PersonneUrgence[]
+  createdAt: Date | string
+}
+
+type CentreData = {
+  id: string
+  nom: string
+  adresse: string
+  telephone: string
+  email: string
+  region: string
+  prefecture: string
+  type: string
+  logo: string | null
+}
+
+type CreeParData = {
+  id: string
+  nom: string
+  prenoms: string
+  email: string
+  telephone: string | null
+  photo: string | null
+  niveauAcces: string
 }
 
 type Specialite = { id: string; nom: string; code: string }
 
 export function DossierPatientClient({
   patient,
+  centreCreation,
+  creePar,
   patientId,
   accesValide,
   modeUrgence,
   specialitesAccessibles,
 }: {
   patient: PatientData
+  centreCreation: CentreData
+  creePar: CreeParData
   patientId: string
   accesValide: boolean
   modeUrgence: boolean
@@ -182,6 +213,102 @@ export function DossierPatientClient({
               )}
             </div>
           )}
+        </div>
+      )}
+
+      {/* ── Documents ── */}
+      {activeTab === 'documents' && (
+        <DocumentsTab patientId={patientId} accesValide={accesValide} />
+      )}
+
+      {/* ── Centre & création ── */}
+      {activeTab === 'origine' && (
+        <div className="space-y-4">
+          {/* Centre de santé */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-base text-slate-700 dark:text-zinc-200">
+                <Building2 className="h-4 w-4 text-brand" />
+                Centre de santé
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center gap-4">
+                <div className="h-14 w-14 rounded-xl overflow-hidden bg-slate-100 dark:bg-zinc-800 flex items-center justify-center flex-shrink-0 border border-slate-200 dark:border-zinc-700">
+                  {centreCreation.logo ? (
+                    <Image src={centreCreation.logo} alt={centreCreation.nom} width={56} height={56} className="h-full w-full object-cover" />
+                  ) : (
+                    <Building2 className="h-6 w-6 text-slate-300 dark:text-zinc-600" />
+                  )}
+                </div>
+                <div>
+                  <p className="font-bold text-sm text-slate-900 dark:text-white">{centreCreation.nom}</p>
+                  <p className="text-xs text-slate-400 dark:text-zinc-500 mt-0.5">{centreCreation.type}</p>
+                </div>
+              </div>
+              <div className="grid sm:grid-cols-2 gap-3 text-sm border-t border-slate-100 dark:border-zinc-800 pt-4">
+                <div>
+                  <p className="text-gray-500 dark:text-zinc-400 text-xs">Adresse</p>
+                  <p>{centreCreation.adresse}</p>
+                </div>
+                <div>
+                  <p className="text-gray-500 dark:text-zinc-400 text-xs">Région / Préfecture</p>
+                  <p>{centreCreation.region} — {centreCreation.prefecture}</p>
+                </div>
+                <div>
+                  <p className="text-gray-500 dark:text-zinc-400 text-xs">Téléphone</p>
+                  <p>{centreCreation.telephone}</p>
+                </div>
+                <div>
+                  <p className="text-gray-500 dark:text-zinc-400 text-xs">Email</p>
+                  <p>{centreCreation.email}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Personnel créateur */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-base text-slate-700 dark:text-zinc-200">
+                <User className="h-4 w-4 text-brand" />
+                Compte créé par
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center gap-4">
+                <div className="h-12 w-12 rounded-full overflow-hidden bg-brand/10 dark:bg-brand/15 flex items-center justify-center flex-shrink-0">
+                  {creePar.photo ? (
+                    <Image src={creePar.photo} alt={`${creePar.nom} ${creePar.prenoms}`} width={48} height={48} className="h-full w-full object-cover" />
+                  ) : (
+                    <span className="text-brand font-bold text-sm">{creePar.nom[0]}{creePar.prenoms[0]}</span>
+                  )}
+                </div>
+                <div>
+                  <p className="font-bold text-sm text-slate-900 dark:text-white">{creePar.nom.toUpperCase()} {creePar.prenoms}</p>
+                  <p className="text-xs text-slate-400 dark:text-zinc-500 mt-0.5">
+                    {creePar.niveauAcces === 'SUPERADMIN' ? 'Administrateur National' : creePar.niveauAcces === 'ADMIN_CENTRE' ? 'Admin de centre' : 'Personnel médical'}
+                  </p>
+                </div>
+              </div>
+              <div className="grid sm:grid-cols-2 gap-3 text-sm border-t border-slate-100 dark:border-zinc-800 pt-4">
+                <div>
+                  <p className="text-gray-500 dark:text-zinc-400 text-xs">Email</p>
+                  <p>{creePar.email}</p>
+                </div>
+                {creePar.telephone && (
+                  <div>
+                    <p className="text-gray-500 dark:text-zinc-400 text-xs">Téléphone</p>
+                    <p>{creePar.telephone}</p>
+                  </div>
+                )}
+                <div>
+                  <p className="text-gray-500 dark:text-zinc-400 text-xs">Date d&apos;enregistrement du patient</p>
+                  <p>{formatDate(patient.createdAt)}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       )}
 

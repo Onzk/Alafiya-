@@ -24,6 +24,12 @@ export default async function DossierPatientPage({ params }: { params: { id: str
           },
         },
       },
+      centreCreation: {
+        select: { id: true, nom: true, adresse: true, telephone: true, email: true, region: true, prefecture: true, type: true, logo: true },
+      },
+      creePar: {
+        select: { id: true, nom: true, prenoms: true, email: true, telephone: true, photo: true, niveauAcces: true },
+      },
     },
   })
 
@@ -108,7 +114,10 @@ export default async function DossierPatientPage({ params }: { params: { id: str
           numeroCNI: patient.numeroCNI ?? null,
           photo: patient.photo ?? null,
           personnesUrgence: patient.personnesUrgence,
+          createdAt: patient.createdAt,
         }}
+        centreCreation={patient.centreCreation}
+        creePar={patient.creePar}
         patientId={params.id}
         accesValide={accesValide}
         modeUrgence={modeUrgence}

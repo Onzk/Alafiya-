@@ -1,10 +1,22 @@
 import { auth } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 import prisma from '@/lib/db'
-import { UserPlus, QrCode, User, Search } from 'lucide-react'
+import { UserPlus, QrCode, User, Search, Clock, Zap } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { calculerAge } from '@/lib/utils'
+import { SessionUser } from '@/types'
+
+function formatTempsRestant(finAcces: Date): string {
+  const diffMs = finAcces.getTime() - Date.now()
+  if (diffMs <= 0) return ''
+  const totalMin = Math.floor(diffMs / 60000)
+  const heures = Math.floor(totalMin / 60)
+  const minutes = totalMin % 60
+  if (heures > 0) return `${heures}h ${minutes}min`
+  return `${minutes}min`
+}
 
 export default async function PatientsPage({
   searchParams,
@@ -13,6 +25,9 @@ export default async function PatientsPage({
 }) {
   const session = await auth()
   if (!session?.user) redirect('/login')
+
+  const user = session.user as unknown as SessionUser
+  const isAdmin = user.niveauAcces === 'SUPERADMIN' || user.niveauAcces === 'ADMIN_CENTRE'
 
   const page = parseInt(searchParams.page || '1')
   const limit = 20
@@ -33,9 +48,29 @@ export default async function PatientsPage({
       orderBy: { createdAt: 'desc' },
       skip,
       take: limit,
+      include: { dossier: { select: { id: true } } },
     }),
     prisma.patient.count({ where }),
   ])
+
+  // Pour le personnel, récupérer les accès actifs en cours
+  const accesMap = new Map<string, { finAcces: Date; modeUrgence: boolean }>()
+  if (!isAdmin) {
+    const dossierIds = patients.map(p => p.dossier?.id).filter(Boolean) as string[]
+    if (dossierIds.length > 0) {
+      const accesActifs = await prisma.accesDossier.findMany({
+        where: {
+          medecinId: user.id,
+          dossierId: { in: dossierIds },
+          finAcces: { gt: new Date() },
+        },
+        select: { dossierId: true, finAcces: true, modeUrgence: true },
+      })
+      for (const a of accesActifs) {
+        accesMap.set(a.dossierId, { finAcces: a.finAcces, modeUrgence: a.modeUrgence })
+      }
+    }
+  }
 
   const totalPages = Math.ceil(total / limit)
 
@@ -77,55 +112,113 @@ export default async function PatientsPage({
           )}
         </div>
       ) : (
-        <div className="dash-in delay-150 bg-white dark:bg-zinc-950 rounded-2xl border border-slate-100 dark:border-zinc-800 overflow-hidden">
-          {/* Table header */}
-          <div className="hidden sm:grid grid-cols-[1fr_auto_auto_auto] gap-4 px-5 py-2.5 bg-slate-50/60 dark:bg-zinc-950/40 border-b border-slate-100 dark:border-zinc-800">
-            <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-zinc-500">Patient</span>
-            <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-zinc-500">Âge</span>
-            <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-zinc-500">Genre</span>
-            <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-zinc-500">Actions</span>
+        <div className="dash-in delay-150 rounded-2xl border border-slate-100 dark:border-zinc-800 overflow-hidden bg-white dark:bg-zinc-950">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-slate-100 dark:border-zinc-800 bg-slate-50/70 dark:bg-zinc-900/60">
+                  <th className="text-left px-5 py-3 text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-zinc-500 w-full">Patient</th>
+                  <th className="text-left px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-zinc-500 whitespace-nowrap">Date de naissance</th>
+                  <th className="text-left px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-zinc-500 whitespace-nowrap">Genre</th>
+                  {!isAdmin && (
+                    <th className="text-left px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-zinc-500 whitespace-nowrap">Accès</th>
+                  )}
+                  <th className="text-right px-5 py-3 text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-zinc-500">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {patients.map((patient, i) => {
+                  const acces = patient.dossier ? accesMap.get(patient.dossier.id) : undefined
+                  const tempsRestant = acces ? formatTempsRestant(acces.finAcces) : ''
+                  const age = calculerAge(patient.dateNaissance)
+                  const dateNaissanceFormatee = new Date(patient.dateNaissance).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' })
+                  return (
+                    <tr
+                      key={patient.id}
+                      className={`dash-in delay-${[0,75,100,150,200,225,300,375][i] ?? 300} border-b border-slate-50 dark:border-zinc-800/60 last:border-0 hover:bg-slate-50/60 dark:hover:bg-zinc-800/20 transition-colors`}
+                    >
+                      {/* Patient */}
+                      <td className="px-5 py-3">
+                        <div className="flex items-center gap-3">
+                          <div className="h-9 w-9 rounded-full bg-brand/10 dark:bg-brand/15 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                            {patient.photo ? (
+                              <Image
+                                src={patient.photo}
+                                alt={`${patient.nom} ${patient.prenoms}`}
+                                width={36}
+                                height={36}
+                                className="h-full w-full object-cover"
+                              />
+                            ) : (
+                              <span className="text-brand font-bold text-sm">
+                                {patient.nom[0]}{patient.prenoms[0]}
+                              </span>
+                            )}
+                          </div>
+                          <div>
+                            <p className="font-semibold text-slate-900 dark:text-white">
+                              {patient.nom.toUpperCase()} {patient.prenoms}
+                            </p>
+                          </div>
+                        </div>
+                      </td>
+
+                      {/* Date de naissance + âge */}
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        <span className="text-slate-700 dark:text-zinc-300">{dateNaissanceFormatee}</span>
+                        <span className="ml-2 text-xs text-slate-400 dark:text-zinc-500">
+                          ({age} ans{patient.dateNaissancePresumee && ', estimé'})
+                        </span>
+                      </td>
+
+                      {/* Genre */}
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium ${
+                          patient.genre === 'M'
+                            ? 'bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400'
+                            : 'bg-pink-50 text-pink-600 dark:bg-pink-950/40 dark:text-pink-400'
+                        }`}>
+                          {patient.genre === 'M' ? 'Homme' : 'Femme'}
+                        </span>
+                      </td>
+
+                      {/* Accès (personnel uniquement) */}
+                      {!isAdmin && (
+                        <td className="px-4 py-3 whitespace-nowrap">
+                          {acces && tempsRestant ? (
+                            <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg text-xs font-semibold ${
+                              acces.modeUrgence
+                                ? 'bg-red-100 text-red-600 dark:bg-red-950/40 dark:text-red-400'
+                                : 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400'
+                            }`}>
+                              {acces.modeUrgence ? <Zap className="h-3 w-3" /> : <Clock className="h-3 w-3" />}
+                              {acces.modeUrgence ? 'Urgence' : tempsRestant}
+                            </span>
+                          ) : (
+                            <span className="text-xs text-slate-300 dark:text-zinc-600">Aucun</span>
+                          )}
+                        </td>
+                      )}
+
+                      {/* Actions */}
+                      <td className="px-5 py-3">
+                        <div className="flex items-center justify-end gap-2">
+                          <Link href={`/patients/${patient.id}/qrcode`}>
+                            <Button size="sm" variant="outline" className="rounded-xl border-slate-200 dark:border-zinc-700 h-8 px-2.5">
+                              <QrCode className="h-3.5 w-3.5" />
+                            </Button>
+                          </Link>
+                          <Link href={`/patients/${patient.id}`}>
+                            <Button size="sm" className="bg-brand hover:bg-brand-dark text-white rounded-xl h-8 px-3 text-xs">Dossier</Button>
+                          </Link>
+                        </div>
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
           </div>
-
-          <ul>
-            {patients.map((patient, i) => (
-              <li
-                key={patient.id}
-                className={`dash-in delay-${[0,75,100,150,200,225,300,375][i] ?? 300} flex sm:grid sm:grid-cols-[1fr_auto_auto_auto] items-center gap-4 px-5 py-3.5 border-b border-slate-50 dark:border-zinc-800/60 last:border-0 hover:bg-slate-50/60 dark:hover:bg-zinc-800/30 transition-colors`}
-              >
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className="h-9 w-9 rounded-full bg-brand/10 dark:bg-brand/15 flex items-center justify-center flex-shrink-0">
-                    <span className="text-brand font-bold text-sm">
-                      {patient.nom[0]}{patient.prenoms[0]}
-                    </span>
-                  </div>
-                  <div className="min-w-0">
-                    <p className="font-semibold text-sm text-slate-900 dark:text-white truncate">
-                      {patient.nom.toUpperCase()} {patient.prenoms}
-                    </p>
-                  </div>
-                </div>
-
-                <span className="text-xs text-slate-400 dark:text-zinc-500 hidden sm:block whitespace-nowrap">
-                  {calculerAge(patient.dateNaissance)} ans{patient.dateNaissancePresumee && ' *'}
-                </span>
-
-                <span className="text-xs text-slate-500 dark:text-zinc-400 hidden sm:block whitespace-nowrap">
-                  {patient.genre === 'M' ? 'Homme' : 'Femme'}
-                </span>
-
-                <div className="flex items-center gap-2 flex-shrink-0">
-                  <Link href={`/patients/${patient.id}/qrcode`}>
-                    <Button size="sm" variant="outline" className="rounded-xl border-slate-200 dark:border-zinc-700 h-8 px-2.5">
-                      <QrCode className="h-3.5 w-3.5" />
-                    </Button>
-                  </Link>
-                  <Link href={`/patients/${patient.id}`}>
-                    <Button size="sm" className="bg-brand hover:bg-brand-dark text-white rounded-xl h-8 px-3 text-xs">Dossier</Button>
-                  </Link>
-                </div>
-              </li>
-            ))}
-          </ul>
         </div>
       )}
 
