@@ -198,9 +198,12 @@ export function QRScanner({ onScan, onError }: QRScannerProps) {
 
       {/* Indication scanner actif */}
       {cameraState === 'active' && (
-        <p className="text-center text-sm text-slate-500 dark:text-zinc-400">
-          Pointez la caméra vers le QR code du patient
-        </p>
+        <div className="flex items-center justify-center gap-2">
+          <span className="h-2 w-2 rounded-full bg-brand animate-pulse shrink-0" />
+          <p className="text-sm text-slate-500 dark:text-zinc-400">
+            Pointez la caméra vers le QR code du patient
+          </p>
+        </div>
       )}
     </div>
   )

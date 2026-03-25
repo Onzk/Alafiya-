@@ -2,11 +2,12 @@ import { auth } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import prisma from '@/lib/db'
-import { Plus, ClipboardList, FlaskConical, Pill, CalendarCheck, ArrowLeft } from 'lucide-react'
-import { ConsultationCardHeader } from './ConsultationCardHeader'
+import { Plus, ArrowLeft, FileText, ScrollText, ExternalLink, Clock, CheckCircle2, CalendarX2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
+import { cn } from '@/lib/utils'
 import { FormulaireEnregistrement } from '@/components/dossier/FormulaireEnregistrement'
+import { ConsultationCard } from '@/components/dossier/ConsultationCard'
 import { RechercheInput } from './RechercheInput'
 import { SessionUser } from '@/types'
 
@@ -22,7 +23,7 @@ export default async function ModuleSpecialitePage({
   searchParams,
 }: {
   params: { id: string; specialite: string }
-  searchParams: { nouveau?: string; q?: string }
+  searchParams: { nouveau?: string; q?: string; tab?: string; statut?: string }
 }) {
   const session = await auth()
   if (!session?.user) redirect('/login')
@@ -50,39 +51,78 @@ export default async function ModuleSpecialitePage({
   if (!accesValide) redirect('/scanner')
 
   const q = searchParams.q?.trim() ?? ''
-
-  const enregistrements = await prisma.enregistrementMedical.findMany({
-    where: {
-      dossierId,
-      specialiteId: params.specialite,
-      ...(q && {
-        OR: [
-          { antecedents:    { contains: q, mode: 'insensitive' } },
-          { signes:         { contains: q, mode: 'insensitive' } },
-          { examens:        { contains: q, mode: 'insensitive' } },
-          { bilan:          { contains: q, mode: 'insensitive' } },
-          { traitConseils:  { contains: q, mode: 'insensitive' } },
-          { traitInjections:{ contains: q, mode: 'insensitive' } },
-          { traitOrdonnance:{ contains: q, mode: 'insensitive' } },
-          { suivi:          { contains: q, mode: 'insensitive' } },
-          { medecin: { nom:     { contains: q, mode: 'insensitive' } } },
-          { medecin: { prenoms: { contains: q, mode: 'insensitive' } } },
-        ],
-      }),
-    },
-    include: {
-      medecin: { select: { nom: true, prenoms: true, telephone: true, photo: true, role: { select: { nom: true } } } },
-      centre:  { select: { nom: true, adresse: true, region: true, prefecture: true, type: true, telephone: true, email: true, logo: true } },
-    },
-    orderBy: { dateConsultation: 'desc' },
-  })
-
+  const tab = searchParams.tab ?? 'consultations'
   const afficherFormulaire = searchParams.nouveau === '1'
+
+  const VALID_STATUTS = ['EN_COURS', 'TERMINEE', 'REPORTEE'] as const
+  type StatutFilter = typeof VALID_STATUTS[number]
+  const statutFilter = VALID_STATUTS.includes(searchParams.statut as StatutFilter)
+    ? (searchParams.statut as StatutFilter)
+    : undefined
+
+  const enrSelect = {
+    medecin:    { select: { nom: true, prenoms: true, telephone: true, photo: true, role: { select: { nom: true } } } },
+    centre:     { select: { nom: true, adresse: true, region: true, prefecture: true, type: true, telephone: true, email: true, logo: true } },
+    documents:  { orderBy: { createdAt: 'asc' as const } },
+    ordonnances:{ orderBy: { createdAt: 'asc' as const } },
+  }
+
+  const [enregistrements, docsModule, ordsModule] = await Promise.all([
+    prisma.enregistrementMedical.findMany({
+      where: {
+        dossierId,
+        specialiteId: params.specialite,
+        parentId: null,
+        ...(statutFilter && { statut: statutFilter }),
+        ...(q && {
+          OR: [
+            { antecedents:     { contains: q, mode: 'insensitive' } },
+            { signes:          { contains: q, mode: 'insensitive' } },
+            { examens:         { contains: q, mode: 'insensitive' } },
+            { bilan:           { contains: q, mode: 'insensitive' } },
+            { traitConseils:   { contains: q, mode: 'insensitive' } },
+            { traitInjections: { contains: q, mode: 'insensitive' } },
+            { traitOrdonnance: { contains: q, mode: 'insensitive' } },
+            { suivi:           { contains: q, mode: 'insensitive' } },
+            { medecin: { nom:     { contains: q, mode: 'insensitive' } } },
+            { medecin: { prenoms: { contains: q, mode: 'insensitive' } } },
+          ],
+        }),
+      },
+      include: {
+        ...enrSelect,
+        sousConsultations: {
+          include: enrSelect,
+          orderBy: { dateConsultation: 'asc' },
+        },
+      },
+      orderBy: { dateConsultation: 'desc' },
+    }),
+
+    // Documents de toutes les consultations de ce module (sans filtre de recherche)
+    prisma.documentConsultation.findMany({
+      where: { enregistrement: { dossierId, specialiteId: params.specialite } },
+      include: { enregistrement: { select: { dateConsultation: true } } },
+      orderBy: { createdAt: 'desc' },
+    }),
+
+    // Ordonnances de toutes les consultations de ce module (sans filtre de recherche)
+    prisma.ordonnanceConsultation.findMany({
+      where: { enregistrement: { dossierId, specialiteId: params.specialite } },
+      include: { enregistrement: { select: { dateConsultation: true } } },
+      orderBy: { createdAt: 'desc' },
+    }),
+  ])
+
+  const totalDocsModule = docsModule.length + ordsModule.length
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
 
-      <Link href={`/patients/${params.id}`} className="inline-flex items-center gap-1.5 text-sm text-slate-500 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white transition-colors">
+      <Link
+        href={`/patients/${params.id}`}
+        className="inline-flex items-center gap-1.5 text-sm text-slate-500 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white transition-colors"
+      >
         <ArrowLeft className="h-4 w-4" />
         Retour au dossier
       </Link>
@@ -107,7 +147,7 @@ export default async function ModuleSpecialitePage({
         )}
       </div>
 
-      {/* ── Formulaire ── */}
+      {/* ── Formulaire nouvelle consultation ── */}
       {afficherFormulaire && (
         <FormulaireEnregistrement
           dossierId={dossierId}
@@ -116,118 +156,238 @@ export default async function ModuleSpecialitePage({
         />
       )}
 
-      {/* ── Historique ── */}
+      {/* ── Tabs + contenu ── */}
       {!afficherFormulaire && (
-        <div className="space-y-4">
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 dark:text-zinc-500">
-              {enregistrements.length} consultation{enregistrements.length !== 1 ? 's' : ''}{q && ` pour « ${q} »`}
-            </p>
-            <div className="sm:w-72">
-              <RechercheInput defaultValue={q} />
-            </div>
+        <>
+          {/* Navigation tabs */}
+          <div className="flex gap-0 border-b border-slate-200 dark:border-zinc-800">
+            <Link
+              href={`?tab=consultations${q ? `&q=${encodeURIComponent(q)}` : ''}`}
+              className={`px-4 py-2.5 text-sm font-medium transition-colors border-b-2 -mb-px ${
+                tab !== 'documents'
+                  ? 'border-brand text-brand'
+                  : 'border-transparent text-slate-500 dark:text-zinc-400 hover:text-slate-800 dark:hover:text-zinc-200'
+              }`}
+            >
+              Consultations
+              <span className="ml-1.5 text-xs opacity-60">({enregistrements.length})</span>
+            </Link>
+            <Link
+              href={`?tab=documents`}
+              className={`px-4 py-2.5 text-sm font-medium transition-colors border-b-2 -mb-px flex items-center gap-1.5 ${
+                tab === 'documents'
+                  ? 'border-brand text-brand'
+                  : 'border-transparent text-slate-500 dark:text-zinc-400 hover:text-slate-800 dark:hover:text-zinc-200'
+              }`}
+            >
+              Documents
+              {totalDocsModule > 0 && (
+                <span className={`inline-flex items-center justify-center h-4 min-w-[1rem] px-1 rounded-full text-[10px] font-bold ${
+                  tab === 'documents'
+                    ? 'bg-brand/10 text-brand'
+                    : 'bg-slate-100 dark:bg-zinc-800 text-slate-500 dark:text-zinc-400'
+                }`}>
+                  {totalDocsModule}
+                </span>
+              )}
+            </Link>
           </div>
 
-          {enregistrements.length === 0 ? (
-            <Card>
-              <CardContent className="p-10 text-center text-gray-400 dark:text-zinc-500">
-                {q ? `Aucun résultat pour « ${q} ».` : 'Aucune consultation enregistrée dans cette spécialité.'}
-              </CardContent>
-            </Card>
-          ) : (
-            enregistrements.map((enr) => (
-              <Card key={enr.id} className="overflow-hidden border-slate-200 dark:border-zinc-800 shadow-sm">
+          {/* ── Tab : Consultations ── */}
+          {tab !== 'documents' && (
+            <div className="space-y-4">
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 dark:text-zinc-500">
+                  {enregistrements.length} consultation{enregistrements.length !== 1 ? 's' : ''}
+                  {q && ` pour « ${q} »`}
+                </p>
+                <div className="sm:w-72">
+                  <RechercheInput defaultValue={q} />
+                </div>
+              </div>
 
-                {/* Header de la card */}
-                {(() => {
-                  const { jour, heure } = formatDate(enr.dateConsultation)
+              {/* Filtre par statut */}
+              <div className="flex gap-1.5 flex-wrap">
+                {([
+                  { value: undefined,   label: 'Tous',      Icon: null          },
+                  { value: 'EN_COURS',  label: 'En cours',  Icon: Clock         },
+                  { value: 'TERMINEE',  label: 'Terminées', Icon: CheckCircle2  },
+                  { value: 'REPORTEE',  label: 'Reportées', Icon: CalendarX2    },
+                ] as const).map(({ value, label, Icon }) => {
+                  const isActive = statutFilter === value
+                  const href = `?tab=consultations${value ? `&statut=${value}` : ''}${q ? `&q=${encodeURIComponent(q)}` : ''}`
                   return (
-                    <ConsultationCardHeader
-                      jour={jour}
-                      heure={heure}
-                      genereParIA={enr.genereParIA}
-                      medecin={enr.medecin}
-                      centre={enr.centre}
+                    <Link
+                      key={label}
+                      href={href}
+                      className={cn(
+                        'inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium border transition-all',
+                        isActive
+                          ? 'bg-brand text-white border-brand'
+                          : 'border-slate-200 dark:border-zinc-700 text-slate-500 dark:text-zinc-400 bg-white dark:bg-zinc-950 hover:border-slate-300 dark:hover:border-zinc-600',
+                      )}
+                    >
+                      {Icon && <Icon className="h-3 w-3" />}
+                      {label}
+                    </Link>
+                  )
+                })}
+              </div>
+
+              {enregistrements.length === 0 ? (
+                <Card>
+                  <CardContent className="p-10 text-center text-gray-400 dark:text-zinc-500">
+                    {statutFilter
+                      ? q
+                        ? `Aucun résultat pour « ${q} » avec ce statut.`
+                        : 'Aucune consultation avec ce statut.'
+                      : q
+                        ? `Aucun résultat pour « ${q} ».`
+                        : 'Aucune consultation enregistrée dans cette spécialité.'}
+                  </CardContent>
+                </Card>
+              ) : (
+                enregistrements.map((enr) => {
+                  const { jour, heure } = formatDate(enr.dateConsultation)
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  function mapEnr(e: any, parentId: string | null = null) {
+                    const { jour: j, heure: h } = formatDate(e.dateConsultation)
+                    return {
+                      id:              e.id,
+                      patientId:       params.id,
+                      dossierId,
+                      specialiteId:    params.specialite,
+                      specialiteNom:   specialite!.nom,
+                      parentId,
+                      jour:            j,
+                      heure:           h,
+                      genereParIA:     e.genereParIA,
+                      statut:          e.statut as 'EN_COURS' | 'TERMINEE' | 'REPORTEE',
+                      causeReport:     e.causeReport,
+                      dateProchainRdv: e.dateProchainRdv?.toISOString() ?? null,
+                      antecedents:     e.antecedents,
+                      signes:          e.signes,
+                      examens:         e.examens,
+                      bilan:           e.bilan,
+                      traitConseils:   e.traitConseils,
+                      traitInjections: e.traitInjections,
+                      traitOrdonnance: e.traitOrdonnance,
+                      suivi:           e.suivi,
+                      medecin:         e.medecin,
+                      centre:          e.centre,
+                      documents:       e.documents.map((d: any) => ({ id: d.id, titre: d.titre, note: d.note, fichier: d.fichier, createdAt: d.createdAt.toISOString() })),
+                      ordonnances:     e.ordonnances.map((o: any) => ({ id: o.id, titre: o.titre, texte: o.texte, fichier: o.fichier, createdAt: o.createdAt.toISOString() })),
+                      sousConsultations: (e.sousConsultations ?? []).map((s: any) => mapEnr(s, e.id)),
+                    }
+                  }
+                  return (
+                    <ConsultationCard
+                      key={enr.id}
+                      enr={mapEnr(enr)}
                     />
                   )
-                })()}
-
-                {/* Corps */}
-                <CardContent className="p-4 grid gap-4 sm:grid-cols-2">
-                  {enr.antecedents && (
-                    <Section icon={ClipboardList} color="blue" label="Antécédents" value={enr.antecedents} />
-                  )}
-                  {enr.signes && (
-                    <Section icon={ClipboardList} color="blue" label="Signes & Symptômes" value={enr.signes} />
-                  )}
-                  {enr.examens && (
-                    <Section icon={FlaskConical} color="violet" label="Examens" value={enr.examens} />
-                  )}
-                  {enr.bilan && (
-                    <Section icon={FlaskConical} color="violet" label="Bilan" value={enr.bilan} />
-                  )}
-                  {enr.traitConseils && (
-                    <Section icon={Pill} color="emerald" label="Conseils" value={enr.traitConseils} />
-                  )}
-                  {enr.traitInjections && (
-                    <Section icon={Pill} color="emerald" label="Injections" value={enr.traitInjections} />
-                  )}
-                  {enr.traitOrdonnance && (
-                    <Section icon={Pill} color="emerald" label="Ordonnance" value={enr.traitOrdonnance} className="sm:col-span-2" />
-                  )}
-                  {enr.suivi && (
-                    <Section icon={CalendarCheck} color="orange" label="Suivi" value={enr.suivi} className="sm:col-span-2" />
-                  )}
-                </CardContent>
-              </Card>
-            ))
+                })
+              )}
+            </div>
           )}
-        </div>
-      )}
-    </div>
-  )
-}
 
-/* ── Composants internes ── */
+          {/* ── Tab : Documents de consultation ── */}
+          {tab === 'documents' && (
+            <div className="space-y-8">
 
-const COLORS = {
-  blue:    { icon: 'bg-blue-100 dark:bg-blue-900/30 text-blue-500 dark:text-blue-400',    label: 'text-blue-600 dark:text-blue-400'    },
-  violet:  { icon: 'bg-violet-100 dark:bg-violet-900/30 text-violet-500 dark:text-violet-400', label: 'text-violet-600 dark:text-violet-400' },
-  emerald: { icon: 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-500 dark:text-emerald-400', label: 'text-emerald-600 dark:text-emerald-400' },
-  orange:  { icon: 'bg-orange-100 dark:bg-orange-900/30 text-orange-500 dark:text-orange-400',  label: 'text-orange-600 dark:text-orange-400'  },
-}
+              {/* Documents */}
+              <div className="space-y-3">
+                <p className="text-xs font-semibold uppercase tracking-widest text-slate-400 dark:text-zinc-500 flex items-center gap-1.5">
+                  <FileText className="h-3.5 w-3.5" />
+                  Documents ({docsModule.length})
+                </p>
+                {docsModule.length === 0 ? (
+                  <p className="text-sm text-slate-400 dark:text-zinc-500 text-center py-8">
+                    Aucun document associé aux consultations de cette spécialité.
+                  </p>
+                ) : (
+                  docsModule.map((doc) => {
+                    const { jour } = formatDate(doc.enregistrement.dateConsultation)
+                    return (
+                      <div
+                        key={doc.id}
+                        className="flex items-start gap-3 p-3 rounded-lg bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 shadow-sm"
+                      >
+                        <FileText className="h-4 w-4 text-slate-400 dark:text-zinc-500 shrink-0 mt-0.5" />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-slate-800 dark:text-zinc-100 leading-tight">{doc.titre}</p>
+                          {doc.note && (
+                            <p className="text-xs text-slate-500 dark:text-zinc-400 mt-0.5">{doc.note}</p>
+                          )}
+                          <p className="text-xs text-slate-400 dark:text-zinc-500 mt-1">
+                            Consultation du {jour}
+                          </p>
+                        </div>
+                        <a
+                          href={doc.fichier}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="shrink-0 h-7 w-7 rounded flex items-center justify-center text-slate-400 hover:text-brand dark:text-zinc-500 dark:hover:text-brand transition-colors"
+                          title="Ouvrir"
+                        >
+                          <ExternalLink className="h-4 w-4" />
+                        </a>
+                      </div>
+                    )
+                  })
+                )}
+              </div>
 
-function Section({
-  icon: Icon, color, label, value, className = '',
-}: {
-  icon: React.ComponentType<{ className?: string }>
-  color: keyof typeof COLORS
-  label: string
-  value: string
-  className?: string
-}) {
-  const c = COLORS[color]
-  const lines = value.split('\n').filter((l) => l.trim() !== '')
+              {/* Ordonnances */}
+              <div className="space-y-3">
+                <p className="text-xs font-semibold uppercase tracking-widest text-slate-400 dark:text-zinc-500 flex items-center gap-1.5">
+                  <ScrollText className="h-3.5 w-3.5" />
+                  Ordonnances ({ordsModule.length})
+                </p>
+                {ordsModule.length === 0 ? (
+                  <p className="text-sm text-slate-400 dark:text-zinc-500 text-center py-8">
+                    Aucune ordonnance associée aux consultations de cette spécialité.
+                  </p>
+                ) : (
+                  ordsModule.map((ord) => {
+                    const { jour } = formatDate(ord.enregistrement.dateConsultation)
+                    return (
+                      <div
+                        key={ord.id}
+                        className="flex items-start gap-3 p-3 rounded-lg bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 shadow-sm"
+                      >
+                        <ScrollText className="h-4 w-4 text-emerald-500 dark:text-emerald-400 shrink-0 mt-0.5" />
+                        <div className="flex-1 min-w-0">
+                          {ord.titre && (
+                            <p className="text-sm font-medium text-slate-800 dark:text-zinc-100 leading-tight">{ord.titre}</p>
+                          )}
+                          {ord.texte && (
+                            <p className="text-xs text-slate-600 dark:text-zinc-300 mt-0.5 leading-relaxed whitespace-pre-wrap">{ord.texte}</p>
+                          )}
+                          <p className="text-xs text-slate-400 dark:text-zinc-500 mt-1">
+                            Consultation du {jour}
+                          </p>
+                        </div>
+                        {ord.fichier && (
+                          <a
+                            href={ord.fichier}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="shrink-0 h-7 w-7 rounded flex items-center justify-center text-slate-400 hover:text-brand dark:text-zinc-500 dark:hover:text-brand transition-colors"
+                            title="Ouvrir le fichier"
+                          >
+                            <ExternalLink className="h-4 w-4" />
+                          </a>
+                        )}
+                      </div>
+                    )
+                  })
+                )}
+              </div>
 
-  return (
-    <div className={className}>
-      <div className="flex items-center gap-1.5 mb-1.5">
-        <span className={`inline-flex items-center justify-center h-5 w-5 rounded-md ${c.icon}`}>
-          <Icon className="h-3 w-3" />
-        </span>
-        <span className={`text-xs font-semibold uppercase tracking-wide ${c.label}`}>{label}</span>
-      </div>
-      {lines.length <= 1 ? (
-        <p className="text-sm text-slate-700 dark:text-zinc-300 leading-relaxed">{value}</p>
-      ) : (
-        <ul className="space-y-1">
-          {lines.map((line, i) => (
-            <li key={i} className="flex gap-2 text-sm text-slate-700 dark:text-zinc-300">
-              <span className="text-slate-300 dark:text-zinc-600 shrink-0 mt-0.5">•</span>
-              <span className="leading-relaxed">{line}</span>
-            </li>
-          ))}
-        </ul>
+            </div>
+          )}
+        </>
       )}
     </div>
   )

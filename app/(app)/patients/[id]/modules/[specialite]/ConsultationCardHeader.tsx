@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { ChevronDown, User, Building2, Phone, Mail, MapPin, Sparkles } from 'lucide-react'
+import { ChevronDown, User, Building2, Phone, Mail, MapPin, Sparkles, Clock, CheckCircle2, CalendarX2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 type Medecin = {
@@ -23,19 +23,30 @@ type Centre = {
   logo: string | null
 }
 
+type StatutConsultation = 'EN_COURS' | 'TERMINEE' | 'REPORTEE'
+
+const STATUT_CONFIG: Record<StatutConsultation, { label: string; Icon: React.ComponentType<{ className?: string }>; cls: string }> = {
+  EN_COURS: { label: 'En cours',  Icon: Clock,        cls: 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300' },
+  TERMINEE: { label: 'Terminée',  Icon: CheckCircle2, cls: 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300' },
+  REPORTEE: { label: 'Reportée',  Icon: CalendarX2,   cls: 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300' },
+}
+
 export function ConsultationCardHeader({
   jour,
   heure,
   genereParIA,
+  statut,
   medecin,
   centre,
 }: {
   jour: string
   heure: string
   genereParIA: boolean
+  statut: StatutConsultation
   medecin: Medecin
   centre: Centre
 }) {
+  const statutConf = STATUT_CONFIG[statut]
   const [open, setOpen] = useState(false)
 
   return (
@@ -48,6 +59,10 @@ export function ConsultationCardHeader({
           <p className="text-xs text-slate-400 dark:text-zinc-500 mt-0.5">à {heure}</p>
         </div>
         <div className="flex items-center gap-2 shrink-0">
+          <span className={cn('inline-flex items-center gap-1 rounded-full text-xs font-medium px-2 py-0.5', statutConf.cls)}>
+            <statutConf.Icon className="h-3 w-3" />
+            {statutConf.label}
+          </span>
           {genereParIA && (
             <span className="inline-flex items-center gap-1 rounded-full bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 text-xs font-medium px-2 py-0.5">
               <Sparkles className="h-3 w-3" />

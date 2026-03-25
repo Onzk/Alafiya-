@@ -19,6 +19,10 @@ const creerEnregistrementSchema = z.object({
   suivi: z.string().optional(),
   audioTranscriptionBrute: z.string().optional(),
   genereParIA: z.boolean().default(false),
+  statut: z.enum(['EN_COURS', 'TERMINEE', 'REPORTEE']).default('EN_COURS'),
+  causeReport: z.string().optional(),
+  dateProchainRdv: z.string().optional().nullable(),
+  parentId: z.string().optional().nullable(),
 })
 
 async function verifierAcces(dossierId: string, userId: string, niveauAcces: string): Promise<boolean> {
@@ -85,6 +89,22 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
 
   const { traitements, ...rest } = validation.data
 
+  // Validation sous-consultation
+  if (rest.parentId) {
+    const parent = await prisma.enregistrementMedical.findUnique({
+      where: { id: rest.parentId },
+      select: { dossierId: true, parentId: true, statut: true },
+    })
+    if (!parent || parent.dossierId !== params.id)
+      return NextResponse.json({ error: 'Consultation parente introuvable.' }, { status: 404 })
+    if (parent.parentId)
+      return NextResponse.json({ error: 'Impossible de créer une sous-consultation d\'une sous-consultation.' }, { status: 400 })
+    if (parent.statut === 'TERMINEE')
+      return NextResponse.json({ error: 'Impossible d\'ajouter une sous-consultation à une consultation terminée.' }, { status: 400 })
+  }
+
+  const finalStatut = rest.parentId ? 'TERMINEE' : rest.statut
+
   const enregistrement = await prisma.enregistrementMedical.create({
     data: {
       dossierId: params.id,
@@ -102,6 +122,12 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
       audioTranscriptionBrute: rest.audioTranscriptionBrute,
       genereParIA: rest.genereParIA,
       valideParMedecin: true,
+      statut: finalStatut,
+      causeReport: finalStatut === 'REPORTEE' ? (rest.causeReport ?? null) : null,
+      dateProchainRdv: finalStatut === 'REPORTEE' && rest.dateProchainRdv
+        ? new Date(rest.dateProchainRdv)
+        : null,
+      parentId: rest.parentId ?? null,
     },
   })
 

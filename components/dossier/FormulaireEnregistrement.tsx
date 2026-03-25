@@ -4,12 +4,13 @@ import { useState, useEffect, useRef } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import {
   Save, Loader2, ArrowLeft, ClipboardList, FlaskConical,
-  Pill, CalendarCheck, Check, X, Plus,
+  Pill, CalendarCheck, Check, X, Plus, Clock, CheckCircle2, CalendarX2,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { DicteeVocale } from '@/components/ia/DicteeVocale'
+import { OrdonnanceLigneChamp } from '@/components/dossier/OrdonnanceLigneChamp'
 import { StructureIA } from '@/types'
 import { useToast } from '@/hooks/use-toast'
 import { cn } from '@/lib/utils'
@@ -18,6 +19,9 @@ interface FormulaireEnregistrementProps {
   dossierId: string
   specialiteId: string
   specialiteNom: string
+  parentId?: string
+  onCancel?: () => void
+  onSuccess?: () => void
 }
 
 const labelCls  = 'text-slate-700 dark:text-zinc-300 text-sm font-medium'
@@ -35,6 +39,9 @@ export function FormulaireEnregistrement({
   dossierId,
   specialiteId,
   specialiteNom,
+  parentId,
+  onCancel,
+  onSuccess,
 }: FormulaireEnregistrementProps) {
   const router   = useRouter()
   const pathname = usePathname()
@@ -43,6 +50,10 @@ export function FormulaireEnregistrement({
   const [step, setStep]     = useState(0)
   const [loading, setLoading] = useState(false)
   const [transcriptionBrute, setTranscriptionBrute] = useState('')
+
+  const [statut, setStatut] = useState<'EN_COURS' | 'TERMINEE' | 'REPORTEE'>('EN_COURS')
+  const [causeReport, setCauseReport] = useState('')
+  const [dateProchainRdv, setDateProchainRdv] = useState('')
 
   const [form, setForm] = useState({
     antecedents: '',
@@ -92,6 +103,10 @@ export function FormulaireEnregistrement({
         ...form,
         audioTranscriptionBrute: transcriptionBrute || undefined,
         genereParIA: !!transcriptionBrute,
+        statut,
+        causeReport: statut === 'REPORTEE' ? causeReport || undefined : undefined,
+        dateProchainRdv: statut === 'REPORTEE' && dateProchainRdv ? dateProchainRdv : undefined,
+        parentId: parentId ?? undefined,
       }),
     })
 
@@ -105,7 +120,7 @@ export function FormulaireEnregistrement({
 
     toast({ description: 'Consultation enregistrée avec succès!' })
     router.refresh()
-    router.push(pathname)
+    if (onSuccess) { onSuccess() } else { router.push(pathname) }
   }
 
   return (
@@ -117,7 +132,7 @@ export function FormulaireEnregistrement({
         </div>
         <div>
           <h2 className="text-xl font-extrabold text-slate-900 dark:text-white leading-tight">
-            Nouvelle consultation
+            {parentId ? 'Sous-consultation' : 'Nouvelle consultation'}
           </h2>
           <p className="text-sm text-slate-500 dark:text-zinc-400 mt-0.5">{specialiteNom}</p>
         </div>
@@ -244,26 +259,78 @@ export function FormulaireEnregistrement({
                         onChange={(v) => setTrait('injections', v)}
                       />
                       <div className="sm:col-span-2">
-                        <ListeChamp
-                          id="ordonnance"
-                          label="Ordonnance médicale"
-                          placeholder="Médicaments prescrits, posologie, durée…"
-                          value={form.traitements.ordonnance}
-                          onChange={(v) => setTrait('ordonnance', v)}
-                        />
+                        <div className="space-y-1.5">
+                          <Label className={labelCls}>Ordonnance médicale</Label>
+                          <OrdonnanceLigneChamp
+                            value={form.traitements.ordonnance}
+                            onChange={(v) => setTrait('ordonnance', v)}
+                          />
+                        </div>
                       </div>
                     </div>
                   )}
 
                   {/* Étape 3 — Suivi */}
                   {step === 3 && (
-                    <ListeChamp
-                      id="suivi"
-                      label="Suivi préconisé"
-                      placeholder="Prochain rendez-vous, examens complémentaires…"
-                      value={form.suivi}
-                      onChange={(v) => set('suivi', v)}
-                    />
+                    <div className="space-y-4">
+                      <ListeChamp
+                        id="suivi"
+                        label="Suivi préconisé"
+                        placeholder="Prochain rendez-vous, examens complémentaires…"
+                        value={form.suivi}
+                        onChange={(v) => set('suivi', v)}
+                      />
+
+                      {/* Statut de la consultation */}
+                      <div className="space-y-2">
+                        <Label className={labelCls}>Statut de la consultation</Label>
+                        <div className="flex flex-wrap gap-2">
+                          {([
+                            { value: 'EN_COURS',  label: 'En cours',  Icon: Clock,         cls: 'border-blue-300 dark:border-blue-700 text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/30'         },
+                            { value: 'TERMINEE',  label: 'Terminée',  Icon: CheckCircle2,  cls: 'border-emerald-300 dark:border-emerald-700 text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/30' },
+                            { value: 'REPORTEE',  label: 'Reportée',  Icon: CalendarX2,    cls: 'border-amber-300 dark:border-amber-700 text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/30'         },
+                          ] as const).map(({ value, label, Icon, cls }) => (
+                            <button
+                              key={value}
+                              type="button"
+                              onClick={() => setStatut(value)}
+                              className={cn(
+                                'flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-sm font-medium transition-all',
+                                statut === value
+                                  ? cls
+                                  : 'border-slate-200 dark:border-zinc-700 text-slate-500 dark:text-zinc-400 bg-white dark:bg-zinc-950 hover:border-slate-300 dark:hover:border-zinc-600',
+                              )}
+                            >
+                              <Icon className="h-3.5 w-3.5" />
+                              {label}
+                            </button>
+                          ))}
+                        </div>
+
+                        {statut === 'REPORTEE' && (
+                          <div className="grid sm:grid-cols-2 gap-3 pt-1">
+                            <div className="space-y-1.5">
+                              <Label className={labelCls}>Cause du report</Label>
+                              <Input
+                                value={causeReport}
+                                onChange={(e) => setCauseReport(e.target.value)}
+                                placeholder="Ex : Patient absent, indisponibilité…"
+                                className={inputCls}
+                              />
+                            </div>
+                            <div className="space-y-1.5">
+                              <Label className={labelCls}>Prochain rendez-vous</Label>
+                              <Input
+                                type="datetime-local"
+                                value={dateProchainRdv}
+                                onChange={(e) => setDateProchainRdv(e.target.value)}
+                                className={inputCls}
+                              />
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
                   )}
 
                   {/* Navigation */}
@@ -282,7 +349,7 @@ export function FormulaireEnregistrement({
                         type="button"
                         variant="outline"
                         className="h-10 border-slate-200 dark:border-zinc-700 text-slate-700 dark:text-zinc-300"
-                        onClick={() => router.push(pathname)}
+                        onClick={() => onCancel ? onCancel() : router.push(pathname)}
                       >
                         Annuler
                       </Button>

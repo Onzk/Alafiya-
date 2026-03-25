@@ -236,6 +236,9 @@ model EnregistrementMedical {
   audioTranscriptionBrute String?
   genereParIA             Boolean                  @default(false)
   valideParMedecin        Boolean                  @default(true)
+  statut                  StatutConsultation       @default(EN_COURS)
+  causeReport             String?
+  dateProchainRdv         DateTime?
   dateConsultation        DateTime                 @default(now())
   createdAt               DateTime                 @default(now())
   updatedAt               DateTime                 @updatedAt
@@ -247,6 +250,9 @@ model EnregistrementMedical {
   dossier                 DossierMedical           @relation(fields: [dossierId], references: [id], onDelete: Cascade)
   medecin                 User                     @relation(fields: [medecinId], references: [id])
   specialite              Specialite               @relation(fields: [specialiteId], references: [id])
+  parentId                String?
+  parent                  EnregistrementMedical?  @relation("SousConsultations", fields: [parentId], references: [id])
+  sousConsultations       EnregistrementMedical[] @relation("SousConsultations")
   documents               DocumentConsultation[]
   ordonnances             OrdonnanceConsultation[]
 }
@@ -370,6 +376,12 @@ enum StatutFacture {
   EN_ATTENTE
   PAYE
   EN_RETARD
+}
+
+enum StatutConsultation {
+  EN_COURS
+  TERMINEE
+  REPORTEE
 }
 
 enum TypeDocumentIdentification {
