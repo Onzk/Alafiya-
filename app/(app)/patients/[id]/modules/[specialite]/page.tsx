@@ -2,7 +2,7 @@ import { auth } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import prisma from '@/lib/db'
-import { Plus, ClipboardList, FlaskConical, Pill, CalendarCheck } from 'lucide-react'
+import { Plus, ClipboardList, FlaskConical, Pill, CalendarCheck, ArrowLeft } from 'lucide-react'
 import { ConsultationCardHeader } from './ConsultationCardHeader'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -81,6 +81,11 @@ export default async function ModuleSpecialitePage({
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
+
+      <Link href={`/patients/${params.id}`} className="inline-flex items-center gap-1.5 text-sm text-slate-500 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white transition-colors">
+        <ArrowLeft className="h-4 w-4" />
+        Retour au dossier
+      </Link>
 
       {/* ── En-tête ── */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">

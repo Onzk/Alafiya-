@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useToast } from '@/hooks/use-toast'
 import { cn } from '@/lib/utils'
+import { PhotoPicker } from '@/components/patients/PhotoPicker'
 
 const RELATIONS_PRESET = [
   'Époux/Épouse', 'Père', 'Mère', 'Fils', 'Fille',
@@ -53,6 +54,7 @@ export default function NouveauPatientPage() {
     numeroCNI: '',
   })
 
+  const [photoFile, setPhotoFile] = useState<File | null>(null)
   const [personnesUrgence, setPersonnesUrgence] = useState<PersonneUrgence[]>([emptyContact()])
   const [contactSelectVals, setContactSelectVals] = useState<string[]>([''])
 
@@ -124,14 +126,22 @@ export default function NouveauPatientPage() {
     })
 
     const data = await res.json()
-    setLoading(false)
 
     if (!res.ok) {
+      setLoading(false)
       toast({ description: data.error || 'Erreur lors de la création du patient.', variant: 'destructive' })
       return
     }
 
-    router.push(`/patients/${data.patient._id}/qrcode`)
+    // Upload photo si sélectionnée
+    if (photoFile) {
+      const fd = new FormData()
+      fd.append('photo', photoFile)
+      await fetch(`/api/patients/${data.patient.id}/photo`, { method: 'POST', body: fd })
+    }
+
+    setLoading(false)
+    router.push(`/patients/${data.patient.id}/qrcode`)
   }
 
   const inputCls = 'h-12 border-slate-200 dark:border-zinc-700 rounded-lg text-sm bg-white dark:bg-zinc-950 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-zinc-500 focus-visible:ring-emerald-500 focus-visible:border-emerald-400'
@@ -139,6 +149,11 @@ export default function NouveauPatientPage() {
 
   return (
     <div className="max-w-2xl space-y-6">
+
+      <Link href="/patients" className="inline-flex items-center gap-1.5 text-sm text-slate-500 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white transition-colors">
+        <ArrowLeft className="h-4 w-4" />
+        Retour aux patients
+      </Link>
 
       <div className="dash-in delay-0 flex items-center gap-3">
         <div className="h-10 w-10 rounded-xl bg-brand/10 dark:bg-brand/15 flex items-center justify-center">
@@ -198,6 +213,8 @@ export default function NouveauPatientPage() {
                   {/* ── Step 0 : Informations personnelles ── */}
                   {step === 0 && (
                     <>
+                      <PhotoPicker onChange={setPhotoFile} />
+
                       <div className="grid sm:grid-cols-2 gap-4">
                         <div className="space-y-1.5">
                           <Label htmlFor="nom" className={labelCls}>Nom *</Label>

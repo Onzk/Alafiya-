@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { LogoIcon } from '@/components/ui/logo'
-import { signOut } from 'next-auth/react'
+import { useLogout } from '@/hooks/use-logout'
 import {
   LayoutDashboard, Users, QrCode, FileText, Building2,
   Shield, Activity, LogOut, Stethoscope, AlertCircle, UserRound, Settings, Receipt,
@@ -76,6 +76,7 @@ const navigationPersonnel: NavGroup[] = [
 
 export function Sidebar({ user }: SidebarProps) {
   const pathname = usePathname()
+  const logout = useLogout()
 
   const groups =
     user.niveauAcces === 'SUPERADMIN'   ? navigationSuperAdmin :
@@ -155,7 +156,7 @@ export function Sidebar({ user }: SidebarProps) {
       {/* Bas : logout */}
       <div className="relative z-10 flex-shrink-0 p-3 border-t border-white/10 dark:border-zinc-800">
         <button
-          onClick={() => signOut({ callbackUrl: `${window.location.origin}/login` })}
+          onClick={logout}
           className="flex w-full items-center gap-3 h-12 rounded-xl px-3 py-2.5 text-sm font-semibold transition-all duration-150 text-white/75 hover:bg-white/15 hover:text-white dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-white"
         >
           <LogOut className="h-4 w-4 flex-shrink-0" />

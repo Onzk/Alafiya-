@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useToast } from '@/hooks/use-toast'
 import { cn } from '@/lib/utils'
+import { PhotoPicker } from '@/components/patients/PhotoPicker'
 
 const RELATIONS_PRESET = [
   'Époux/Épouse', 'Père', 'Mère', 'Fils', 'Fille',
@@ -45,6 +46,7 @@ type InitialData = {
   telephone: string
   email: string
   numeroCNI: string
+  photo: string | null
   personnesUrgence: PersonneUrgence[]
 }
 
@@ -72,6 +74,7 @@ export function FormulaireModificationPatient({
     numeroCNI: initialData.numeroCNI,
   })
 
+  const [photoFile, setPhotoFile] = useState<File | null>(null)
   const initialContacts = initialData.personnesUrgence.length > 0 ? initialData.personnesUrgence : [emptyContact()]
   const [personnesUrgence, setPersonnesUrgence] = useState<PersonneUrgence[]>(initialContacts)
   const [contactSelectVals, setContactSelectVals] = useState<string[]>(
@@ -146,16 +149,23 @@ export function FormulaireModificationPatient({
     })
 
     const data = await res.json()
-    setLoading(false)
 
     if (!res.ok) {
+      setLoading(false)
       toast({ description: data.error || 'Erreur lors de la modification.', variant: 'destructive' })
       return
     }
 
+    // Upload photo si une nouvelle a été sélectionnée
+    if (photoFile) {
+      const fd = new FormData()
+      fd.append('photo', photoFile)
+      await fetch(`/api/patients/${patientId}/photo`, { method: 'POST', body: fd })
+    }
+
+    setLoading(false)
     toast({ description: 'Dossier mis à jour avec succès.' })
-    router.push(`/patients/${patientId}`)
-    router.refresh()
+    window.location.href = `/patients/${patientId}`
   }
 
   const inputCls = 'h-12 border-slate-200 dark:border-zinc-700 rounded-lg text-sm bg-white dark:bg-zinc-950 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-zinc-500 focus-visible:ring-emerald-500 focus-visible:border-emerald-400'
@@ -224,6 +234,8 @@ export function FormulaireModificationPatient({
                   {/* ── Step 0 : Informations personnelles ── */}
                   {step === 0 && (
                     <>
+                      <PhotoPicker initialUrl={initialData.photo} onChange={setPhotoFile} />
+
                       <div className="grid sm:grid-cols-2 gap-4">
                         <div className="space-y-1.5">
                           <Label htmlFor="nom" className={labelCls}>Nom *</Label>

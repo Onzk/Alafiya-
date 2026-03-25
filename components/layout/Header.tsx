@@ -9,7 +9,7 @@ import { LogoIcon } from '@/components/ui/logo'
 import { SessionUser } from '@/types'
 import { ThemeToggle } from '@/components/ThemeToggle'
 import { cn } from '@/lib/utils'
-import { signOut } from 'next-auth/react'
+import { useLogout } from '@/hooks/use-logout'
 import { CommandPalette } from '@/components/ui/CommandPalette'
 
 interface HeaderProps { user: SessionUser }
@@ -60,6 +60,7 @@ function getTitle(pathname: string): string {
 export function Header({ user }: HeaderProps) {
   const pathname = usePathname()
   const title    = getTitle(pathname)
+  const logout   = useLogout()
 
   const displayName =
     user.niveauAcces === 'SUPERADMIN'
@@ -287,7 +288,7 @@ export function Header({ user }: HeaderProps) {
               </Link>
               <div className="h-px bg-slate-100 dark:bg-zinc-950" />
               <button
-                onClick={() => signOut({ callbackUrl: `${window.location.origin}/login` })}
+                onClick={logout}
                 className="flex w-full items-center gap-3 px-4 py-3 text-sm font-semibold text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors"
               >
                 <LogOut className="h-4 w-4" />
@@ -397,7 +398,7 @@ export function Header({ user }: HeaderProps) {
               Paramètres
             </Link>
             <button
-              onClick={() => signOut({ callbackUrl: `${window.location.origin}/login` })}
+              onClick={logout}
               className="flex w-full items-center gap-3 h-12 rounded-xl px-3 text-sm font-semibold text-white/75 hover:bg-white/15 hover:text-white dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-white transition-all"
             >
               <LogOut className="h-4 w-4 flex-shrink-0" />

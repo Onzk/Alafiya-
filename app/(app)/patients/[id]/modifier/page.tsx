@@ -1,5 +1,7 @@
 import { auth } from '@/lib/auth'
 import { redirect } from 'next/navigation'
+import Link from 'next/link'
+import { ArrowLeft } from 'lucide-react'
 import prisma from '@/lib/db'
 import { SessionUser } from '@/types'
 import { FormulaireModificationPatient } from './FormulaireModification'
@@ -12,7 +14,13 @@ export default async function ModifierPatientPage({ params }: { params: { id: st
 
   const patient = await prisma.patient.findUnique({
     where: { id: params.id },
-    include: { personnesUrgence: true, dossier: { select: { id: true } } },
+    select: {
+      nom: true, prenoms: true, genre: true, dateNaissance: true,
+      dateNaissancePresumee: true, adresse: true, telephone: true,
+      email: true, numeroCNI: true, photo: true,
+      personnesUrgence: true,
+      dossier: { select: { id: true } },
+    },
   })
 
   if (!patient || !patient.dossier) redirect('/patients')
@@ -27,7 +35,12 @@ export default async function ModifierPatientPage({ params }: { params: { id: st
   if (!accesValide) redirect(`/patients/${params.id}`)
 
   return (
-    <FormulaireModificationPatient
+    <div className="space-y-5">
+      <Link href={`/patients/${params.id}`} className="inline-flex items-center gap-1.5 text-sm text-slate-500 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white transition-colors">
+        <ArrowLeft className="h-4 w-4" />
+        Retour au dossier
+      </Link>
+      <FormulaireModificationPatient
       patientId={params.id}
       initialData={{
         nom: patient.nom,
@@ -39,6 +52,7 @@ export default async function ModifierPatientPage({ params }: { params: { id: st
         telephone: patient.telephone ?? '',
         email: patient.email ?? '',
         numeroCNI: patient.numeroCNI ?? '',
+        photo: patient.photo ?? null,
         personnesUrgence: patient.personnesUrgence.map((p) => ({
           nom: p.nom,
           prenoms: p.prenoms,
@@ -48,5 +62,6 @@ export default async function ModifierPatientPage({ params }: { params: { id: st
         })),
       }}
     />
+    </div>
   )
 }

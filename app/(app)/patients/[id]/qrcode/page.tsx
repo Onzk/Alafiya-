@@ -6,29 +6,47 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { QRCodeDisplay } from '@/components/qrcode/QRCodeDisplay'
 import { PrintButton } from './PrintButton'
-import { QRUnlockButton } from './QRUnlockButton'
 import { genererURLQR } from '@/lib/qrcode'
 import { formatDate, calculerAge } from '@/lib/utils'
-import { ShieldOff, Clock } from 'lucide-react'
+import { ShieldOff, Clock, ArrowLeft } from 'lucide-react'
+import { SessionUser } from '@/types'
 
 export default async function QRCodePage({ params }: { params: { id: string } }) {
   const session = await auth()
   if (!session?.user) redirect('/login')
+
+  const user = session.user as unknown as SessionUser
+  const isAdmin = user.niveauAcces === 'SUPERADMIN' || user.niveauAcces === 'ADMIN_CENTRE'
 
   const patient = await prisma.patient.findUnique({
     where: { id: params.id },
     select: {
       id: true, nom: true, prenoms: true, genre: true,
       dateNaissance: true, dateNaissancePresumee: true,
-      qrToken: true, qrGeneratedAt: true,
+      photo: true, qrToken: true, qrGeneratedAt: true,
+      dossier: { select: { id: true } },
     },
   })
   if (!patient) redirect('/patients')
+
+  // Contrôle d'accès : admin ou médecin ayant déjà un AccesDossier sur ce patient
+  let aAccesDossier = false
+  if (!isAdmin) {
+    if (!patient.dossier) redirect(`/patients/${params.id}`)
+    const acces = await prisma.accesDossier.findFirst({
+      where: { dossierId: patient.dossier.id, medecinId: user.id },
+    })
+    if (!acces) redirect(`/patients/${params.id}`)
+    aAccesDossier = true
+  }
 
   const now = new Date()
   const createdAt = patient.qrGeneratedAt
   const expiresAt = new Date(createdAt.getTime() + 24 * 60 * 60 * 1000) // 24 heures
   const qrAccessible = expiresAt > now
+
+  // Les médecins ayant un AccesDossier voient toujours le QR, sans limite 24h
+  const qrVisible = aAccesDossier || qrAccessible
 
   // Temps restant formaté
   let tempsRestant = ''
@@ -45,6 +63,11 @@ export default async function QRCodePage({ params }: { params: { id: string } })
 
   return (
     <div className="max-w-lg mx-auto space-y-6">
+      <Link href={`/patients/${params.id}`} className="inline-flex items-center gap-1.5 text-sm text-slate-500 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white transition-colors">
+        <ArrowLeft className="h-4 w-4" />
+        Retour au dossier
+      </Link>
+
       <div className="flex items-center gap-3">
         <h1 className="text-xl font-bold text-gray-900 dark:text-white">QR Code patient</h1>
       </div>
@@ -61,7 +84,7 @@ export default async function QRCodePage({ params }: { params: { id: string } })
             </p>
           </div>
 
-          {qrAccessible ? (
+          {qrVisible ? (
             <>
               <QRCodeDisplay value={genererURLQR(patient.qrToken)} />
 
@@ -69,11 +92,13 @@ export default async function QRCodePage({ params }: { params: { id: string } })
                 {patient.qrToken.slice(0, 16)}...
               </p>
 
-              {/* Expiration */}
-              <div className="flex items-center justify-center gap-1.5 text-xs text-emerald-600 dark:text-emerald-400">
-                <Clock className="h-3.5 w-3.5" />
-                <span>Accès valide encore <strong>{tempsRestant}</strong></span>
-              </div>
+              {/* Expiration : uniquement si encore dans les 24h */}
+              {qrAccessible && (
+                <div className="flex items-center justify-center gap-1.5 text-xs text-emerald-600 dark:text-emerald-400">
+                  <Clock className="h-3.5 w-3.5" />
+                  <span>Accès valide encore <strong>{tempsRestant}</strong></span>
+                </div>
+              )}
 
               <div className="flex gap-3 justify-center">
                 <PrintButton
@@ -83,6 +108,7 @@ export default async function QRCodePage({ params }: { params: { id: string } })
                   age={age}
                   dateNaissance={dateNaiss}
                   dateNaissancePresumee={patient.dateNaissancePresumee ?? false}
+                  photo={patient.photo ?? null}
                 />
                 <Link href={`/patients/${params.id}`}>
                   <Button variant="outline">Voir le dossier</Button>
@@ -103,8 +129,6 @@ export default async function QRCodePage({ params }: { params: { id: string } })
                   </p>
                 </div>
               </div>
-
-              <QRUnlockButton patientId={patient.id} />
 
               <Link href={`/patients/${params.id}`}>
                 <Button variant="outline" className="w-full">Voir le dossier</Button>

@@ -168,6 +168,7 @@ model Patient {
   telephone             String?
   email                 String?
   numeroCNI             String?
+  photo                 String?
   qrToken               String             @unique
   qrGeneratedAt         DateTime           @default(now())
   qrAccesExpireAt       DateTime?
