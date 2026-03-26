@@ -14,9 +14,11 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { OrdonnanceLigneChamp, parseLignes } from '@/components/dossier/OrdonnanceLigneChamp'
+import { DicteeVocale } from '@/components/ia/DicteeVocale'
 import { ConsultationCardHeader } from '@/app/(app)/patients/[id]/modules/[specialite]/ConsultationCardHeader'
 import { cn } from '@/lib/utils'
 import { useToast } from '@/hooks/use-toast'
+import { StructureIA } from '@/types'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -337,6 +339,19 @@ export function ConsultationCard({ enr }: { enr: ConsultationData }) {
     router.refresh()
   }
 
+  function handleStructureIA(structure: StructureIA) {
+    setEditForm((prev) => ({
+      antecedents:     structure.antecedents             ?? prev.antecedents,
+      signes:          structure.signes                  ?? prev.signes,
+      examens:         structure.examens                 ?? prev.examens,
+      bilan:           structure.bilan                   ?? prev.bilan,
+      traitConseils:   structure.traitements?.conseils   ?? prev.traitConseils,
+      traitInjections: structure.traitements?.injections ?? prev.traitInjections,
+      traitOrdonnance: structure.traitements?.ordonnance ?? prev.traitOrdonnance,
+      suivi:           structure.suivi                   ?? prev.suivi,
+    }))
+  }
+
   // ── Soumission document ───────────────────────────────────────────────────
 
   async function handleAddDoc(e: React.FormEvent) {
@@ -574,6 +589,7 @@ export function ConsultationCard({ enr }: { enr: ConsultationData }) {
         editMode ? (
           /* ── Formulaire d'édition ── */
           <form onSubmit={handleSaveEdit} className="p-4 space-y-3">
+            <DicteeVocale onStructure={handleStructureIA} />
             <div className="grid sm:grid-cols-2 gap-3">
               {([
                 { key: 'antecedents',    label: 'Antécédents',           placeholder: 'Maladies chroniques, allergies…' },

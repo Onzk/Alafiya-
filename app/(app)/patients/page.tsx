@@ -171,11 +171,13 @@ export default async function PatientsPage({
 
                   {/* Actions */}
                   <div className="flex items-center gap-1.5 flex-shrink-0">
-                    <Link href={`/patients/${patient.id}/qrcode`}>
-                      <Button size="sm" variant="outline" className="rounded-xl border-slate-200 dark:border-zinc-700 h-8 px-2.5">
-                        <QrCode className="h-3.5 w-3.5" />
-                      </Button>
-                    </Link>
+                    {(isAdmin || acces) && (
+                      <Link href={`/patients/${patient.id}/qrcode`}>
+                        <Button size="sm" variant="outline" className="rounded-xl border-slate-200 dark:border-zinc-700 h-8 px-2.5">
+                          <QrCode className="h-3.5 w-3.5" />
+                        </Button>
+                      </Link>
+                    )}
                     <Link href={`/patients/${patient.id}`}>
                       <Button size="sm" className="bg-brand hover:bg-brand-dark text-white rounded-xl h-8 px-3 text-xs">Dossier</Button>
                     </Link>
@@ -277,11 +279,13 @@ export default async function PatientsPage({
                         {/* Actions */}
                         <td className="px-5 py-3">
                           <div className="flex items-center justify-end gap-2">
-                            <Link href={`/patients/${patient.id}/qrcode`}>
-                              <Button size="sm" variant="outline" className="rounded-xl border-slate-200 dark:border-zinc-700 h-8 px-2.5">
-                                <QrCode className="h-3.5 w-3.5" />
-                              </Button>
-                            </Link>
+                            {(isAdmin || acces) && (
+                              <Link href={`/patients/${patient.id}/qrcode`}>
+                                <Button size="sm" variant="outline" className="rounded-xl border-slate-200 dark:border-zinc-700 h-8 px-2.5">
+                                  <QrCode className="h-3.5 w-3.5" />
+                                </Button>
+                              </Link>
+                            )}
                             <Link href={`/patients/${patient.id}`}>
                               <Button size="sm" className="bg-brand hover:bg-brand-dark text-white rounded-xl h-8 px-3 text-xs">Dossier</Button>
                             </Link>

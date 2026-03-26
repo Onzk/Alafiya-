@@ -38,7 +38,7 @@ export function VitrineNavbar() {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-8">
 
         <Link href="/" className="flex items-center gap-1 flex-shrink-0">
-          <LogoIcon className="h-7 w-7 text-emerald-500 dark:text-emerald-400" />
+          <LogoIcon className="h-8 w-8 text-emerald-500 dark:text-emerald-400" />
           <span className="text-lg font-extrabold text-slate-900 dark:text-white tracking-tight">
             Alafiya <span className="text-brand">+</span>
           </span>

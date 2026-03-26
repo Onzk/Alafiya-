@@ -24,34 +24,43 @@ export default async function QRCodePage({ params }: { params: { id: string } })
       id: true, nom: true, prenoms: true, genre: true,
       dateNaissance: true, dateNaissancePresumee: true,
       photo: true, qrToken: true, qrGeneratedAt: true,
+      createdAt: true, creeParId: true,
       dossier: { select: { id: true } },
     },
   })
   if (!patient) redirect('/patients')
 
-  // Contrôle d'accès : admin ou médecin ayant déjà un AccesDossier sur ce patient
-  let aAccesDossier = false
+  // Contrôle d'accès pour le personnel (non-admin)
+  let accesActif = false
   if (!isAdmin) {
     if (!patient.dossier) redirect(`/patients/${params.id}`)
-    const acces = await prisma.accesDossier.findFirst({
-      where: { dossierId: patient.dossier.id, medecinId: user.id },
-    })
-    if (!acces) redirect(`/patients/${params.id}`)
-    aAccesDossier = true
+
+    const now24 = new Date()
+    const [acces, estCreateur24h] = await Promise.all([
+      prisma.accesDossier.findFirst({
+        where: { dossierId: patient.dossier.id, medecinId: user.id, finAcces: { gt: now24 } },
+      }),
+      Promise.resolve(
+        patient.creeParId === user.id &&
+        (now24.getTime() - patient.createdAt.getTime()) < 24 * 60 * 60 * 1000
+      ),
+    ])
+
+    if (!acces && !estCreateur24h) redirect('/scanner')
+    accesActif = !!acces
   }
 
   const now = new Date()
-  const createdAt = patient.qrGeneratedAt
-  const expiresAt = new Date(createdAt.getTime() + 24 * 60 * 60 * 1000) // 24 heures
-  const qrAccessible = expiresAt > now
+  const qrExpiresAt = new Date(patient.qrGeneratedAt.getTime() + 24 * 60 * 60 * 1000)
+  const qrAccessible = qrExpiresAt > now
 
-  // Les médecins ayant un AccesDossier voient toujours le QR, sans limite 24h
-  const qrVisible = aAccesDossier || qrAccessible
+  // Accès actif → QR toujours visible ; créateur dans les 24h → respecte la fenêtre du token
+  const qrVisible = isAdmin || accesActif || qrAccessible
 
   // Temps restant formaté
   let tempsRestant = ''
   if (qrAccessible) {
-    const diff = expiresAt.getTime() - now.getTime()
+    const diff = qrExpiresAt.getTime() - now.getTime()
     const heures = Math.floor(diff / (1000 * 60 * 60))
     const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
     tempsRestant = heures > 0 ? `${heures}h${minutes.toString().padStart(2, '0')}` : `${minutes} min`

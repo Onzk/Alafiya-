@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
   } catch (err) {
     console.error('[Transcription IA]', err)
     return NextResponse.json(
-      { error: 'Erreur lors de la transcription. Vérifiez que Ollama est démarré avec le modèle Whisper.' },
+      { error: 'Erreur lors de la transcription. Vérifiez que faster-whisper-server est démarré.' },
       { status: 500 }
     )
   }

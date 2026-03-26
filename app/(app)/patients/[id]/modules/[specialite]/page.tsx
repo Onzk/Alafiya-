@@ -10,6 +10,7 @@ import { FormulaireEnregistrement } from '@/components/dossier/FormulaireEnregis
 import { ConsultationCard } from '@/components/dossier/ConsultationCard'
 import { RechercheInput } from './RechercheInput'
 import { SessionUser } from '@/types'
+import { ChatbotDossier } from '@/components/ia/ChatbotDossier'
 
 function formatDate(date: Date | string) {
   const d = typeof date === 'string' ? new Date(date) : date
@@ -117,7 +118,8 @@ export default async function ModuleSpecialitePage({
   const totalDocsModule = docsModule.length + ordsModule.length
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6">
+    <div className="max-w-4xl mx-auto">
+    <div className="space-y-6">
 
       <Link
         href={`/patients/${params.id}`}
@@ -389,6 +391,15 @@ export default async function ModuleSpecialitePage({
           )}
         </>
       )}
+    </div>
+
+      {/* Chatbot overlay — FAB + panel latéral */}
+      <ChatbotDossier
+        patientId={params.id}
+        patientNom={`${patient.nom.toUpperCase()} ${patient.prenoms}`}
+        specialiteId={params.specialite}
+        specialiteNom={specialite.nom}
+      />
     </div>
   )
 }

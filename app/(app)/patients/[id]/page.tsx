@@ -6,6 +6,7 @@ import { QrCode, Pencil, ArrowLeft, CreditCard, TextQuote } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { SessionUser } from '@/types'
 import { DossierPatientClient } from './DossierPatientClient'
+import { ChatbotDossier } from '@/components/ia/ChatbotDossier'
 
 export default async function DossierPatientPage({ params }: { params: { id: string } }) {
   const session = await auth()
@@ -66,71 +67,82 @@ export default async function DossierPatientPage({ params }: { params: { id: str
   }
 
   return (
-    <div className="max-w-3xl mx-auto space-y-5">
+    <div className="max-w-4xl mx-auto">
 
-      <Link href="/patients" className="inline-flex items-center gap-1.5 text-sm text-slate-500 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white transition-colors">
-        <ArrowLeft className="h-4 w-4" />
-        Retour aux patients
-      </Link>
+      <div className="space-y-5">
 
-      {/* ── En-tête ── */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-xl font-bold text-gray-900 dark:text-white">Dossier médical</h1>
-          <p className="text-sm text-slate-500 dark:text-zinc-400 mt-0.5">
-            {patient.nom.toUpperCase()} {patient.prenoms}
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          {accesValide && (
-            <Link href={`/patients/${params.id}/modifier`}>
-              <Button variant="warning" size="sm">
-                <Pencil className="mr-2 h-4 w-4" />
-                Modifier
-              </Button>
-            </Link>
-          )}
-          {accesValide && (
-            <Link href={`/patients/${params.id}/documents`}>
-              <Button variant="secondary" size="sm">
-                <TextQuote className="mr-2 h-4 w-4" />
-                ID
-              </Button>
-            </Link>
-          )}
-          {peutVoirQR && (
-            <Link href={`/patients/${params.id}/qrcode`}>
-              <Button variant="default" size="sm">
-                <QrCode className="mr-2 h-4 w-4" />
-                QR Code
-              </Button>
-            </Link>
-          )}
-        </div>
+          <Link href="/patients" className="inline-flex items-center gap-1.5 text-sm text-slate-500 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white transition-colors">
+            <ArrowLeft className="h-4 w-4" />
+            Retour aux patients
+          </Link>
+
+          {/* En-tête */}
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h1 className="text-xl font-bold text-gray-900 dark:text-white">Dossier médical</h1>
+              <p className="text-sm text-slate-500 dark:text-zinc-400 mt-0.5">
+                {patient.nom.toUpperCase()} {patient.prenoms}
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              {accesValide && (
+                <Link href={`/patients/${params.id}/modifier`}>
+                  <Button variant="warning" size="sm">
+                    <Pencil className="mr-2 h-4 w-4" />
+                    Modifier
+                  </Button>
+                </Link>
+              )}
+              {accesValide && (
+                <Link href={`/patients/${params.id}/documents`}>
+                  <Button variant="secondary" size="sm">
+                    <TextQuote className="mr-2 h-4 w-4" />
+                    ID
+                  </Button>
+                </Link>
+              )}
+              {peutVoirQR && (
+                <Link href={`/patients/${params.id}/qrcode`}>
+                  <Button variant="default" size="sm">
+                    <QrCode className="mr-2 h-4 w-4" />
+                    QR Code
+                  </Button>
+                </Link>
+              )}
+            </div>
+          </div>
+
+          {/* Contenu tabulé */}
+          <DossierPatientClient
+            patient={{
+              nom: patient.nom,
+              prenoms: patient.prenoms,
+              genre: patient.genre,
+              dateNaissance: patient.dateNaissance,
+              dateNaissancePresumee: patient.dateNaissancePresumee,
+              adresse: patient.adresse,
+              telephone: patient.telephone ?? null,
+              numeroCNI: patient.numeroCNI ?? null,
+              photo: patient.photo ?? null,
+              personnesUrgence: patient.personnesUrgence,
+              createdAt: patient.createdAt,
+            }}
+            centreCreation={patient.centreCreation}
+            creePar={patient.creePar}
+            patientId={params.id}
+            accesValide={accesValide}
+            modeUrgence={modeUrgence}
+            specialitesAccessibles={specialitesAccessibles}
+          />
       </div>
 
-      {/* ── Contenu tabulé ── */}
-      <DossierPatientClient
-        patient={{
-          nom: patient.nom,
-          prenoms: patient.prenoms,
-          genre: patient.genre,
-          dateNaissance: patient.dateNaissance,
-          dateNaissancePresumee: patient.dateNaissancePresumee,
-          adresse: patient.adresse,
-          telephone: patient.telephone ?? null,
-          numeroCNI: patient.numeroCNI ?? null,
-          photo: patient.photo ?? null,
-          personnesUrgence: patient.personnesUrgence,
-          createdAt: patient.createdAt,
-        }}
-        centreCreation={patient.centreCreation}
-        creePar={patient.creePar}
-        patientId={params.id}
-        accesValide={accesValide}
-        modeUrgence={modeUrgence}
-        specialitesAccessibles={specialitesAccessibles}
-      />
+      {/* Chatbot overlay — FAB + panel latéral */}
+      {accesValide && (
+        <ChatbotDossier
+          patientId={params.id}
+          patientNom={`${patient.nom.toUpperCase()} ${patient.prenoms}`}
+        />
+      )}
 
     </div>
   )

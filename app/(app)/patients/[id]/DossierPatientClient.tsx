@@ -199,7 +199,9 @@ export function DossierPatientClient({
                       <Card className="hover:border-green-300 dark:hover:border-emerald-700 hover:shadow-md transition-all cursor-pointer">
                         <CardContent className="p-4 flex items-center gap-3">
                           <div className="h-10 w-10 rounded-full bg-blue-50 dark:bg-indigo-400/15 flex items-center justify-center flex-shrink-0">
-                            <span className="text-blue-600 dark:text-indigo-300 text-xs font-bold">{sp.code.slice(0, 3)}</span>
+                            <span className="text-blue-600 dark:text-indigo-300 text-xs font-bold">
+                              <FolderOpen />
+                            </span>
                           </div>
                           <div>
                             <p className="font-medium text-sm text-gray-900 dark:text-white">{sp.nom}</p>

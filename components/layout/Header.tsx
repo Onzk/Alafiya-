@@ -185,9 +185,9 @@ export function Header({ user }: HeaderProps) {
       {/* Gauche : logo mobile + titre desktop */}
       <div className="flex items-center gap-4">
         <Link href="/" className="flex lg:hidden items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-500">
-            <LogoIcon className="h-5 w-5 text-white" />
-          </div>
+          {/* <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-500">
+          </div> */}
+            <LogoIcon className="h-8 w-8 text-emerald-500 dark:text-emerald-400" />
           <span className="font-extrabold text-slate-900 dark:text-white text-base">
             Alafiya <span className="text-emerald-500">Plus</span>
           </span>
