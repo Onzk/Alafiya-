@@ -1,0 +1,228 @@
+====================================================================
+  ALAFIYA PLUS — SCRIPT DE DÉMONSTRATION (5 minutes maximum)
+  Axé sur l'expérience du personnel médical
+====================================================================
+
+PERSONNAGES DE LA DÉMO
+--------------------------------------
+Superadmin  : Équipe Alafiya (N'di Solutions)
+Responsable : Mme Akossiwa DOVI, directrice de la Clinique Espoir
+Médecin     : Dr Koami AGBEVE, médecin généraliste
+Patiente    : Mme Afi MENSAH, 34 ans, Lomé
+Urgence     : M. Mawuli ADZOA, 48 ans (amené inconscient)
+
+
+====================================================================
+  ÉTAPE 1 — CRÉATION DU CENTRE PAR LE SUPERADMIN  (~25 secondes)
+====================================================================
+
+ACTION   → Se connecter en tant que Superadmin.
+           Aller dans "Centres de santé" → "Ajouter un centre".
+           Remplir : Nom → "Clinique Espoir", Ville → Lomé,
+           Type → Clinique privée.
+           Désigner Mme DOVI comme administratrice du centre.
+           Valider.
+
+À DIRE   → "Tout part du superadmin : c'est lui qui référence les
+            établissements de santé sur la plateforme.
+            En quelques clics, la Clinique Espoir existe sur Alafiya
+            Plus, avec Mme DOVI désignée comme responsable.
+            Elle reçoit immédiatement ses identifiants."
+
+
+====================================================================
+  ÉTAPE 2 — CRÉATION DU COMPTE MÉDECIN PAR LE RESPONSABLE  (~25 secondes)
+====================================================================
+
+ACTION   → Se connecter en tant que Mme DOVI (admin centre).
+           Aller dans "Personnel" → "Ajouter un membre".
+           Remplir : Nom → "AGBEVE", Prénoms → "Koami",
+           Rôle → Médecin, Spécialité → Médecine Générale.
+           Valider.
+
+À DIRE   → "Mme DOVI crée ensuite les comptes de son équipe.
+            Elle définit les spécialités de chaque médecin, ce qui
+            détermine précisément à quelles sections du dossier
+            patient il aura accès.
+            Le Dr AGBEVE reçoit ses identifiants et peut se
+            connecter immédiatement."
+
+
+====================================================================
+  ÉTAPE 3 — CONNEXION DU MÉDECIN  (~20 secondes)
+====================================================================
+
+ACTION   → Se connecter avec les identifiants du Dr AGBEVE.
+
+À DIRE   → "Le Dr AGBEVE arrive à sa consultation du matin.
+            Il ouvre Alafiya Plus et se connecte.
+            À partir d'ici, c'est lui qui est aux commandes."
+
+
+====================================================================
+  ÉTAPE 4 — ACCÈS AU DOSSIER PAR QR CODE  (~40 secondes)
+====================================================================
+
+ACTION   → Aller sur l'onglet "Scanner".
+           Scanner le QR code de la carte patient d'Afi
+           (ou afficher le QR depuis un second téléphone).
+
+À DIRE   → "Afi tend sa carte patient au médecin.
+            En un scan, le système reconnaît la patiente.
+            Aucun mot de passe, aucun numéro de dossier à chercher.
+
+            C'est LA grande innovation : c'est le patient qui
+            autorise l'accès à son propre dossier, simplement en
+            présentant son QR code.
+
+            La session est automatiquement limitée à 1 heure,
+            enregistrée et tracée. Le médecin peut y mettre fin
+            à tout moment en un clic."
+
+ACTION   → Montrer la bannière verte "Accès actif — Session en cours"
+           et le bouton "Terminer" en haut du dossier.
+
+
+====================================================================
+  ÉTAPE 5 — CONSULTATION DU DOSSIER  (~25 secondes)
+====================================================================
+
+ACTION   → Parcourir rapidement le dossier d'Afi :
+           - Onglet "Informations" : photo, âge, adresse
+           - Ancienne consultation visible (paludisme 3 semaines
+             plus tôt : fièvre 39,5°, traitement Coartem)
+           - Onglet "Contacts urgence" : son mari, Kossi MENSAH
+
+À DIRE   → "En quelques secondes, le médecin voit l'historique
+            complet d'Afi. Il sait qu'elle a eu un paludisme
+            il y a 3 semaines, le traitement prescrit, par qui.
+            Plus besoin qu'Afi se souvienne de tout par cœur."
+
+
+====================================================================
+  ÉTAPE 6 — DICTÉE VOCALE + STRUCTURATION IA  (~1 min 20)
+====================================================================
+  ** INNOVATION PRINCIPALE — INSISTER ICI **
+
+ACTION   → Ouvrir le module "Médecine Générale" dans le dossier.
+           Créer une nouvelle consultation.
+           Appuyer sur le bouton FAB vert (micro) en bas à droite.
+
+À DIRE   → "Plutôt que de taper au clavier pendant la consultation —
+            ce qui est froid et chronophage — le Dr AGBEVE dicte
+            simplement ses observations à voix haute."
+
+ACTION   → Dicter ce texte clairement, comme si on examinait Afi :
+
+    ---- TEXTE À DICTER ----
+    "La patiente présente des céphalées depuis 10 jours et une
+     fatigue persistante. Antécédents : paludisme traité en mars.
+     Tension artérielle 14 sur 9, pouls 88, température 37,2.
+     Je prescris Amlodipine 5 milligrammes par jour pendant
+     30 jours, et du repos. Suivi dans 2 semaines."
+    ------------------------
+
+ACTION   → Arrêter l'enregistrement. Attendre 5-10 secondes.
+           Montrer le résultat : les champs sont remplis
+           automatiquement.
+           - Antécédents      → "Paludisme traité en mars"
+           - Signes/Symptômes → "Céphalées depuis 10 jours, fatigue"
+           - Examens cliniques → "TA 14/9, pouls 88, T° 37,2"
+           - Ordonnance        → "Amlodipine 5mg/j pendant 30 jours"
+           - Suivi             → "Dans 2 semaines"
+
+À DIRE   → "L'intelligence artificielle a compris, structuré et
+            classé chaque information dans le bon champ.
+            La consultation est prête. Le médecin n'a qu'à vérifier
+            et valider. Ce qui prenait 5 à 10 minutes ne prend
+            plus que quelques secondes."
+
+
+====================================================================
+  ÉTAPE 7 — CHATBOT IA SUR LE DOSSIER  (~40 secondes)
+====================================================================
+
+ACTION   → Appuyer sur le bouton FAB bleu (bulle de chat) en bas
+           à droite pour ouvrir le chatbot.
+
+À DIRE   → "Le Dr AGBEVE a un doute : Afi a-t-elle déjà eu de
+            l'hypertension, ou c'est nouveau ? Il pose directement
+            la question à l'assistant IA."
+
+ACTION   → Taper ou dicter (micro dans le chatbot) :
+           "Est-ce qu'Afi a déjà eu des problèmes de tension
+            dans ses consultations précédentes ?"
+
+ACTION   → Montrer la réponse de l'IA qui analyse l'historique.
+
+À DIRE   → "L'IA a analysé tout l'historique et répond en quelques
+            secondes. Le médecin prend une décision mieux informée,
+            sans tout relire lui-même.
+
+            C'est un assistant médical disponible à tout moment,
+            qui connaît le dossier du patient aussi bien que
+            le médecin qui le suit depuis le début."
+
+
+====================================================================
+  ÉTAPE 8 — MODE URGENCE  (~40 secondes)
+====================================================================
+  ** SCÉNARIO DIFFÉRENT **
+  M. Mawuli ADZOA, 48 ans, est amené inconscient aux urgences.
+  Pas de carte, mais sa femme est présente.
+
+ACTION   → Aller sur "Mode Urgence" depuis le scanner.
+           Remplir le formulaire :
+           - Genre  : Homme
+           - Nom    : ADZOA (optionnel)
+           - Motif  : "Patient inconscient, traumatisme crânien,
+                       tension non mesurable à l'arrivée"
+           - Téléphone de la femme : +228 90 XX XX XX
+           - Signer sur le pad (signature du médecin)
+           - Signer sur le second pad (signature de la femme)
+
+ACTION   → Valider → page de résultats → sélectionner Mawuli ADZOA
+           dans la grille → confirmer l'accès urgence.
+
+À DIRE   → "En situation d'urgence, on n'a pas le temps de chercher
+            une carte. Le mode urgence donne un accès immédiat et
+            complet au dossier.
+
+            Mais cet accès n'est pas anonyme : il est signé,
+            justifié, et la famille co-signe.
+            La femme de Mawuli reçoit immédiatement un SMS
+            l'informant que le dossier a été ouvert, par qui,
+            et dans quel établissement.
+            La traçabilité est totale."
+
+ACTION   → Montrer la bannière rouge "MODE URGENCE ACTIF" dans le
+           dossier de Mawuli, avec le bouton "Terminer l'accès".
+
+
+====================================================================
+  CONCLUSION  (~15 secondes)
+====================================================================
+
+    "Alafiya Plus, c'est trois innovations majeures pour le Togo :
+
+     1. Le QR code patient — le consentement dans la poche.
+     2. La dictée + IA — fini les consultations face à un clavier.
+     3. Le mode urgence tracé — l'accès immédiat, sans impunité.
+
+     Un dossier médical numérique, sécurisé, accessible partout.
+     C'est Alafiya Plus."
+
+
+====================================================================
+  TIMING INDICATIF
+====================================================================
+  Étape 1 — Superadmin : création du centre      :  0:00 → 0:25
+  Étape 2 — Responsable : création compte médecin :  0:25 → 0:50
+  Étape 3 — Connexion médecin                    :  0:50 → 1:10
+  Étape 4 — Scanner QR / accès dossier           :  1:10 → 1:50
+  Étape 5 — Lecture du dossier                   :  1:50 → 2:15
+  Étape 6 — Dictée vocale + IA        ← CLOU     :  2:15 → 3:35
+  Étape 7 — Chatbot IA                           :  3:35 → 4:15
+  Étape 8 — Mode urgence                         :  4:15 → 4:55
+  Conclusion                                     :  4:55 → 5:00
+====================================================================

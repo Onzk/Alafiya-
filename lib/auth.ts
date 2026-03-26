@@ -75,6 +75,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       }
       return token
     },
+    async redirect({ url, baseUrl }) {
+      // Autoriser la redirection vers le domaine de production
+      if (url.startsWith('https://srv1486271.hstgr.cloud')) return url
+      // Comportement par défaut
+      if (url.startsWith('/')) return `${baseUrl}${url}`
+      if (url.startsWith(baseUrl)) return url
+      return baseUrl
+    },
     async session({ session, token }) {
       session.user = {
         ...session.user,
