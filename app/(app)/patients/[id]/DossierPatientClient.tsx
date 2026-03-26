@@ -3,7 +3,8 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { User, Phone, Stethoscope, AlertTriangle, Building2, FolderOpen } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { User, Phone, Stethoscope, AlertTriangle, Building2, FolderOpen, ShieldOff, Loader2, ShieldCheck, FileSearch } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -73,6 +74,8 @@ export function DossierPatientClient({
   patientId,
   accesValide,
   modeUrgence,
+  modeAccesDoc,
+  accesDossierId,
   specialitesAccessibles,
 }: {
   patient: PatientData
@@ -81,9 +84,20 @@ export function DossierPatientClient({
   patientId: string
   accesValide: boolean
   modeUrgence: boolean
+  modeAccesDoc: boolean
+  accesDossierId: string | null
   specialitesAccessibles: Specialite[]
 }) {
+  const router = useRouter()
   const [activeTab, setActiveTab] = useState<Tab>('informations')
+  const [terminant, setTerminant] = useState(false)
+
+  async function terminerAcces() {
+    if (!accesDossierId) return
+    setTerminant(true)
+    await fetch(`/api/acces-dossier/${accesDossierId}`, { method: 'PATCH' })
+    router.push('/patients')
+  }
 
   return (
     <div className="space-y-5">
@@ -103,9 +117,34 @@ export function DossierPatientClient({
       )}
 
       {modeUrgence && (
-        <div className="bg-red-50 dark:bg-red-950/30 border border-red-300 dark:border-red-900/50 rounded-lg p-3 text-sm text-red-700 dark:text-red-300 flex items-center gap-2">
-          <AlertTriangle className="h-4 w-4 flex-shrink-0" />
-          <span><strong>MODE URGENCE ACTIF</strong> — Accès complet. Session tracée.</span>
+        <div className="bg-red-50 dark:bg-red-950/30 border border-red-300 dark:border-red-900/50 rounded-lg p-3 text-sm text-red-700 dark:text-red-300 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <AlertTriangle className="h-4 w-4 flex-shrink-0" />
+            <span><strong>MODE URGENCE ACTIF</strong> — Accès complet. Session tracée.</span>
+          </div>
+          {accesDossierId && (
+            <Button size="sm" variant="destructive" onClick={terminerAcces} disabled={terminant} className="shrink-0">
+              {terminant ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <><ShieldOff className="h-3.5 w-3.5 mr-1.5" />Terminer l&apos;accès</>}
+            </Button>
+          )}
+        </div>
+      )}
+
+      {accesValide && !modeUrgence && accesDossierId && (
+        <div className="bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-900/40 rounded-lg p-3 text-sm text-emerald-700 dark:text-emerald-300 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            {modeAccesDoc
+              ? <FileSearch className="h-4 w-4 flex-shrink-0" />
+              : <ShieldCheck className="h-4 w-4 flex-shrink-0" />}
+            <span>
+              {modeAccesDoc
+                ? <><strong>Accès par document</strong> — Cette consultation est enregistrée et étroitement surveillée.</>
+                : <><strong>Accès actif</strong> — Session en cours. Toute consultation est tracée.</>}
+            </span>
+          </div>
+          <Button size="sm" variant="outline" onClick={terminerAcces} disabled={terminant} className="shrink-0 border-emerald-300 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-950/40">
+            {terminant ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <><ShieldOff className="h-3.5 w-3.5 mr-1.5" />Terminer</>}
+          </Button>
         </div>
       )}
 

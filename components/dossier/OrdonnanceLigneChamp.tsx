@@ -93,7 +93,7 @@ export function OrdonnanceLigneChamp({
   }
 
   const inputCls = cn(
-    'h-9 text-sm rounded-lg border-slate-200 dark:border-zinc-700 bg-white dark:bg-zinc-950 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-zinc-500 focus-visible:ring-emerald-500 focus-visible:border-emerald-400',
+    'h-12 text-sm rounded-lg border-slate-200 dark:border-zinc-700 bg-white dark:bg-zinc-950 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-zinc-500 focus-visible:ring-emerald-500 focus-visible:border-emerald-400',
     inputClassName,
   )
 

@@ -42,6 +42,7 @@ export default async function DossierPatientPage({ params }: { params: { id: str
   const isAdmin = user.niveauAcces === 'SUPERADMIN' || user.niveauAcces === 'ADMIN_CENTRE'
   const accesValide = !!accesActif || isAdmin
   const modeUrgence = accesActif?.modeUrgence ?? false
+  const modeAccesDoc = accesActif?.modeAccesDoc ?? false
 
   // Le bouton QR est visible aux admins et aux médecins ayant déjà un AccesDossier (même expiré)
   const peutVoirQR = isAdmin || (patient.dossier
@@ -132,6 +133,8 @@ export default async function DossierPatientPage({ params }: { params: { id: str
             patientId={params.id}
             accesValide={accesValide}
             modeUrgence={modeUrgence}
+            modeAccesDoc={modeAccesDoc}
+            accesDossierId={accesActif?.id ?? null}
             specialitesAccessibles={specialitesAccessibles}
           />
       </div>

@@ -301,6 +301,7 @@ model AccesUrgence {
   justifieParNom       String?
   justifieParTel       String?
   justifieParSignature String?
+  signatureMedecin     String?
   patientId            String
   medecinId            String
   centreId             String

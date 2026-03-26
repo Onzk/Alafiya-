@@ -8,7 +8,17 @@ export async function POST(req: NextRequest) {
   const session = await auth()
   if (!session?.user) return NextResponse.json({ error: 'Non autorisé' }, { status: 401 })
 
-  const { patientId, dossierId, justification } = await req.json()
+  const {
+    patientId,
+    dossierId,
+    justification,
+    signatureMedecin,
+    justifieParNom,
+    justifieParTel,
+    justifieParSignature,
+    justifieParType,
+  } = await req.json()
+
   if (!patientId || !dossierId || !justification?.trim()) {
     return NextResponse.json({ error: 'Données manquantes ou justification vide' }, { status: 400 })
   }
@@ -33,7 +43,17 @@ export async function POST(req: NextRequest) {
   if (!patient) return NextResponse.json({ error: 'Patient introuvable' }, { status: 404 })
 
   const accesUrgence = await prisma.accesUrgence.create({
-    data: { patientId, medecinId: session.user.id!, centreId, justification },
+    data: {
+      patientId,
+      medecinId: session.user.id!,
+      centreId,
+      justification,
+      signatureMedecin: signatureMedecin ?? null,
+      justifieParNom: justifieParNom ?? null,
+      justifieParTel: justifieParTel ?? null,
+      justifieParSignature: justifieParSignature ?? null,
+      justifieParType: justifieParType ?? null,
+    },
   })
 
   const debutAcces = new Date()
