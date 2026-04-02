@@ -33,14 +33,30 @@ export default async function PatientsPage({
   const limit = 20
   const skip = (page - 1) * limit
 
-  const where = searchParams.q
+  // Le personnel ne voit que les patients créés dans son centre ou y ayant consulté
+  const centreActif = user.centreActif
+  const scopeFilter = !isAdmin && centreActif
     ? {
         OR: [
-          { nom: { contains: searchParams.q, mode: 'insensitive' as const } },
-          { prenoms: { contains: searchParams.q, mode: 'insensitive' as const } },
+          { centreCreationId: centreActif },
+          { dossier: { enregistrements: { some: { centreId: centreActif } } } },
         ],
       }
     : {}
+
+  const where = searchParams.q
+    ? {
+        AND: [
+          scopeFilter,
+          {
+            OR: [
+              { nom: { contains: searchParams.q, mode: 'insensitive' as const } },
+              { prenoms: { contains: searchParams.q, mode: 'insensitive' as const } },
+            ],
+          },
+        ],
+      }
+    : scopeFilter
 
   const [patients, total] = await Promise.all([
     prisma.patient.findMany({
